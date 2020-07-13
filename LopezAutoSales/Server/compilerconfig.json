@@ -1,0 +1,7 @@
+﻿[
+  {
+    "outputFile": "../Client/wwwroot/css/bootstrap.css",
+    "inputFile": "Styles/bootstrap.scss",
+    "minify": { "enabled": "true" }
+  }
+]
