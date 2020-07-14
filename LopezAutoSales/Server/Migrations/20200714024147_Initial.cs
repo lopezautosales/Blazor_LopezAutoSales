@@ -1,12 +1,28 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
-namespace LopezAutoSales.Server.Data.Migrations
+namespace LopezAutoSales.Server.Migrations
 {
-    public partial class CreateIdentitySchema : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Address",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Street = table.Column<string>(maxLength: 50, nullable: false),
+                    City = table.Column<string>(maxLength: 20, nullable: false),
+                    State = table.Column<string>(maxLength: 20, nullable: false),
+                    ZIP = table.Column<string>(maxLength: 10, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Address", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -47,6 +63,24 @@ namespace LopezAutoSales.Server.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Cars",
+                columns: table => new
+                {
+                    Date = table.Column<DateTime>(nullable: false),
+                    VIN = table.Column<string>(nullable: false),
+                    Year = table.Column<int>(nullable: false),
+                    Make = table.Column<string>(nullable: true),
+                    Model = table.Column<string>(nullable: true),
+                    Color = table.Column<string>(nullable: true),
+                    Mileage = table.Column<int>(nullable: true),
+                    IsSalvage = table.Column<bool>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cars", x => new { x.VIN, x.Date });
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DeviceCodes",
                 columns: table => new
                 {
@@ -78,6 +112,26 @@ namespace LopezAutoSales.Server.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PersistedGrants", x => x.Key);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Lienholder",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(nullable: true),
+                    AddressId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Lienholder", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Lienholder_Address_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Address",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -186,6 +240,135 @@ namespace LopezAutoSales.Server.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Images",
+                columns: table => new
+                {
+                    Id = table.Column<string>(nullable: false),
+                    CarVIN = table.Column<string>(nullable: true),
+                    CarDate = table.Column<DateTime>(nullable: true),
+                    URL = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Images", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Images_Cars_CarVIN_CarDate",
+                        columns: x => new { x.CarVIN, x.CarDate },
+                        principalTable: "Cars",
+                        principalColumns: new[] { "VIN", "Date" },
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Sales",
+                columns: table => new
+                {
+                    Id = table.Column<string>(nullable: false),
+                    LienholderId = table.Column<int>(nullable: true),
+                    AddressId = table.Column<int>(nullable: false),
+                    Date = table.Column<DateTime>(nullable: false),
+                    Phone = table.Column<string>(nullable: true),
+                    Buyer = table.Column<string>(nullable: true),
+                    CoBuyer = table.Column<string>(nullable: true),
+                    CarVIN = table.Column<string>(nullable: true),
+                    CarDate = table.Column<DateTime>(nullable: true),
+                    TradeInVIN = table.Column<string>(nullable: true),
+                    TradeInDate = table.Column<DateTime>(nullable: true),
+                    SellingPrice = table.Column<decimal>(type: "money", nullable: false),
+                    BoughtPrice = table.Column<decimal>(type: "money", nullable: true),
+                    DownPayment = table.Column<decimal>(type: "money", nullable: false),
+                    MonthlyPayment = table.Column<decimal>(type: "money", nullable: false),
+                    TaxRate = table.Column<decimal>(type: "decimal(5,5)", nullable: false),
+                    HasTag = table.Column<bool>(nullable: false),
+                    IsOutOfState = table.Column<bool>(nullable: false),
+                    IsPaid = table.Column<bool>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sales", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Sales_Address_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Address",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Sales_Lienholder_LienholderId",
+                        column: x => x.LienholderId,
+                        principalTable: "Lienholder",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Sales_Cars_CarVIN_CarDate",
+                        columns: x => new { x.CarVIN, x.CarDate },
+                        principalTable: "Cars",
+                        principalColumns: new[] { "VIN", "Date" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Sales_Cars_TradeInVIN_TradeInDate",
+                        columns: x => new { x.TradeInVIN, x.TradeInDate },
+                        principalTable: "Cars",
+                        principalColumns: new[] { "VIN", "Date" },
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Payments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SaleId = table.Column<string>(nullable: true),
+                    Date = table.Column<DateTime>(nullable: false),
+                    Amount = table.Column<decimal>(type: "money", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Payments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Payments_Sales_SaleId",
+                        column: x => x.SaleId,
+                        principalTable: "Sales",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserSales",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(nullable: false),
+                    SaleId = table.Column<string>(nullable: false),
+                    DateSet = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserSales", x => new { x.UserId, x.SaleId });
+                    table.ForeignKey(
+                        name: "FK_UserSales_Sales_SaleId",
+                        column: x => x.SaleId,
+                        principalTable: "Sales",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserSales_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Address",
+                columns: new[] { "Id", "City", "State", "Street", "ZIP" },
+                values: new object[] { 1, "Emporia", "Kansas", "710 Lantern Lane", "66801" });
+
+            migrationBuilder.InsertData(
+                table: "Lienholder",
+                columns: new[] { "Id", "AddressId", "Name" },
+                values: new object[] { 1, 1, "Lopez Auto Sales, Inc." });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -237,6 +420,21 @@ namespace LopezAutoSales.Server.Data.Migrations
                 column: "Expiration");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Images_CarVIN_CarDate",
+                table: "Images",
+                columns: new[] { "CarVIN", "CarDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Lienholder_AddressId",
+                table: "Lienholder",
+                column: "AddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_SaleId",
+                table: "Payments",
+                column: "SaleId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PersistedGrants_Expiration",
                 table: "PersistedGrants",
                 column: "Expiration");
@@ -245,6 +443,31 @@ namespace LopezAutoSales.Server.Data.Migrations
                 name: "IX_PersistedGrants_SubjectId_ClientId_Type",
                 table: "PersistedGrants",
                 columns: new[] { "SubjectId", "ClientId", "Type" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sales_AddressId",
+                table: "Sales",
+                column: "AddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sales_LienholderId",
+                table: "Sales",
+                column: "LienholderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sales_CarVIN_CarDate",
+                table: "Sales",
+                columns: new[] { "CarVIN", "CarDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sales_TradeInVIN_TradeInDate",
+                table: "Sales",
+                columns: new[] { "TradeInVIN", "TradeInDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserSales_SaleId",
+                table: "UserSales",
+                column: "SaleId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -268,13 +491,34 @@ namespace LopezAutoSales.Server.Data.Migrations
                 name: "DeviceCodes");
 
             migrationBuilder.DropTable(
+                name: "Images");
+
+            migrationBuilder.DropTable(
+                name: "Payments");
+
+            migrationBuilder.DropTable(
                 name: "PersistedGrants");
+
+            migrationBuilder.DropTable(
+                name: "UserSales");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "Sales");
+
+            migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Lienholder");
+
+            migrationBuilder.DropTable(
+                name: "Cars");
+
+            migrationBuilder.DropTable(
+                name: "Address");
         }
     }
 }

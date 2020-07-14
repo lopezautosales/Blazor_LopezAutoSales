@@ -6,6 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20200714023313_Initial.cs" />
+    <Compile Remove="Migrations\20200714023313_Initial.Designer.cs" />
+    <Compile Remove="Migrations\20200714024113_Initial.cs" />
+    <Compile Remove="Migrations\20200714024113_Initial.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="compilerconfig.json" />
   </ItemGroup>
 
