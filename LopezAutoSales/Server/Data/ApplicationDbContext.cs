@@ -3,6 +3,7 @@ using LopezAutoSales.Server.Models;
 using LopezAutoSales.Shared;
 using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -24,6 +25,13 @@ namespace LopezAutoSales.Server.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<IdentityRole>().HasData(new IdentityRole
+            {
+                Id = "2301D884-221A-4E7D-B509-0113DCC043E1",
+                Name = "Admin",
+                NormalizedName = "ADMIN"
+            });
+
             Dealership.Address.Id = 1;
             Lienholder dealership = new Lienholder
             {

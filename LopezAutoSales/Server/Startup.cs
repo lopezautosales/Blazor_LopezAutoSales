@@ -1,6 +1,7 @@
 using IdentityServer4.Services;
 using LopezAutoSales.Server.Data;
 using LopezAutoSales.Server.Models;
+using LopezAutoSales.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -49,7 +50,7 @@ namespace LopezAutoSales.Server
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, UserManager<ApplicationUser> userManager)
         {
             if (env.IsDevelopment())
             {
@@ -73,6 +74,7 @@ namespace LopezAutoSales.Server
             app.UseIdentityServer();
             app.UseAuthentication();
             app.UseAuthorization();
+            SeedUsers(userManager);
 
             app.UseEndpoints(endpoints =>
             {
@@ -80,6 +82,26 @@ namespace LopezAutoSales.Server
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
             });
+        }
+
+        public void SeedUsers(UserManager<ApplicationUser> userManager)
+        {
+            if (userManager.FindByEmailAsync(Dealership.Email).Result == null)
+            {
+                ApplicationUser user = new ApplicationUser
+                {
+                    UserName = Dealership.Email,
+                    Email = Dealership.Email,
+                    PhoneNumber = Dealership.Phone
+                };
+                string password = Configuration.GetValue<string>("Admin:Password");
+                IdentityResult result = userManager.CreateAsync(user, password).Result;
+
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(user, "Admin").Wait();
+                }
+            }
         }
     }
 }
