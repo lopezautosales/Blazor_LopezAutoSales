@@ -6,5 +6,6 @@
 
         public Car Car { get; set; }
         public string URL { get; set; }
+        public bool IsThumbnail { get; set; }
     }
 }

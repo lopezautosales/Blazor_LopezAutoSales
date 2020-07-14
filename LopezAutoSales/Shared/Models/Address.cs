@@ -18,5 +18,13 @@ namespace LopezAutoSales.Shared.Models
         [Required]
         [MaxLength(10)]
         public string ZIP { get; set; }
+
+        public string Area
+        {
+            get
+            {
+                return $"{City}, {State}, {ZIP}";
+            }
+        }
     }
 }

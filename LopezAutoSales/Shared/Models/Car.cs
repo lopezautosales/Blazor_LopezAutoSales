@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LopezAutoSales.Shared.Models
 {
@@ -14,6 +15,25 @@ namespace LopezAutoSales.Shared.Models
         public string Color { get; set; }
         public int? Mileage { get; set; }
         public bool IsSalvage { get; set; }
+        public bool IsListed { get; set; }
+        [Column(TypeName = "money")]
+        public decimal ListPrice { get; set; }
         public List<Image> Images { get; set; } = new List<Image>();
+
+        public string Name
+        {
+            get
+            {
+                return $"{Year} {Make} {Model}";
+            }
+        }
+
+        public string MileageString
+        {
+            get
+            {
+                return Mileage.HasValue ? Mileage.Value.ToString() : "Exempt";
+            }
+        }
     }
 }

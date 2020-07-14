@@ -6,12 +6,20 @@
 
 <AuthorizeView>
     <Authorized>
-        <a class="btn btn-secondary" href="authentication/profile">Hello, @context.User.Identity.Name!</a>
-        <button class="btn btn-danger" @onclick="BeginSignOut">Log out</button>
+        <li class="nav-item">
+            <a class="nav-link" href="authentication/profile"><i class="mdi mdi-account"></i> @context.User.Identity.Name</a>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" @onclick="BeginSignOut"><i class="mdi mdi-logout"></i> Log out</button>
+        </li>
     </Authorized>
     <NotAuthorized>
-        <a class="btn btn-secondary" href="authentication/register">Register</a>
-        <a class="btn btn-success" href="authentication/login">Log in</a>
+        <li class="nav-item">
+            <a class="nav-link" href="authentication/register"><i class="mdi mdi-account-plus"></i> Register</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="authentication/login"><i class="mdi mdi-login"></i> Log in</a>
+        </li>
     </NotAuthorized>
 </AuthorizeView>
 

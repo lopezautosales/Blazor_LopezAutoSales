@@ -237,8 +237,14 @@ namespace LopezAutoSales.Server.Migrations
                     b.Property<string>("Color")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsListed")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsSalvage")
                         .HasColumnType("bit");
+
+                    b.Property<decimal>("ListPrice")
+                        .HasColumnType("money");
 
                     b.Property<string>("Make")
                         .HasColumnType("nvarchar(max)");
@@ -267,6 +273,9 @@ namespace LopezAutoSales.Server.Migrations
 
                     b.Property<string>("CarVIN")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsThumbnail")
+                        .HasColumnType("bit");
 
                     b.Property<string>("URL")
                         .HasColumnType("nvarchar(max)");

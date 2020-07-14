@@ -4,13 +4,15 @@
 <main role="main" class="container">
     @Body
 </main>
-<footer class="mt-auto py-2">
+<footer class="mt-auto">
     <hr />
-    <div class="container text-center">
-        <p class="my-0">Lopez Auto Sales</p>
-        <p class="my-0"><a class="text-decoration-none" href="https://goo.gl/maps/YZoFvQTUptU8cASW8" target="_blank">515 Albert St</a></p>
-        <p class="my-0">Emporia, KS, 66801</p>
-        <p class="my-0"><a class="text-decoration-none" href="tel:16202086250">(620)208-6250</a></p>
-        <p class="my-0"><a class="text-decoration-none" href="mailto:lopezauto@outlook.com">lopezauto@outlook.com</a></p>
-    </div>
+    <address class="text-center">
+        <strong>@Dealership.Name</strong><br />
+        <a class="text-decoration-none text-dark" href="https://goo.gl/maps/YZoFvQTUptU8cASW8" target="_blank">
+            @Dealership.Address.Street
+        </a><br />
+        @Dealership.Address.Area<br />
+        <a class="text-decoration-none text-dark" href="tel:16202086250">(620)208-6250</a><br />
+        <a class="text-decoration-none text-dark" href="mailto:lopezauto@outlook.com">lopezauto@outlook.com</a>
+    </address>
 </footer>
