@@ -1,10 +1,10 @@
 {
-  "name": "LopezAutoSales",
-  "short_name": "LopezAutoSales",
+  "name": "Lopez Auto Sales",
+  "short_name": "Lopez Auto Sales",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#03173d",
+  "background_color": "#FFF",
+  "theme_color": "#02bbee",
   "icons": [
     {
       "src": "icon-512.png",

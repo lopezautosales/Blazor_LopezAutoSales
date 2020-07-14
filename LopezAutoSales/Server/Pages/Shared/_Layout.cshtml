@@ -1,5 +1,7 @@
-﻿<!DOCTYPE html>
-<html>
+﻿@using LopezAutoSales.Shared
+
+<!DOCTYPE html>
+<html class="h-100">
 
 <head>
     <meta charset="utf-8" />
@@ -10,15 +12,37 @@
     <link href="~/css/app.css" rel="stylesheet" />
 </head>
 
-<body>
-    <div class="main">
-        <div class="content px-4">
-            @RenderBody()
+<body class="d-flex flex-column h-100">
+    <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-gradient-primary">
+        <div class="container">
+            <a class="navbar-brand font-weight-bold" href="/">Lopez Auto Sales</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="mdi mdi-menu"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarTop">
+                <ul class="navbar-nav ml-auto">
+                    <partial name="_LoginPartial" />
+                </ul>
+            </div>
         </div>
+    </nav>
+    <div role="main" class="container">
+        @RenderBody()
     </div>
-
-    <script src="~/lib/dist/js/bootstrap.bundle.min.js"></script>
+    <footer class="mt-auto">
+        <hr />
+        <address class="text-center">
+            <strong>@Dealership.Name</strong><br />
+            <a class="text-decoration-none text-dark" href="https://goo.gl/maps/YZoFvQTUptU8cASW8" target="_blank">
+                @Dealership.Address.Street
+            </a><br />
+            @Dealership.Address.Area<br />
+            <a class="text-decoration-none text-dark" href="tel:16202086250">(620)208-6250</a><br />
+            <a class="text-decoration-none text-dark" href="mailto:lopezauto@outlook.com">lopezauto@outlook.com</a>
+        </address>
+    </footer>
     <script src="~/lib/dist/js/jquery.slim.min.js"></script>
+    <script src="~/lib/dist/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", false);
 </body>
 
