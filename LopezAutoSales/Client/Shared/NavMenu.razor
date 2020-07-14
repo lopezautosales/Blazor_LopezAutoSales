@@ -12,6 +12,19 @@
                 <li class="nav-item">
                     <NavLink class="nav-link" href="/about" Match="NavLinkMatch.Prefix"><i class="mdi mdi-information-outline"></i> About</NavLink>
                 </li>
+                <AuthorizeView Roles="admin">
+                    <li class="nav-item dropdown">
+                        <NavLink class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Dropdown
+                        </NavLink>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                    </li>
+                </AuthorizeView>
                 <LoginDisplay />
             </ul>
         </div>

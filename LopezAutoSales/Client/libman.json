@@ -12,6 +12,10 @@
       "library": "jquery@3.5.1",
       "files": [ "jquery.slim.min.js", "jquery.slim.min.map" ],
       "destination": "wwwroot/lib/dist/js"
+    },
+    {
+      "library": "MaterialDesign-Webfont@5.3.45",
+      "destination": "wwwroot/lib/"
     }
   ]
 }
