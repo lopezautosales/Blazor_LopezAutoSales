@@ -1,7 +1,8 @@
 ﻿@page "/"
+@inject HttpClient http
 
 <h1 class="text-center">Inventory</h1>
-@if (Cars == null)
+@if (Cars == null || Cars.Count == 0)
 {
     <p class="lead">There's currently no vehicles available.</p>
 }
@@ -33,8 +34,9 @@ else
 @code {
     public List<Car> Cars { get; set; }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        return base.OnInitializedAsync();
+        Cars = await http.GetFromJsonAsync<List<Car>>("/api/inventory");
+        await base.OnInitializedAsync();
     }
 }
