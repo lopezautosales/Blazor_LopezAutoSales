@@ -14,14 +14,12 @@
                 </li>
                 <AuthorizeView Roles="Admin">
                     <li class="nav-item dropdown">
-                        <NavLink class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Dropdown
+                        <NavLink class="nav-link dropdown-toggle" Match="NavLinkMatch.Prefix" href="/app" id="appDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="mdi mdi-clipboard"></i> App
                         </NavLink>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="#">Action</a>
-                            <a class="dropdown-item" href="#">Another action</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Something else here</a>
+                        <div class="dropdown-menu" aria-labelledby="appDropdown">
+                            <a class="dropdown-item" href="/app/payments">Payments</a>
+                            <a class="dropdown-item" href="/app/inventory">Inventory</a>
                         </div>
                     </li>
                 </AuthorizeView>
