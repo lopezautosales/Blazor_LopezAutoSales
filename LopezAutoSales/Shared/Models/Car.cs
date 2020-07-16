@@ -32,6 +32,8 @@ namespace LopezAutoSales.Shared.Models
         public string JsonData { get; set; }
         [NotMapped]
         public CarData Data { get; set; }
+        [NotMapped]
+        public List<string> Files { get; set; }
 
         public string Name
         {

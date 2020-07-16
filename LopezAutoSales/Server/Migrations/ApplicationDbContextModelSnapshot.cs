@@ -235,6 +235,7 @@ namespace LopezAutoSales.Server.Migrations
                         .HasColumnType("money");
 
                     b.Property<string>("Color")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Date")
@@ -253,15 +254,18 @@ namespace LopezAutoSales.Server.Migrations
                         .HasColumnType("money");
 
                     b.Property<string>("Make")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Mileage")
                         .HasColumnType("int");
 
                     b.Property<string>("Model")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VIN")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Year")
@@ -439,7 +443,7 @@ namespace LopezAutoSales.Server.Migrations
                         new
                         {
                             Id = "2301D884-221A-4E7D-B509-0113DCC043E1",
-                            ConcurrencyStamp = "09df618f-3c19-4b65-a3e8-b5decb00cd4b",
+                            ConcurrencyStamp = "8e06a26c-03f3-4bce-9a9a-acd76aed610e",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });

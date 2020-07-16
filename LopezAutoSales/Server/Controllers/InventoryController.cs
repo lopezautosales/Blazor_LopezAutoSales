@@ -51,6 +51,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
+            //handle car files
             car.IsListed = true;
             car.Date = DateTime.Now;
             _context.Cars.Add(car);

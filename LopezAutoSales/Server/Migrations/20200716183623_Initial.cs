@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace LopezAutoSales.Server.Migrations
 {
@@ -66,18 +66,23 @@ namespace LopezAutoSales.Server.Migrations
                 name: "Cars",
                 columns: table => new
                 {
+                    Id = table.Column<string>(nullable: false),
                     Date = table.Column<DateTime>(nullable: false),
                     VIN = table.Column<string>(nullable: false),
                     Year = table.Column<int>(nullable: false),
-                    Make = table.Column<string>(nullable: true),
-                    Model = table.Column<string>(nullable: true),
-                    Color = table.Column<string>(nullable: true),
+                    Make = table.Column<string>(nullable: false),
+                    Model = table.Column<string>(nullable: false),
+                    Color = table.Column<string>(nullable: false),
                     Mileage = table.Column<int>(nullable: true),
-                    IsSalvage = table.Column<bool>(nullable: false)
+                    IsSalvage = table.Column<bool>(nullable: false),
+                    IsListed = table.Column<bool>(nullable: false),
+                    BoughtPrice = table.Column<decimal>(type: "money", nullable: true),
+                    ListPrice = table.Column<decimal>(type: "money", nullable: false),
+                    JsonData = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cars", x => new { x.VIN, x.Date });
+                    table.PrimaryKey("PK_Cars", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -245,18 +250,18 @@ namespace LopezAutoSales.Server.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(nullable: false),
-                    CarVIN = table.Column<string>(nullable: true),
-                    CarDate = table.Column<DateTime>(nullable: true),
-                    URL = table.Column<string>(nullable: true)
+                    CarId = table.Column<string>(nullable: true),
+                    URL = table.Column<string>(nullable: true),
+                    IsThumbnail = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Images", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Images_Cars_CarVIN_CarDate",
-                        columns: x => new { x.CarVIN, x.CarDate },
+                        name: "FK_Images_Cars_CarId",
+                        column: x => x.CarId,
                         principalTable: "Cars",
-                        principalColumns: new[] { "VIN", "Date" },
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -267,16 +272,13 @@ namespace LopezAutoSales.Server.Migrations
                     Id = table.Column<string>(nullable: false),
                     LienholderId = table.Column<int>(nullable: true),
                     AddressId = table.Column<int>(nullable: false),
+                    CarId = table.Column<string>(nullable: true),
+                    TradeInId = table.Column<string>(nullable: true),
                     Date = table.Column<DateTime>(nullable: false),
                     Phone = table.Column<string>(nullable: true),
                     Buyer = table.Column<string>(nullable: true),
                     CoBuyer = table.Column<string>(nullable: true),
-                    CarVIN = table.Column<string>(nullable: true),
-                    CarDate = table.Column<DateTime>(nullable: true),
-                    TradeInVIN = table.Column<string>(nullable: true),
-                    TradeInDate = table.Column<DateTime>(nullable: true),
                     SellingPrice = table.Column<decimal>(type: "money", nullable: false),
-                    BoughtPrice = table.Column<decimal>(type: "money", nullable: true),
                     DownPayment = table.Column<decimal>(type: "money", nullable: false),
                     MonthlyPayment = table.Column<decimal>(type: "money", nullable: false),
                     TaxRate = table.Column<decimal>(type: "decimal(5,5)", nullable: false),
@@ -294,22 +296,22 @@ namespace LopezAutoSales.Server.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_Sales_Cars_CarId",
+                        column: x => x.CarId,
+                        principalTable: "Cars",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Sales_Lienholder_LienholderId",
                         column: x => x.LienholderId,
                         principalTable: "Lienholder",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Sales_Cars_CarVIN_CarDate",
-                        columns: x => new { x.CarVIN, x.CarDate },
+                        name: "FK_Sales_Cars_TradeInId",
+                        column: x => x.TradeInId,
                         principalTable: "Cars",
-                        principalColumns: new[] { "VIN", "Date" },
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Sales_Cars_TradeInVIN_TradeInDate",
-                        columns: x => new { x.TradeInVIN, x.TradeInDate },
-                        principalTable: "Cars",
-                        principalColumns: new[] { "VIN", "Date" },
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -365,6 +367,11 @@ namespace LopezAutoSales.Server.Migrations
                 values: new object[] { 1, "Emporia", "Kansas", "710 Lantern Lane", "66801" });
 
             migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[] { "2301D884-221A-4E7D-B509-0113DCC043E1", "8e06a26c-03f3-4bce-9a9a-acd76aed610e", "Admin", "ADMIN" });
+
+            migrationBuilder.InsertData(
                 table: "Lienholder",
                 columns: new[] { "Id", "AddressId", "Name" },
                 values: new object[] { 1, 1, "Lopez Auto Sales, Inc." });
@@ -409,6 +416,11 @@ namespace LopezAutoSales.Server.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Cars_IsListed",
+                table: "Cars",
+                column: "IsListed");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DeviceCodes_DeviceCode",
                 table: "DeviceCodes",
                 column: "DeviceCode",
@@ -420,9 +432,9 @@ namespace LopezAutoSales.Server.Migrations
                 column: "Expiration");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Images_CarVIN_CarDate",
+                name: "IX_Images_CarId",
                 table: "Images",
-                columns: new[] { "CarVIN", "CarDate" });
+                column: "CarId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Lienholder_AddressId",
@@ -450,19 +462,19 @@ namespace LopezAutoSales.Server.Migrations
                 column: "AddressId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Sales_CarId",
+                table: "Sales",
+                column: "CarId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Sales_LienholderId",
                 table: "Sales",
                 column: "LienholderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Sales_CarVIN_CarDate",
+                name: "IX_Sales_TradeInId",
                 table: "Sales",
-                columns: new[] { "CarVIN", "CarDate" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Sales_TradeInVIN_TradeInDate",
-                table: "Sales",
-                columns: new[] { "TradeInVIN", "TradeInDate" });
+                column: "TradeInId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserSales_SaleId",
@@ -512,10 +524,10 @@ namespace LopezAutoSales.Server.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "Lienholder");
+                name: "Cars");
 
             migrationBuilder.DropTable(
-                name: "Cars");
+                name: "Lienholder");
 
             migrationBuilder.DropTable(
                 name: "Address");
