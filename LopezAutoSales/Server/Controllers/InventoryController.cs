@@ -3,6 +3,7 @@ using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -48,7 +49,10 @@ namespace LopezAutoSales.Server.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult AddVehicle(Car car)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.GetErrors());
             car.IsListed = true;
+            car.Date = DateTime.Now;
             _context.Cars.Add(car);
             _context.SaveChanges();
             return Ok(car.Id);
