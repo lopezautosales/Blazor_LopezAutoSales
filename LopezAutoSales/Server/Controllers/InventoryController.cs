@@ -1,5 +1,6 @@
 ﻿using LopezAutoSales.Server.Data;
 using LopezAutoSales.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace LopezAutoSales.Server.Controllers
     [ApiController]
     public class InventoryController : ControllerBase
     {
-        private ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
         public InventoryController(ApplicationDbContext context)
         {
@@ -22,8 +23,35 @@ namespace LopezAutoSales.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> GetInventory()
         {
-            List<Car> cars = await _context.Cars.Where(x => x.IsListed).Include(x => x.Images).ToListAsync();
+            List<Car> cars = await _context.Cars.AsNoTracking().Where(x => x.IsListed).Include(x => x.Images).ToListAsync();
+            cars.ForEach(x => x.BoughtPrice = null);
             return Ok(cars);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetWarranty(string id)
+        {
+            Car car = await _context.Cars.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            car.BoughtPrice = null;
+            return Ok(car);
+        }
+
+        [HttpGet("admin")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAdminInventory()
+        {
+            List<Car> cars = await _context.Cars.AsNoTracking().Where(x => x.IsListed).Include(x => x.Images).ToListAsync();
+            return Ok(cars);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public IActionResult AddVehicle(Car car)
+        {
+            car.IsListed = true;
+            _context.Cars.Add(car);
+            _context.SaveChanges();
+            return Ok(car.Id);
         }
     }
 }

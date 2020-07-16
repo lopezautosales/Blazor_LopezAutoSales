@@ -11,17 +11,17 @@ namespace LopezAutoSales.Shared.Models
         public Lienholder Lienholder { get; set; }
         public int AddressId { get; set; }
         public Address Address { get; set; }
+        public string CarId { get; set; }
+        public Car Car { get; set; }
+        public string TradeInId { get; set; }
+        public Car TradeIn { get; set; }
 
         public DateTime Date { get; set; }
         public string Phone { get; set; }
         public string Buyer { get; set; }
         public string CoBuyer { get; set; }
-        public Car Car { get; set; }
-        public Car TradeIn { get; set; }
         [Column(TypeName = "money")]
         public decimal SellingPrice { get; set; }
-        [Column(TypeName = "money")]
-        public decimal? BoughtPrice { get; set; }
         [Column(TypeName = "money")]
         public decimal DownPayment { get; set; }
         [Column(TypeName = "money")]

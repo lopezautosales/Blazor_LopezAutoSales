@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
 
 namespace LopezAutoSales.Shared.Models
 {
     public class Car
     {
+        public string Id { get; set; }
+
         public DateTime Date { get; set; }
         public string VIN { get; set; }
-
         public int Year { get; set; }
         public string Make { get; set; }
         public string Model { get; set; }
@@ -17,8 +19,13 @@ namespace LopezAutoSales.Shared.Models
         public bool IsSalvage { get; set; }
         public bool IsListed { get; set; }
         [Column(TypeName = "money")]
+        public decimal? BoughtPrice { get; set; }
+        [Column(TypeName = "money")]
         public decimal ListPrice { get; set; }
         public List<Image> Images { get; set; } = new List<Image>();
+        public string JsonData { get; set; }
+        [NotMapped]
+        public CarData Data { get; set; }
 
         public string Name
         {
@@ -34,6 +41,11 @@ namespace LopezAutoSales.Shared.Models
             {
                 return Mileage.HasValue ? Mileage.Value.ToString() : "Exempt";
             }
+        }
+
+        public void DeserializeJson()
+        {
+            Data = JsonSerializer.Deserialize<CarData>(JsonData);
         }
     }
 }

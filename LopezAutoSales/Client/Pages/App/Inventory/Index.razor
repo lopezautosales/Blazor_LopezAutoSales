@@ -1,0 +1,64 @@
+﻿@page "/app/inventory"
+@attribute [Authorize(Roles = "Admin")]
+@inject AuthHttp http 
+
+<h1 class="text-center">Inventory</h1>
+<div class="container text-right">
+    <a href="/app/inventory/add" class="btn btn-secondary"><i class="mdi mdi-plus"></i> Add Vehicle</a>
+</div>
+@if (Inventory == null)
+{
+    <p class="lead">There's currently no active vehicles in inventory.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Year
+                    </th>
+                    <th>
+                        Make
+                    </th>
+                    <th>Model</th>
+                    <th>Mileage</th>
+                    <th>Bought Price</th>
+                    <th>List Price</th>
+                    <th>Salvage</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Car car in Inventory)
+                {
+                    <tr>
+                        <td>
+                            @car.Year
+                        </td>
+                        <td>@car.Make</td>
+                        <td>@car.Model</td>
+                        <td>@car.MileageString</td>
+                        <td>@car.BoughtPrice</td>
+                        <td>@car.ListPrice</td>
+                        <td>
+                            <input class="form-check-input position-static" type="checkbox" value="@car.IsSalvage" />
+                        </td>
+                        <td></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    public List<Car> Inventory { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Inventory = await http.Client.GetFromJsonAsync<List<Car>>("/app/inventory/admin");
+        await base.OnInitializedAsync();
+    }
+}

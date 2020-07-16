@@ -39,7 +39,6 @@ namespace LopezAutoSales.Server.Data
                 AddressId = 1,
                 Id = 1,
             };
-            builder.Entity<Car>().HasKey(x => new { x.VIN, x.Date });
             builder.Entity<Car>().HasIndex(x => x.IsListed);
             builder.Entity<UserSale>().HasKey(x => new { x.UserId, x.SaleId });
             builder.Entity<Address>().HasData(Dealership.Address);

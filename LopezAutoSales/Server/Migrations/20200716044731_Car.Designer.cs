@@ -4,14 +4,16 @@ using LopezAutoSales.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace LopezAutoSales.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200716044731_Car")]
+    partial class Car
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -246,9 +248,6 @@ namespace LopezAutoSales.Server.Migrations
                     b.Property<bool>("IsSalvage")
                         .HasColumnType("bit");
 
-                    b.Property<string>("JsonData")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal>("ListPrice")
                         .HasColumnType("money");
 
@@ -439,7 +438,7 @@ namespace LopezAutoSales.Server.Migrations
                         new
                         {
                             Id = "2301D884-221A-4E7D-B509-0113DCC043E1",
-                            ConcurrencyStamp = "09df618f-3c19-4b65-a3e8-b5decb00cd4b",
+                            ConcurrencyStamp = "ccc973ac-11ac-412e-a518-37d4f0a954d8",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });

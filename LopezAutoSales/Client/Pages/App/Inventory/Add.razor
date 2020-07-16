@@ -1,0 +1,58 @@
+﻿@page "/app/inventory/add"
+@attribute [Authorize(Roles = "Admin")]
+@inject AuthHttp auth
+@inject HttpClient http
+@inject NavigationManager nav
+@inject IJSRuntime js
+
+<h1 class="text-center">Add Vehicle</h1>
+<EditForm EditContext="EditContext">
+    <div class="form-group">
+        <label>VIN</label>
+        <InputText class="form-control" @bind-Value="Car.VIN"></InputText>
+        <div class="input-group-append">
+            <button type="button" class="btn btn-secondary" @onclick="async () => await DecodeVin()">Verify</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private EditContext EditContext { get; set; }
+    private Car Car { get; set; } = new Car();
+    private string DecodedVin { get; set; }
+
+    protected override void OnInitialized()
+    {
+        EditContext = new EditContext(Car);
+        base.OnInitialized();
+    }
+
+    private async Task SubmitVehicle()
+    {
+        var response = await auth.Client.PostAsJsonAsync<Car>("/app/inventory/add", Car);
+        if (response.IsSuccessStatusCode)
+        {
+            nav.NavigateTo($"/warranty/{Car.Year}/{Car.Make}/{Car.Model}/{Car.VIN}");
+        }
+        else
+            await js.InvokeVoidAsync("blazorAlert", response.ReasonPhrase);
+    }
+
+    private async Task DecodeVin(bool showMessage = true)
+    {
+        if (DecodedVin == Car.VIN)
+        {
+            if (showMessage)
+                await js.InvokeVoidAsync("blazorAlert", "The VIN has already been decoded.");
+        }
+        else
+        {
+            Car.Data = await http.GetFromJsonAsync<CarData>($"https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/{Car.VIN}?format=json");
+            DecodedVin = Car.VIN;
+            if (showMessage)
+                await js.InvokeVoidAsync("blazorAlert", Car.Data.Message);
+           // if(Car.Data.Results.Find(x => x.VariableId == 143).Value != "0")
+               //handle errors
+        }
+    }
+}
