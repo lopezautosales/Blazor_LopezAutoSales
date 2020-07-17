@@ -49,7 +49,7 @@ namespace LopezAutoSales.Server.Controllers
                 });
                 if (!hasThumbnail)
                 {
-                    string thumbnailPath = path.Insert(path.LastIndexOf('.'), "thumbnail.");
+                    string thumbnailPath = path.Insert(path.LastIndexOf('.'), ".thumbnail");
                     pictures.Add(new Picture
                     {
                         CarId = car.Id,

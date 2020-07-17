@@ -21,7 +21,7 @@ else
                             <figcaption class="figure-caption">@car.MileageString</figcaption>
                             @if (car.Pictures.Any(x => x.IsThumbnail))
                             {
-                                <img data-src="@car.Pictures.First(x => x.IsThumbnail).URL" height="200" width="200" class="figure-img img-fluid rounded" />
+                                <img src="@car.Pictures.First(x => x.IsThumbnail).URL" height="200" width="200" class="figure-img img-fluid rounded" />
                             }
                         </figure>
                     </a>
