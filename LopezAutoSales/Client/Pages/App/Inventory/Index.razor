@@ -6,7 +6,7 @@
 <div class="text-right">
     <a href="/app/inventory/add" class="btn btn-secondary"><i class="mdi mdi-plus"></i> Add Vehicle</a>
 </div>
-@if (Inventory == null)
+@if (Inventory == null || Inventory.Count == 0)
 {
     <p class="lead">There's currently no active vehicles in inventory.</p>
 }
@@ -40,12 +40,14 @@ else
                         <td>@car.Make</td>
                         <td>@car.Model</td>
                         <td>@car.MileageString</td>
-                        <td>@car.BoughtPrice</td>
-                        <td>@car.ListPrice</td>
-                        <td>
-                            <input class="form-check-input position-static" type="checkbox" value="@car.IsSalvage" />
+                        <td>@car.BoughtPrice?.ToString("C")</td>
+                        <td>@car.ListPrice.ToString("C")</td>
+                        <td class="text-center">
+                            <input class="form-check-input position-static" disabled type="checkbox" value="@car.IsSalvage" />
                         </td>
-                        <td></td>
+                        <td>
+                            <a href="/app/inventory/view/@car.Id" class="btn btn-sm btn-secondary">View</a>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -58,7 +60,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Inventory = await http.Client.GetFromJsonAsync<List<Car>>("/app/inventory/admin");
+        Inventory = await http.Client.GetFromJsonAsync<List<Car>>("/api/inventory");
         await base.OnInitializedAsync();
     }
 }

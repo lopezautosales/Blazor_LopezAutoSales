@@ -1,4 +1,5 @@
-﻿using IdentityServer4.EntityFramework.Options;
+﻿using IdentityServer4.EntityFramework.Extensions;
+using IdentityServer4.EntityFramework.Options;
 using LopezAutoSales.Server.Models;
 using LopezAutoSales.Shared;
 using LopezAutoSales.Shared.Models;
@@ -16,11 +17,13 @@ namespace LopezAutoSales.Server.Data
         public DbSet<Payment> Payments { get; set; }
         public DbSet<UserSale> UserSales { get; set; }
         public DbSet<Picture> Pictures { get; set; }
+        private OperationalStoreOptions _operationalStoreOptions { get; }
 
         public ApplicationDbContext(
             DbContextOptions options,
             IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
         {
+            _operationalStoreOptions = operationalStoreOptions.Value;
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -43,6 +46,7 @@ namespace LopezAutoSales.Server.Data
             builder.Entity<UserSale>().HasKey(x => new { x.UserId, x.SaleId });
             builder.Entity<Address>().HasData(Dealership.Address);
             builder.Entity<Lienholder>().HasData(dealership);
+            builder.ConfigurePersistedGrantContext(_operationalStoreOptions);
             base.OnModelCreating(builder);
         }
     }

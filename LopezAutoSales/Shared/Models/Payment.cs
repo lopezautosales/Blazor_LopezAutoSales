@@ -6,7 +6,7 @@ namespace LopezAutoSales.Shared.Models
     public class Payment
     {
         public int Id { get; set; }
-        public string SaleId { get; set; }
+        public int SaleId { get; set; }
         public Sale Sale { get; set; }
 
         public DateTime Date { get; set; }

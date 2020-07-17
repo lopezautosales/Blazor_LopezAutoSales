@@ -6,12 +6,12 @@ namespace LopezAutoSales.Shared.Models
 {
     public class Sale
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
         public int? LienholderId { get; set; }
         public Lienholder Lienholder { get; set; }
         public int AddressId { get; set; }
         public Address Address { get; set; }
-        public string CarId { get; set; }
+        public int CarId { get; set; }
         public Car Car { get; set; }
         public string TradeInId { get; set; }
         public Car TradeIn { get; set; }

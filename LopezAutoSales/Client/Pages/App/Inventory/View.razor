@@ -1,0 +1,42 @@
+﻿@page "/app/inventory/view/{id:int}"
+@using BlazorInputFile
+@inject AuthHttp auth
+
+<h3>View</h3>
+<InputFile OnChange="HandleSelection"></InputFile>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Car Car { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Car = await auth.Client.GetFromJsonAsync<Car>($"/api/inventory/{Id}");
+        await base.OnInitializedAsync();
+    }
+
+    private async Task HandleSelection(IFileListEntry[] files)
+    {
+        var content = new MultipartFormDataContent();
+        int i = 0;
+        foreach (var file in files)
+        {
+            var ms = new System.IO.MemoryStream();
+            await file.Data.CopyToAsync(ms);
+            content.Add(new ByteArrayContent(ms.GetBuffer()), $"\"upload{i}\"", file.Name);
+            i++;
+        }
+        var response = await auth.Client.PostAsync($"/api/upload/car/{Id}", content);
+        if (response.IsSuccessStatusCode)
+        {
+            List<Picture> pictures = await response.Content.ReadFromJsonAsync<List<Picture>>();
+            Car.Pictures.AddRange(pictures);
+        }
+    }
+
+    private async Task SetThumbnail()
+    {
+
+    }
+}

@@ -7,7 +7,7 @@ namespace LopezAutoSales.Server.Models
     {
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
-        public string SaleId { get; set; }
+        public int SaleId { get; set; }
         public Sale Sale { get; set; }
 
         public DateTime DateSet { get; set; }

@@ -8,7 +8,7 @@ namespace LopezAutoSales.Shared.Models
 {
     public class Car
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
 
         public DateTime Date { get; set; }
         [Required]

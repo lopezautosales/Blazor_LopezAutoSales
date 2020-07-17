@@ -17,7 +17,7 @@ else
                     <a href="/view/@car.VIN" class="btn btn-light">
                         <figure class="figure text-left">
                             <figcaption class="figure-caption">@car.Name</figcaption>
-                            <figcaption class="figure-caption">$@car.ListPrice</figcaption>
+                            <figcaption class="figure-caption">$@car.ListPrice.ToString("C")</figcaption>
                             <figcaption class="figure-caption">@car.MileageString</figcaption>
                             @if (car.Pictures.Any(x => x.IsThumbnail))
                             {

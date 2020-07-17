@@ -14,6 +14,18 @@
     <Compile Remove="Migrations\20200716183458_Initial.Designer.cs" />
     <Compile Remove="Migrations\20200717014819_Picture.cs" />
     <Compile Remove="Migrations\20200717014819_Picture.Designer.cs" />
+    <Compile Remove="Migrations\20200717043625_Builder.cs" />
+    <Compile Remove="Migrations\20200717043625_Builder.Designer.cs" />
+    <Compile Remove="Migrations\20200717060555_IntId.cs" />
+    <Compile Remove="Migrations\20200717060555_IntId.Designer.cs" />
+    <Compile Remove="Migrations\20200717060644_IntId.cs" />
+    <Compile Remove="Migrations\20200717060644_IntId.Designer.cs" />
+    <Compile Remove="Migrations\20200717060742_IntId.cs" />
+    <Compile Remove="Migrations\20200717060742_IntId.Designer.cs" />
+    <Compile Remove="Migrations\20200717063500_needs.cs" />
+    <Compile Remove="Migrations\20200717063500_needs.Designer.cs" />
+    <Compile Remove="Migrations\20200717063614_PictureId.cs" />
+    <Compile Remove="Migrations\20200717063614_PictureId.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +38,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="3.2.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.6" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.3" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-rc0003" />
   </ItemGroup>
@@ -45,6 +58,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Images\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
