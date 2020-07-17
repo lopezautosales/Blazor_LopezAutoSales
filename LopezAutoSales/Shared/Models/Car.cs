@@ -28,12 +28,10 @@ namespace LopezAutoSales.Shared.Models
         public decimal? BoughtPrice { get; set; }
         [Column(TypeName = "money")]
         public decimal ListPrice { get; set; }
-        public List<Image> Images { get; set; } = new List<Image>();
+        public List<Picture> Pictures { get; set; } = new List<Picture>();
         public string JsonData { get; set; }
         [NotMapped]
         public CarData Data { get; set; }
-        [NotMapped]
-        public List<string> Files { get; set; }
 
         public string Name
         {

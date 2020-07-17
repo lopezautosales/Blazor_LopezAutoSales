@@ -8,7 +8,7 @@ window.readFiles = (id) => {
         const reader = new FileReader();
         return new Promise(resolve => {
             reader.onload = ev => {
-                resolve(ev.target.result.split(",")[1]);
+                resolve(ev.target.result);
             };
             reader.readAsDataURL(file);
         })

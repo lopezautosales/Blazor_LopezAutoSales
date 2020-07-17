@@ -1,0 +1,32 @@
+﻿@inject IJSRuntime js
+
+<div class="custom-file">
+    <input type="file" class="custom-file-input" id="customFile" @onchange='async () => await SetFiles("customFile")' multiple>
+    <label class="custom-file-label" for="customFile">
+        @if (Files == null || Files.Count == 0)
+        {
+            <span>Choose images</span>
+        }
+        else if (Files.Count == 1)
+        {
+            <span>1 image chosen</span>
+        }
+        else
+        {
+            <span>@Files.Count images chosen</span>
+        }
+    </label>
+</div>
+
+@code {
+    [Parameter]
+    public List<string> Files { get; set; }
+    [Parameter]
+    public EventCallback<List<string>> FilesChanged { get; set; }
+
+    private async Task SetFiles(string id)
+    {
+        Files = await js.InvokeAsync<List<string>>("readFiles", id);
+        await FilesChanged.InvokeAsync(Files);
+    }
+}

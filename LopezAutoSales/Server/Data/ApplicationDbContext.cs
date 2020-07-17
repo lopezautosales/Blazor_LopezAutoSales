@@ -15,7 +15,7 @@ namespace LopezAutoSales.Server.Data
         public DbSet<Car> Cars { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<UserSale> UserSales { get; set; }
-        public DbSet<Image> Images { get; set; }
+        public DbSet<Picture> Pictures { get; set; }
 
         public ApplicationDbContext(
             DbContextOptions options,

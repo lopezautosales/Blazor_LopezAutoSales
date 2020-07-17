@@ -1,6 +1,6 @@
 ﻿namespace LopezAutoSales.Shared.Models
 {
-    public class Image
+    public class Picture
     {
         public string Id { get; set; }
 
