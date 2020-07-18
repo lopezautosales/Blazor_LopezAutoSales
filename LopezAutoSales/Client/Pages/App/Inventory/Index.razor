@@ -1,9 +1,9 @@
 ﻿@page "/app/inventory"
 @attribute [Authorize(Roles = "Admin")]
-@inject AuthHttp http 
+@inject AuthHttp http
 
 <h1 class="text-center">Inventory</h1>
-<div class="text-right">
+<div class="text-right my-2">
     <a href="/app/inventory/add" class="btn btn-secondary"><i class="mdi mdi-plus"></i> Add Vehicle</a>
 </div>
 @if (Inventory == null || Inventory.Count == 0)
@@ -40,13 +40,15 @@ else
                         <td>@car.Make</td>
                         <td>@car.Model</td>
                         <td>@car.MileageString</td>
-                        <td>@car.BoughtPrice?.ToString("C")</td>
+                        <td class=@(car.BoughtPrice.HasValue ? string.Empty : "table-danger")>
+                            @car.BoughtPrice?.ToString("C")
+                        </td>
                         <td>@car.ListPrice.ToString("C")</td>
                         <td class="text-center">
                             <input class="form-check-input position-static" disabled type="checkbox" value="@car.IsSalvage" />
                         </td>
                         <td>
-                            <a href="/app/inventory/view/@car.Id" class="btn btn-sm btn-secondary">View</a>
+                            <a href="/app/inventory/edit/@car.Id" class="btn btn-sm btn-secondary">View</a>
                         </td>
                     </tr>
                 }

@@ -34,6 +34,10 @@
 
   <ItemGroup>
     <None Include="compilerconfig.json" />
+    <None Include="wwwroot\Images\1GCHK29K87E518285_p25vjmym.emf.jpg" />
+    <None Include="wwwroot\Images\1GCHK29K87E518285_p25vjmym.emf.thumbnail.jpg" />
+    <None Include="wwwroot\Images\stars.jpg" />
+    <None Include="wwwroot\Images\starsthumbnail..jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -61,7 +65,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Images\" />
+    <Folder Include="wwwroot\Images\" />
     <Folder Include="Services\" />
   </ItemGroup>
 

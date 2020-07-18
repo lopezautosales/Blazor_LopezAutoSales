@@ -73,7 +73,7 @@
         if (response.IsSuccessStatusCode)
         {
             string id = await response.Content.ReadAsStringAsync();
-            nav.NavigateTo($"/app/inventory/view/{id}");
+            nav.NavigateTo($"/app/inventory/edit/{id}");
         }
         else
             await js.InvokeVoidAsync("blazorAlert", response.ReasonPhrase);

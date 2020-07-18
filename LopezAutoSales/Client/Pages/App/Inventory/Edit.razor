@@ -1,9 +1,25 @@
-﻿@page "/app/inventory/view/{id:int}"
+﻿@page "/app/inventory/edit/{id:int}"
 @using BlazorInputFile
 @inject AuthHttp auth
 
-<h3>View</h3>
-<InputFile OnChange="HandleSelection"></InputFile>
+<div class="custom-file">
+    <InputFile class="custom-file-input" OnChange="HandleSelection"></InputFile>
+    <label class="custom-file-label">Choose Images</label>
+</div>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Active</th>
+                <th>Removing</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
 @code {
     [Parameter]

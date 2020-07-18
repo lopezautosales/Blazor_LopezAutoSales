@@ -3,14 +3,14 @@ using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LopezAutoSales.Server.Controllers
 {
@@ -40,30 +40,27 @@ namespace LopezAutoSales.Server.Controllers
             bool hasThumbnail = car.Pictures.Any(x => x.IsThumbnail);
             foreach (var file in HttpContext.Request.Form.Files)
             {
-                var path = Path.Combine(_hostEnvironment.ContentRootPath, "Images", file.FileName);
+                var path = Path.Combine(_hostEnvironment.WebRootPath, "Images", file.FileName);
                 pictures.Add(new Picture
                 {
                     CarId = car.Id,
                     IsThumbnail = false,
                     URL = path
                 });
+                using Image image = Image.Load(file.OpenReadStream());
+                image.Mutate(x => x.AutoOrient());
+                image.Save(path);
                 if (!hasThumbnail)
                 {
-                    string thumbnailPath = path.Insert(path.LastIndexOf('.'), ".thumbnail");
+                    string output = CreateThumbnail(path);
                     pictures.Add(new Picture
                     {
                         CarId = car.Id,
                         IsThumbnail = true,
-                        URL = thumbnailPath
+                        URL = output
                     });
-                    using Image thumbnailImage = Image.Load(file.OpenReadStream());
-                    thumbnailImage.Mutate(x => x.AutoOrient().Resize(200, 200));
-                    thumbnailImage.Save(thumbnailPath);
                     hasThumbnail = true;
                 }
-                using Image image = Image.Load(file.OpenReadStream());
-                image.Mutate(x => x.AutoOrient());
-                image.Save(path);
             }
             _context.Pictures.AddRange(pictures);
             _context.SaveChanges();
@@ -81,10 +78,7 @@ namespace LopezAutoSales.Server.Controllers
             Picture picture = car.Pictures.FirstOrDefault(x => x.Id == pictureId);
             if (picture == null || picture.IsThumbnail)
                 return BadRequest();
-            string path = picture.URL.Insert(picture.URL.LastIndexOf('.'), ".thumbnail");
-            using Image image = Image.Load(picture.URL);
-            image.Mutate(x => x.Resize(200, 200));
-            image.Save(path);
+            string output = CreateThumbnail(picture.URL);
             List<Picture> thumbnails = car.Pictures.Where(x => x.IsThumbnail).ToList();
             if(thumbnails.Count > 0)
             {
@@ -96,11 +90,21 @@ namespace LopezAutoSales.Server.Controllers
             {
                 CarId = car.Id,
                 IsThumbnail = true,
-                URL = path
+                URL = output
             };
             _context.Add(thumbnail);
             _context.SaveChanges();
             return Ok();
+        }
+
+        private string CreateThumbnail(string path)
+        {
+            string output = path.Insert(path.LastIndexOf('.'), ".thumbnail");
+            using Image image = Image.Load(path);
+            double ratio = Constants.ThumbnailSize / (double)image.Width;
+            image.Mutate(x => x.AutoOrient().Resize((int)(image.Width * ratio), (int)(image.Height * ratio)));
+            image.Save(output);
+            return output;
         }
     }
 }
