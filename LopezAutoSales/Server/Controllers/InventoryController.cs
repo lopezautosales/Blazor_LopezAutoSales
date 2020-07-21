@@ -54,5 +54,25 @@ namespace LopezAutoSales.Server.Controllers
             _context.SaveChanges();
             return Ok(car.Id);
         }
+
+        [HttpPut("edit/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> EditVehicle([FromRoute] int id, [FromBody] Car data)
+        {
+            Car car = await _context.Cars.FirstOrDefaultAsync(x => x.Id == id);
+            if (car == null)
+                return BadRequest();
+            car.IsSalvage = data.IsSalvage;
+            car.JsonData = data.JsonData;
+            car.ListPrice = data.ListPrice;
+            car.Make = data.Make;
+            car.Model = data.Model;
+            car.Year = data.Year;
+            car.VIN = data.VIN;
+            car.Color = data.Color;
+            car.Mileage = data.Mileage;
+            _context.SaveChanges();
+            return Ok();
+        }
     }
 }

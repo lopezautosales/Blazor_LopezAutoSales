@@ -8,5 +8,10 @@
         public Car Car { get; set; }
         public string URL { get; set; }
         public bool IsThumbnail { get; set; }
+
+        public string ThumbnailURL()
+        {
+            return URL.Insert(URL.LastIndexOf('.'), ".thumbnail");
+        }
     }
 }

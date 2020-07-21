@@ -6,32 +6,42 @@
 <div class="text-right my-2">
     <a href="/app/inventory/add" class="btn btn-secondary"><i class="mdi mdi-plus"></i> Add Vehicle</a>
 </div>
-@if (Inventory == null || Inventory.Count == 0)
+@if (Inventory == null || Inventory.Cars.Count() == 0)
 {
     <p class="lead">There's currently no active vehicles in inventory.</p>
 }
 else
 {
     <div class="table-responsive">
-        <table class="table">
+        <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>
+                    <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.Year)">
                         Year
                     </th>
-                    <th>
+                    <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.Make)">
                         Make
                     </th>
-                    <th>Model</th>
-                    <th>Mileage</th>
-                    <th>Bought Price</th>
-                    <th>List Price</th>
-                    <th>Salvage</th>
-                    <th>Actions</th>
+                    <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.Model)">
+                        Model
+                    </th>
+                    <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.Mileage)">
+                        Mileage
+                    </th>
+                    <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.BoughtPrice)">
+                        Bought Price
+                    </th>
+                    <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.ListPrice)">
+                        List Price
+                    </th>
+                    <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.Salvage)">
+                        Salvage
+                    </th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (Car car in Inventory)
+                @foreach (Car car in Inventory.Cars)
                 {
                     <tr>
                         <td>
@@ -45,7 +55,7 @@ else
                         </td>
                         <td>@car.ListPrice.ToString("C")</td>
                         <td class="text-center">
-                            <input class="form-check-input position-static" disabled type="checkbox" value="@car.IsSalvage" />
+                            <input class="form-check-input position-static" disabled type="checkbox" @bind="car.IsSalvage" />
                         </td>
                         <td>
                             <a href="/app/inventory/edit/@car.Id" class="btn btn-sm btn-secondary">View</a>
@@ -58,11 +68,11 @@ else
 }
 
 @code {
-    public List<Car> Inventory { get; set; }
+    public Inventory Inventory { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        Inventory = await http.Client.GetFromJsonAsync<List<Car>>("/api/inventory");
+        Inventory = new Inventory(await http.Client.GetFromJsonAsync<IEnumerable<Car>>("/api/inventory"));
         await base.OnInitializedAsync();
     }
 }

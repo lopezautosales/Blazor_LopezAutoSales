@@ -40,25 +40,20 @@ namespace LopezAutoSales.Server.Controllers
             bool hasThumbnail = car.Pictures.Any(x => x.IsThumbnail);
             foreach (var file in HttpContext.Request.Form.Files)
             {
-                var path = Path.Combine(_hostEnvironment.WebRootPath, "Images", file.FileName);
-                pictures.Add(new Picture
+                Picture picture = new Picture
                 {
                     CarId = car.Id,
                     IsThumbnail = false,
-                    URL = path
-                });
+                    URL = Path.Combine("Images", file.FileName)
+                };
+                pictures.Add(picture);
                 using Image image = Image.Load(file.OpenReadStream());
                 image.Mutate(x => x.AutoOrient());
-                image.Save(path);
+                image.Save(FullPath(picture.URL));
                 if (!hasThumbnail)
                 {
-                    string output = CreateThumbnail(path);
-                    pictures.Add(new Picture
-                    {
-                        CarId = car.Id,
-                        IsThumbnail = true,
-                        URL = output
-                    });
+                    CreateThumbnail(picture);
+                    picture.IsThumbnail = true;
                     hasThumbnail = true;
                 }
             }
@@ -78,33 +73,44 @@ namespace LopezAutoSales.Server.Controllers
             Picture picture = car.Pictures.FirstOrDefault(x => x.Id == pictureId);
             if (picture == null || picture.IsThumbnail)
                 return BadRequest();
-            string output = CreateThumbnail(picture.URL);
+            CreateThumbnail(picture);
             List<Picture> thumbnails = car.Pictures.Where(x => x.IsThumbnail).ToList();
-            if(thumbnails.Count > 0)
+            foreach (Picture removable in thumbnails)
             {
-                foreach (Picture removable in thumbnails)
-                    System.IO.File.Delete(removable.URL);
-                _context.Pictures.RemoveRange(thumbnails);
+                removable.IsThumbnail = false;
+                System.IO.File.Delete(FullPath(removable.ThumbnailURL()));
             }
-            Picture thumbnail = new Picture
-            {
-                CarId = car.Id,
-                IsThumbnail = true,
-                URL = output
-            };
-            _context.Add(thumbnail);
+            picture.IsThumbnail = true;
             _context.SaveChanges();
             return Ok();
         }
 
-        private string CreateThumbnail(string path)
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RemovePicture(int id)
         {
-            string output = path.Insert(path.LastIndexOf('.'), ".thumbnail");
-            using Image image = Image.Load(path);
+            Picture picture = await _context.Pictures.FindAsync(id);
+            if (picture == null)
+                return BadRequest();
+            System.IO.File.Delete(FullPath(picture.URL));
+            if (picture.IsThumbnail)
+                System.IO.File.Delete(FullPath(picture.ThumbnailURL()));
+            _context.Remove(picture);
+            _context.SaveChanges();
+            return Ok();
+        }
+
+        private void CreateThumbnail(Picture picture)
+        {
+            using Image image = Image.Load(FullPath(picture.URL));
             double ratio = Constants.ThumbnailSize / (double)image.Width;
             image.Mutate(x => x.AutoOrient().Resize((int)(image.Width * ratio), (int)(image.Height * ratio)));
-            image.Save(output);
-            return output;
+            image.Save(FullPath(picture.ThumbnailURL()));
+        }
+
+        private string FullPath(string path)
+        {
+            return Path.Combine(_hostEnvironment.WebRootPath, path);
         }
     }
 }

@@ -88,28 +88,16 @@
         }
         else
         {
-            var response = await http.GetAsync($"https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/{Car.VIN}?format=json");
-            if (response.IsSuccessStatusCode)
+            Car.JsonData = await http.Decode(Car.VIN);
+            DecodedVin = Car.VIN;
+            if (!Car.TrySetVariables())
             {
-                DecodedVin = Car.VIN;
-                Car.JsonData = await response.Content.ReadAsStringAsync();
-                Car.DeserializeJson();
                 string message = Car.Data.Results.Find(x => x.VariableId == 191).Value;
                 if (showMessage)
                     await js.InvokeVoidAsync("blazorAlert", message);
                 Errors.Clear();
-                if (Car.Data.Results.Find(x => x.VariableId == 143).Value != "0")
-                    Errors.Add(message);
-                else
-                    SetVariables();
+                Errors.Add(message);
             }
         }
-    }
-
-    private void SetVariables()
-    {
-        Car.Year = int.Parse(Car.Data.Results.Find(x => x.VariableId == 29).Value);
-        Car.Make = Car.Data.Results.Find(x => x.VariableId == 26).Value;
-        Car.Model = Car.Data.Results.Find(x => x.VariableId == 28).Value;
     }
 }

@@ -9,25 +9,24 @@
 else
 {
     <p class="lead">Click on the vehicles to see more information.</p>
-    <div class="container">
-        <div class="row text-center">
-            @foreach (Car car in Cars)
-            {
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mt-2">
-                    <a href="/view/@car.VIN" class="btn btn-light">
-                        <figure class="figure text-left">
-                            <figcaption class="figure-caption">@car.Name</figcaption>
-                            <figcaption class="figure-caption">@car.ListPrice.ToString("C")</figcaption>
-                            <figcaption class="figure-caption">@car.MileageString</figcaption>
-                            @if (car.Pictures.Any(x => x.IsThumbnail))
-                            {
-                                <img src="@car.Pictures.First(x => x.IsThumbnail).URL" height="200" width="200" class="figure-img img-fluid rounded" />
-                            }
-                        </figure>
-                    </a>
+    <div class="card-deck">
+        @foreach (Car car in Cars)
+        {
+            <div class="card card-picture">
+                @if (car.Pictures.Any(x => x.IsThumbnail))
+                {
+                    <img src="@car.Pictures.First(x => x.IsThumbnail).ThumbnailURL()" class="card-img-top" />
+                }
+                <div class="card-body">
+                    <h5 class="card-title">@car.Name</h5>
+                    <p class="card-text">
+                        @car.ListPrice.ToString("C") <br />
+                        @car.MileageString
+                    </p>
+                    <a href="/view/@car.VIN" class="card-link">View</a>
                 </div>
-            }
-        </div>
+            </div>
+        }
     </div>
 }
 
