@@ -1,0 +1,21 @@
+﻿@page "/warranty/{id:int}"
+@using LopezAutoSales.Client.Shared.Papers
+@inject CarManager carManager
+@inject HttpClient http
+
+@if (Car != null)
+{
+    <Warranty Car="Car" Amount="Dealership.Warranty" />
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Car Car { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Car = await carManager.GetCarAsync(http, Id);
+        await base.OnInitializedAsync();
+    }
+}

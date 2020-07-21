@@ -1,0 +1,85 @@
+﻿@page "/app/sell/{id:int}"
+@page "/app/sell"
+@inject AuthHttp auth
+@inject CarManager carManager
+
+<h1 class="text-center">Sales Agreement</h1>
+<EditForm Model="Sale">
+    <DataAnnotationsValidator />
+    <ErrorDisplay @bind-Errors="Errors" />
+    <div class="form-row">
+        <div class="col-9"></div>
+        <div class="col-3">
+            <div class="form-group">
+                <label for="Date">Date:</label>
+                <InputDate id="Date" class="form-control text-center" @bind-Value="Sale.Date" />
+            </div>
+        </div>
+    </div>
+    <!--Buyer information-->
+    <div class="form-row">
+        <div class="col-4">
+            <div class="form-group">
+                <label for="Buyer">Buyer:</label>
+                <InputText class="form-control" id="Buyer" @bind-Value="Sale.Buyer" />
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="form-group">
+                <label for="CoBuyer">CoBuyer:</label>
+                <InputText class="form-control" id="CoBuyer" @bind-Value="Sale.CoBuyer" />
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="form-group">
+                <label for="Phone">Phone:</label>
+                <input type="tel" class="form-control" id="Phone" @bind-value="Sale.Phone" />
+            </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-3">
+            <div class="form-group">
+                <label for="Street">Street:</label>
+                <InputText class="form-control" id="Street" @bind-Value="Sale.Address.Street" />
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="form-group">
+                <label for="City">City:</label>
+                <InputText class="form-control" id="City" @bind-Value="Sale.Address.City" />
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="form-group">
+                <label for="State">State:</label>
+                <InputText class="form-control" id="State" @bind-Value="Sale.Address.State" />
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="form-group">
+                <label for="ZIP">ZIP:</label>
+                <InputText class="form-control" id="ZIP" @bind-Value="Sale.Address.ZIP" />
+            </div>
+        </div>
+    </div>
+    <hr />
+    <!--Sales Information-->
+    <button type="submit" class="btn btn-secondary no-print">Complete Sale</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    private List<string> Errors { get; set; }
+    private Sale Sale { get; set; } = new Sale();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+            Sale.Car = await carManager.GetCarAsync(auth.Client, Id.Value);
+        else
+            Sale.Car = new Car();
+        await base.OnInitializedAsync();
+    }
+}

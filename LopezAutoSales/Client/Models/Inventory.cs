@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LopezAutoSales.Client
+namespace LopezAutoSales.Client.Models
 {
     public class Inventory
     {

@@ -1,3 +1,6 @@
+using Blazored.SessionStorage;
+using LopezAutoSales.Client.Services;
+using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,11 +22,13 @@ namespace LopezAutoSales.Client
             builder.Services.AddHttpClient("NoAuth", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
 
             // Supply HttpClient instances that include access tokens when making requests to the server project
-            builder.Services.AddTransient(sp => new AuthHttp { Client = sp.GetRequiredService<IHttpClientFactory>().CreateClient("LopezAutoSales.ServerAPI") });
-            builder.Services.AddTransient(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("NoAuth"));
+            builder.Services.AddTransient(x => new AuthHttp(x.GetRequiredService<IHttpClientFactory>().CreateClient("LopezAutoSales.ServerAPI")));
+            builder.Services.AddTransient(x => x.GetRequiredService<IHttpClientFactory>().CreateClient("NoAuth"));
 
             builder.Services.AddApiAuthorization()
                 .AddAccountClaimsPrincipalFactory<CustomUserFactory>();
+            builder.Services.AddBlazoredSessionStorage();
+            builder.Services.AddTransient(x => new CarManager(x.GetService<ISyncSessionStorageService>()));
 
             await builder.Build().RunAsync();
         }

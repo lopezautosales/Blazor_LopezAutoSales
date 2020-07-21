@@ -3,6 +3,7 @@
 @inject AuthHttp auth
 @inject HttpClient http
 @inject IJSRuntime js
+@inject CarManager carManager
 @inject NavigationManager nav
 
 <h1 class="text-center">Edit Vehicle</h1>
@@ -106,7 +107,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Car = await auth.Client.GetFromJsonAsync<Car>($"/api/inventory/{Id}");
+        Car = await carManager.GetCarAsync(auth.Client, Id);
         await base.OnInitializedAsync();
     }
 

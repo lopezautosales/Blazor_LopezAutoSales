@@ -1,0 +1,59 @@
+﻿@page "/view/{id:int}"
+@inject HttpClient http
+@inject CarManager carManager
+
+@if (Car == null)
+{
+    <p class="lead">Could not load the vehicle.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-sm text-center table-borderless">
+            <thead>
+                <tr>
+                    <th>
+                        Price
+                    </th>
+                    <th>
+                        Car
+                    </th>
+                    <th>
+                        Mileage
+                    </th>
+                    <th>
+                        VIN
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="h5">
+                    <td>
+                        @Car.ListPrice.ToString("C")
+                    </td>
+                    <td>
+                        @Car.Name
+                    </td>
+                    <td>
+                        @Car.MileageString()
+                    </td>
+                    <td>
+                        @Car.VIN
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Car Car { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Car = await carManager.GetCarAsync(http, Id);
+        await base.OnInitializedAsync();
+    }
+}

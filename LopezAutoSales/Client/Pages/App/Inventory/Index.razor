@@ -1,6 +1,7 @@
 ﻿@page "/app/inventory"
 @attribute [Authorize(Roles = "Admin")]
-@inject AuthHttp http
+@inject AuthHttp auth
+@inject CarManager carManager
 
 <h1 class="text-center">Inventory</h1>
 <div class="text-right my-2">
@@ -14,7 +15,7 @@ else
 {
     <div class="table-responsive">
         <table class="table table-hover">
-            <thead>
+            <thead class="text-center">
                 <tr>
                     <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.Year)">
                         Year
@@ -40,7 +41,7 @@ else
                     <th scope="col">Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="text-center">
                 @foreach (Car car in Inventory.Cars)
                 {
                     <tr>
@@ -49,16 +50,20 @@ else
                         </td>
                         <td>@car.Make</td>
                         <td>@car.Model</td>
-                        <td>@car.MileageString</td>
+                        <td>@car.MileageString()</td>
                         <td class=@(car.BoughtPrice.HasValue ? string.Empty : "table-danger")>
                             @car.BoughtPrice?.ToString("C")
                         </td>
                         <td>@car.ListPrice.ToString("C")</td>
-                        <td class="text-center">
+                        <td>
                             <input class="form-check-input position-static" disabled type="checkbox" @bind="car.IsSalvage" />
                         </td>
                         <td>
-                            <a href="/app/inventory/edit/@car.Id" class="btn btn-sm btn-secondary">View</a>
+                            <div class="btn-group" role="group">
+                                <a href="/warranty/@car.Id" class="btn btn-secondary">Warranty</a>
+                                <a href="/app/inventory/edit/@car.Id" class="btn btn-secondary" @onclick="() => SetData(car)">Edit</a>
+                                <a href="/app/sell/@car.Id" class="btn btn-secondary">Sell</a>
+                            </div>
                         </td>
                     </tr>
                 }
@@ -72,7 +77,12 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Inventory = new Inventory(await http.Client.GetFromJsonAsync<IEnumerable<Car>>("/api/inventory"));
+        Inventory = new Inventory(await auth.Client.GetFromJsonAsync<IEnumerable<Car>>("/api/inventory"));
         await base.OnInitializedAsync();
+    }
+
+    public void SetData(Car car)
+    {
+        carManager.SetCar(car);
     }
 }

@@ -1,0 +1,153 @@
+﻿<h1 class="text-center">Buyer's Guide</h1>
+<hr />
+<p><div class="font-weight-bold">Important:</div> Spoken promises are dificult to enforce. Ask the dealer to put all promises in writing. Keep this form.</p>
+<div class="table-responsive">
+    <table class="table table-bordered table-sm text-center">
+        <tr>
+            <td>@Car.Make</td>
+            <td>@Car.Model</td>
+            <td>@Car.Year</td>
+            <td>@Car.VIN</td>
+        </tr>
+        <tr class="small">
+            <td>(Vehicle Make)</td>
+            <td>(Model)</td>
+            <td>(Year)</td>
+            <td>(VIN)</td>
+        </tr>
+    </table>
+</div>
+<h5 style="border-bottom: 2px solid black;">WARRANTIES FOR THIS VEHICLE:</h5>
+<div class="container">
+    <div class="row">
+        <div class="col-1 text-right">
+            <div class="form-check">
+                <input class="form-check-input position-static" type="checkbox" style="width: 30px; height: 30px;" checked="@(Amount==0)">
+            </div>
+        </div>
+        <div class="col-11" style="border-bottom: 2px dashed black; padding-bottom:.5em;">
+            <h1>AS IS - NO DEALER WARRANTY</h1>
+            THE DEALER DOES NOT PROVIDE A WARRANTY FOR ANY REPAIRS AFTER SALE.
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-1 text-right">
+            <div class="form-check">
+                <input class="form-check-input position-static" type="checkbox" style="width: 30px; height: 30px;" checked="@(Amount!=0)">
+            </div>
+        </div>
+        <div class="col-11">
+            <h1>DEALER WARRANTY</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-1 text-right">
+            <div class="form-check">
+                <input class="form-check-input position-static" type="checkbox">
+            </div>
+        </div>
+        <div class="col-11">
+            FULL WARRANTY
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-1 text-right">
+            <div class="form-check">
+                <input class="form-check-input position-static" checked="@(Amount!=0)" type="checkbox">
+            </div>
+        </div>
+        <div class="col-11">
+            LIMITED WARRANTY. The dealer will pay @Amount% of the labor and @Amount% of the parts for the covered systems
+            that fail during the warranty period. Ask the dealer for a copy of the warranty, and for any documents that
+            explain warranty coverage, exclusions, and the dealer’s repair obligations. Implied warranties under your
+            state’s laws may give you additional rights.
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <h5>Systems Covered:</h5>
+            <ul>
+                <li>
+                    Engine
+                </li>
+                <li>
+                    Transmission
+                </li>
+                <li>
+                    No Electric Parts
+                </li>
+            </ul>
+        </div>
+        <div class="col-6">
+            <h5>Duration:</h5>
+            <ul>
+                <li>30 days or 1000 miles whichever occurs first</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<h5 style="border-bottom: 2px solid black;">NON-DEALER WARRANTIES FOR THIS VEHICLE:</h5>
+<div class="container">
+    <div class="row">
+        <div class="col-1 text-right">
+            <div class="form-check">
+                <input class="form-check-input position-static" type="checkbox">
+            </div>
+        </div>
+        <div class="col-11">
+            MANUFACTURER’S WARRANTY STILL APPLIES. The manufacturer’s original warranty has not expired on some
+            components of the vehicle.
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-1 text-right">
+            <div class="form-check">
+                <input class="form-check-input position-static" type="checkbox">
+            </div>
+        </div>
+        <div class="col-11">
+            MANUFACTURER’S USED VEHICLE WARRANTY APPLIES.
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-1 text-right">
+            <div class="form-check">
+                <input class="form-check-input position-static" type="checkbox">
+            </div>
+        </div>
+        <div class="col-11">
+            OTHER USED VEHICLE WARRANTY APPLIES.
+        </div>
+    </div>
+    Ask the dealer for a copy of the warranty document and an explanation of warranty coverage, exclusions, and repair
+    obligations.
+    <hr />
+    <div class="row">
+        <div class="col-1 text-right">
+            <div class="form-check">
+                <input class="form-check-input position-static" type="checkbox">
+            </div>
+        </div>
+        <div class="col-11">
+            SERVICE CONTRACT. A service contract on this vehicle is available for an extra charge. Ask for details about
+            coverage, deductible, price, and exclusions. If you buy a service contract within 90 days of your purchase of this
+            vehicle, implied warranties under your state’s laws may give you additional rights.
+        </div>
+    </div>
+</div>
+<div style="border-bottom: 2px solid black;"></div>
+<p class="font-weight-bold">ASK THE DEALER IF YOUR MECHANIC CAN INSPECT THE VEHICLE ON OR OFF THE LOT.</p>
+<p>
+    <div class="font-weight-bold">OBTAIN A VEHICLE HISTORY REPORT AND CHECK FOR OPEN SAFETY RECALLS.</div> For information on
+    how to obtain a vehicle history report, visit ftc.gov/usedcars. To check for open safety recalls, visit safercar.gov.
+    You will need the vehicle identification number (VIN) shown above to make the best use of the resources on
+    these sites.
+</p>
+<Signature />
+
+@code {
+    [Parameter]
+    public Car Car { get; set; }
+    [Parameter]
+    public int Amount { get; set; }
+}

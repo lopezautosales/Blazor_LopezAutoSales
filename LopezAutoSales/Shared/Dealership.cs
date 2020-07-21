@@ -14,5 +14,7 @@ namespace LopezAutoSales.Shared
         };
         public const string Email = "lopezauto@outlook.com";
         public const string Phone = "(620)208-6250";
+        public const int Warranty = 20;
+        public const decimal TaxRate = 8.5m;
     }
 }

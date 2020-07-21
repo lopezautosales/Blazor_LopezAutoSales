@@ -1,7 +1,22 @@
-﻿.card-picture{
+﻿.card-picture {
     max-width: 12.5rem;
 }
 
-.pointer{
+.pointer {
     cursor: pointer;
+}
+
+.signature {
+    border: 0;
+    border-bottom: 1px solid #000;
+}
+
+@media print {
+    .no-print {
+        display: none;
+    }
+
+    .page-break {
+        page-break-before: always;
+    }
 }

@@ -4,6 +4,10 @@ namespace LopezAutoSales.Client
 {
     public class AuthHttp
     {
-        public HttpClient Client { get; set; }
+        public HttpClient Client { get; private set; }
+        public AuthHttp(HttpClient http)
+        {
+            Client = http;
+        }
     }
 }

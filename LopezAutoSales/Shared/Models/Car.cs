@@ -41,14 +41,6 @@ namespace LopezAutoSales.Shared.Models
             }
         }
 
-        public string MileageString
-        {
-            get
-            {
-                return Mileage.HasValue ? Mileage.Value.ToString() : "Exempt";
-            }
-        }
-
         public void DeserializeJson()
         {
             Data = JsonSerializer.Deserialize<CarData>(JsonData);

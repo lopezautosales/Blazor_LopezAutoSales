@@ -13,7 +13,7 @@ namespace LopezAutoSales.Shared.Models
         public Address Address { get; set; }
         public int CarId { get; set; }
         public Car Car { get; set; }
-        public string TradeInId { get; set; }
+        public int? TradeInId { get; set; }
         public Car TradeIn { get; set; }
 
         public DateTime Date { get; set; }
@@ -31,6 +31,21 @@ namespace LopezAutoSales.Shared.Models
         public bool HasTag { get; set; }
         public bool IsOutOfState { get; set; }
         public bool IsPaid { get; set; }
-        public List<Payment> Payments { get; set; } = new List<Payment>();
+        public List<Payment> Payments { get; set; }
+        [NotMapped]
+        public bool HasTradeIn { get; set; }
+
+        public Sale()
+        {
+            Date = DateTime.Now;
+            Car = new Car();
+            TradeIn = new Car();
+            Address = new Address();
+            Lienholder = new Lienholder
+            {
+                Address = Dealership.Address,
+                Name = Dealership.Name
+            };
+        }
     }
 }
