@@ -29,6 +29,7 @@ namespace LopezAutoSales.Client
                 .AddAccountClaimsPrincipalFactory<CustomUserFactory>();
             builder.Services.AddBlazoredSessionStorage();
             builder.Services.AddTransient(x => new CarManager(x.GetService<ISyncSessionStorageService>()));
+            builder.Services.AddTransient(x => new VINDecoder(x.GetService<HttpClient>()));
 
             await builder.Build().RunAsync();
         }

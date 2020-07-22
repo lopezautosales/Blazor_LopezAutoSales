@@ -4,16 +4,31 @@ using System.Threading.Tasks;
 
 namespace LopezAutoSales.Client
 {
-    public static class VINDecoder
+    public class VINDecoder
     {
         public const string Path = "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/{0}?format=json";
+        private readonly HttpClient _client;
 
-        public static async Task<string> Decode(this HttpClient client, string vin)
+        private string DecodedVIN { get; set; }
+        private string JsonData { get; set; }
+
+        public VINDecoder(HttpClient client)
         {
-            return await client.GetStringAsync(string.Format(Path, vin));
+            _client = client;
         }
 
-        public static bool TrySetVariables(this Car car)
+        public async Task<bool> TryDecodeAsync(Car car)
+        {
+            if (DecodedVIN != car.VIN)
+            {
+                JsonData = await _client.GetStringAsync(string.Format(Path, car.VIN));
+            }
+            DecodedVIN = car.VIN;
+            car.JsonData = JsonData;
+            return SetVariables(car);
+        }
+
+        private bool SetVariables(Car car)
         {
             car.DeserializeJson();
             if (car.Data.Results.Find(x => x.VariableId == 143).Value != "0")

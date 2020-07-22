@@ -2,14 +2,15 @@
 @page "/app/sell"
 @inject AuthHttp auth
 @inject CarManager carManager
+@inject VINDecoder decoder
 
 <h1 class="text-center">Sales Agreement</h1>
 <EditForm Model="Sale">
     <DataAnnotationsValidator />
     <ErrorDisplay @bind-Errors="Errors" />
     <div class="form-row">
-        <div class="col-9"></div>
-        <div class="col-3">
+        <div class="col-sm-6 col-lg-9"></div>
+        <div class="col-sm-6 col-lg-3">
             <div class="form-group">
                 <label for="Date">Date:</label>
                 <InputDate id="Date" class="form-control text-center" @bind-Value="Sale.Date" />
@@ -18,45 +19,43 @@
     </div>
     <!--Buyer information-->
     <div class="form-row">
-        <div class="col-4">
+        <div class="col-sm-6 col-lg-4">
             <div class="form-group">
                 <label for="Buyer">Buyer:</label>
                 <InputText class="form-control" id="Buyer" @bind-Value="Sale.Buyer" />
             </div>
         </div>
-        <div class="col-4">
+        <div class="col-sm-6 col-lg-4">
             <div class="form-group">
                 <label for="CoBuyer">CoBuyer:</label>
                 <InputText class="form-control" id="CoBuyer" @bind-Value="Sale.CoBuyer" />
             </div>
         </div>
-        <div class="col-4">
+        <div class="col-sm-6 col-lg-4">
             <div class="form-group">
                 <label for="Phone">Phone:</label>
                 <input type="tel" class="form-control" id="Phone" @bind-value="Sale.Phone" />
             </div>
         </div>
-    </div>
-    <div class="form-row">
-        <div class="col-3">
+        <div class="col-sm-6 col-lg-3">
             <div class="form-group">
                 <label for="Street">Street:</label>
                 <InputText class="form-control" id="Street" @bind-Value="Sale.Address.Street" />
             </div>
         </div>
-        <div class="col-3">
+        <div class="col-sm-6 col-lg-3">
             <div class="form-group">
                 <label for="City">City:</label>
                 <InputText class="form-control" id="City" @bind-Value="Sale.Address.City" />
             </div>
         </div>
-        <div class="col-3">
+        <div class="col-sm-6 col-lg-3">
             <div class="form-group">
                 <label for="State">State:</label>
                 <InputText class="form-control" id="State" @bind-Value="Sale.Address.State" />
             </div>
         </div>
-        <div class="col-3">
+        <div class="col-sm-6 col-lg-3">
             <div class="form-group">
                 <label for="ZIP">ZIP:</label>
                 <InputText class="form-control" id="ZIP" @bind-Value="Sale.Address.ZIP" />
@@ -64,48 +63,105 @@
         </div>
     </div>
     <hr />
-    @if (Sale.HasTradeIn)
+    <div class="form-row">
+        <div class="col-sm-6 col-lg-1">
+            <div class="form-group">
+                <label for="Year">Year:</label>
+                <InputNumber class="form-control" id="Year" @bind-Value="Sale.Car.Year" />
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="form-group">
+                <label for="Make">Make:</label>
+                <InputText class="form-control" id="Make" @bind-Value="Sale.Car.Make" />
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="form-group">
+                <label for="Model">Model:</label>
+                <InputText class="form-control" id="Model" @bind-Value="Sale.Car.Model" />
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="form-group">
+                <label for="Mileage">Mileage:</label>
+                <InputNumber class="form-control" id="Mileage" @bind-Value="Sale.Car.Mileage" />
+            </div>
+        </div>
+        <div class="col-sm-4 col-lg-1">
+            <div class="form-group">
+                <label for="Color">Color:</label>
+                <InputText class="form-control" id="Color" @bind-Value="Sale.Car.Color" />
+            </div>
+        </div>
+        <div class="col-sm-8 col-lg-4">
+            <div class="form-group">
+                <label for="VIN">VIN:</label>
+                <div class="input-group">
+                    <InputText class="form-control" id="VIN" @bind-Value="Sale.Car.VIN" />
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-secondary" @onclick="async () => await DecodeVin(Sale.Car)">Verify</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p>
+        <button class="btn btn-secondary no-print" type="button" @onclick="() => HasTradeIn = !HasTradeIn">
+            Trade-in <Chevron Down="!HasTradeIn" />
+        </button>
+    </p>
+    @if (HasTradeIn)
     {
-        <div class="form-row">
-            <div class="col-1">
-                <div class="form-group">
-                    <label for="TradeYear">Year:</label>
-                    <InputNumber class="form-control" id="TradeYear" @bind-Value="Sale.TradeIn.Year" />
+        <div class="card card-body">
+            <div class="form-row">
+                <div class="col-sm-6 col-lg-1">
+                    <div class="form-group">
+                        <label for="TradeYear">Year:</label>
+                        <InputNumber class="form-control" id="TradeYear" @bind-Value="Sale.TradeIn.Year" />
+                    </div>
                 </div>
-            </div>
-            <div class="col-2">
-                <div class="form-group">
-                    <label for="TradeMake">Make:</label>
-                    <InputText class="form-control" id="TradeMake" @bind-Value="Sale.TradeIn.Make" />
+                <div class="col-sm-6 col-lg-2">
+                    <div class="form-group">
+                        <label for="TradeMake">Make:</label>
+                        <InputText class="form-control" id="TradeMake" @bind-Value="Sale.TradeIn.Make" />
+                    </div>
                 </div>
-            </div>
-            <div class="col-2">
-                <div class="form-group">
-                    <label for="Paper_TradeIn_Model"></label>
-                    <input type="text" class="form-control text-capitalize" data-val="true" data-val-required="The Trade Model field is required." id="Paper_TradeIn_Model" name="Paper.TradeIn.Model" defaultValue={this.state.tradeModel} />
+                <div class="col-sm-6 col-lg-2">
+                    <div class="form-group">
+                        <label for="TradeModel">Model:</label>
+                        <InputText class="form-control" id="TradeModel" @bind-Value="Sale.TradeIn.Model" />
+                    </div>
                 </div>
-            </div>
-            <div class="col-2">
-                <div class="form-group">
-                    <label for="Paper_TradeIn_Mileage"></label>
-                    <input type="number" class="form-control" id="Paper_TradeIn_Mileage" name="Paper.TradeIn.Mileage" placeholder="Exempt" defaultValue={this.state.tradeMileage} />
+                <div class="col-sm-6 col-lg-2">
+                    <div class="form-group">
+                        <label for="TradeMileage">Mileage:</label>
+                        <InputNumber class="form-control" id="TradeMileage" @bind-Value="Sale.TradeIn.Mileage" />
+                    </div>
                 </div>
-            </div>
-            <div class="col-1">
-                <div class="form-group">
-                    <label for="Paper_TradeIn_Color"></label>
-                    <input type="text" class="form-control text-capitalize" data-val="true" data-val-required="The Trade Color field is required." id="Paper_TradeIn_Color" name="Paper.TradeIn.Color" defaultValue={this.state.tradeColor} />
+                <div class="col-sm-4 col-lg-1">
+                    <div class="form-group">
+                        <label for="TradeColor">Color:</label>
+                        <InputText class="form-control" id="TradeColor" @bind-Value="Sale.TradeIn.Color" />
+                    </div>
                 </div>
-            </div>
-            <div class="col-4">
-                <div class="form-group">
-                    <label for="Paper_TradeIn_VIN" onClick={this.decodeTradeVin}></label>
-                    <input type="text" class="form-control text-uppercase" data-val="true" data-val-required="The Trade VIN field is required." id="Paper_TradeIn_VIN" name="Paper.TradeIn.VIN" value={this.state.tradeVin} onChange={this.handleChange.bind(this, "tradeVin" )} />
+                <div class="col-sm-8 col-lg-4">
+                    <div class="form-group">
+                        <label for="TradeVIN">VIN:</label>
+                        <div class="input-group">
+                            <InputText class="form-control" id="TradeVIN" @bind-Value="Sale.TradeIn.VIN" />
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-secondary" @onclick="async () => await DecodeVin(Sale.TradeIn)">Verify</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     }
-    <button type="submit" class="btn btn-secondary no-print">Complete Sale</button>
+    <p class="text-right">
+        <button type="submit" class="btn btn-secondary no-print">Complete Sale</button>
+    </p>
 </EditForm>
 
 @code {
@@ -113,6 +169,7 @@
     public int? Id { get; set; }
     private List<string> Errors { get; set; }
     private Sale Sale { get; set; } = new Sale();
+    private bool HasTradeIn { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -121,5 +178,14 @@
         else
             Sale.Car = new Car();
         await base.OnInitializedAsync();
+    }
+
+    private async Task DecodeVin(Car car)
+    {
+        if(!await decoder.TryDecodeAsync(car))
+        {
+            Errors.Clear();
+            Errors.Add("Could not decode the car's VIN.");
+        }
     }
 }

@@ -5,6 +5,7 @@
 @inject IJSRuntime js
 @inject CarManager carManager
 @inject NavigationManager nav
+@inject VINDecoder decoder
 
 <h1 class="text-center">Edit Vehicle</h1>
 @if (Car == null)
@@ -113,7 +114,7 @@ else
 
     private async Task EditVehicle()
     {
-        await DecodeVin(false);
+        await DecodeVin();
         var response = await auth.Client.PutAsJsonAsync<Car>($"/api/inventory/edit/{Id}", Car);
         if (response.IsSuccessStatusCode)
         {
@@ -168,25 +169,12 @@ else
         }
     }
 
-    private async Task DecodeVin(bool showMessage = true)
+    private async Task DecodeVin()
     {
-        if (DecodedVin == Car.VIN)
+        if(!await decoder.TryDecodeAsync(Car))
         {
-            if (showMessage)
-                await js.InvokeVoidAsync("blazorAlert", "The VIN has already been decoded.");
-        }
-        else
-        {
-            Car.JsonData = await http.Decode(Car.VIN);
-            DecodedVin = Car.VIN;
-            if (!Car.TrySetVariables())
-            {
-                string message = Car.Data.Results.Find(x => x.VariableId == 191).Value;
-                if (showMessage)
-                    await js.InvokeVoidAsync("blazorAlert", message);
-                Errors.Clear();
-                Errors.Add(message);
-            }
+            Errors.Clear();
+            Errors.Add("Could not decode the car's VIN.");
         }
     }
 }

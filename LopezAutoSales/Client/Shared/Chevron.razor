@@ -1,0 +1,13 @@
+﻿@if (Down)
+{
+    <i class="mdi mdi-chevron-down" />
+}
+else
+{
+    <i class="mdi mdi-chevron-up" />
+}
+
+@code {
+    [Parameter]
+    public bool Down { get; set; }
+}

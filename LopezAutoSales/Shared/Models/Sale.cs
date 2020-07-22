@@ -32,8 +32,6 @@ namespace LopezAutoSales.Shared.Models
         public bool IsOutOfState { get; set; }
         public bool IsPaid { get; set; }
         public List<Payment> Payments { get; set; }
-        [NotMapped]
-        public bool HasTradeIn { get; set; }
 
         public Sale()
         {
