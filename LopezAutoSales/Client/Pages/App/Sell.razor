@@ -64,7 +64,47 @@
         </div>
     </div>
     <hr />
-    <!--Sales Information-->
+    @if (Sale.HasTradeIn)
+    {
+        <div class="form-row">
+            <div class="col-1">
+                <div class="form-group">
+                    <label for="TradeYear">Year:</label>
+                    <InputNumber class="form-control" id="TradeYear" @bind-Value="Sale.TradeIn.Year" />
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="form-group">
+                    <label for="TradeMake">Make:</label>
+                    <InputText class="form-control" id="TradeMake" @bind-Value="Sale.TradeIn.Make" />
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="form-group">
+                    <label for="Paper_TradeIn_Model"></label>
+                    <input type="text" class="form-control text-capitalize" data-val="true" data-val-required="The Trade Model field is required." id="Paper_TradeIn_Model" name="Paper.TradeIn.Model" defaultValue={this.state.tradeModel} />
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="form-group">
+                    <label for="Paper_TradeIn_Mileage"></label>
+                    <input type="number" class="form-control" id="Paper_TradeIn_Mileage" name="Paper.TradeIn.Mileage" placeholder="Exempt" defaultValue={this.state.tradeMileage} />
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="form-group">
+                    <label for="Paper_TradeIn_Color"></label>
+                    <input type="text" class="form-control text-capitalize" data-val="true" data-val-required="The Trade Color field is required." id="Paper_TradeIn_Color" name="Paper.TradeIn.Color" defaultValue={this.state.tradeColor} />
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="form-group">
+                    <label for="Paper_TradeIn_VIN" onClick={this.decodeTradeVin}></label>
+                    <input type="text" class="form-control text-uppercase" data-val="true" data-val-required="The Trade VIN field is required." id="Paper_TradeIn_VIN" name="Paper.TradeIn.VIN" value={this.state.tradeVin} onChange={this.handleChange.bind(this, "tradeVin" )} />
+                </div>
+            </div>
+        </div>
+    }
     <button type="submit" class="btn btn-secondary no-print">Complete Sale</button>
 </EditForm>
 
