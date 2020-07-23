@@ -26,6 +26,10 @@
     <Compile Remove="Migrations\20200717063500_needs.Designer.cs" />
     <Compile Remove="Migrations\20200717063614_PictureId.cs" />
     <Compile Remove="Migrations\20200717063614_PictureId.Designer.cs" />
+    <Compile Remove="Migrations\20200722233434_Accounts.cs" />
+    <Compile Remove="Migrations\20200722233434_Accounts.Designer.cs" />
+    <Compile Remove="Migrations\20200722233749_Accounts.cs" />
+    <Compile Remove="Migrations\20200722233749_Accounts.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

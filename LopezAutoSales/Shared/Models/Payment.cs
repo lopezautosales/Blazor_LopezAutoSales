@@ -6,11 +6,11 @@ namespace LopezAutoSales.Shared.Models
     public class Payment
     {
         public int Id { get; set; }
-        public int SaleId { get; set; }
-        public Sale Sale { get; set; }
+        public int AccountId { get; set; }
+        public Account Account { get; set; }
 
         public DateTime Date { get; set; }
-        [Column(TypeName = "money")]
+        [Column(TypeName = "decimal(9,2)")]
         public decimal Amount { get; set; }
     }
 }

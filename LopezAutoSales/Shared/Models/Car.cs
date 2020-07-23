@@ -24,9 +24,9 @@ namespace LopezAutoSales.Shared.Models
         public int? Mileage { get; set; }
         public bool IsSalvage { get; set; }
         public bool IsListed { get; set; }
-        [Column(TypeName = "money")]
+        [Column(TypeName = "decimal(9,2)")]
         public decimal? BoughtPrice { get; set; }
-        [Column(TypeName = "money")]
+        [Column(TypeName = "decimal(9,2)")]
         public decimal ListPrice { get; set; }
         public List<Picture> Pictures { get; set; } = new List<Picture>();
         public string JsonData { get; set; }

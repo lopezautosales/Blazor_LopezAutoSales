@@ -107,7 +107,7 @@
         </div>
     </div>
     <p>
-        <button class="btn btn-secondary no-print" type="button" @onclick="() => HasTradeIn = !HasTradeIn">
+        <button class="btn btn-secondary no-print" type="button" @onclick="ToggleTrade">
             Trade-in <Chevron Down="!HasTradeIn" />
         </button>
     </p>
@@ -159,6 +159,103 @@
             </div>
         </div>
     }
+    <div class="form-row">
+        <div class="col-lg-6">
+            <div class="table-responsive">
+                <table class="table text-center">
+                    <tbody>
+                        <tr>
+                            <th scope="row">
+                                <label for="SellingPrice">Price:</label>
+                            </th>
+                            <td>
+                                <InputNumber class="form-control text-center" id="SellingPrice" @bind-Value="Sale.SellingPrice" />
+                            </td>
+                        </tr>
+                        @if (HasTradeIn)
+                        {
+                            <tr>
+                                <th scope="row">
+                                    <label for="TradeValue">Trade Value:</label>
+                                </th>
+                                <td class="text-center">
+                                    <InputNumber class="form-control text-center" id="TradeValue" @bind-Value="Sale.TradeIn.BoughtPrice" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    Trade Difference:
+                                </th>
+                                <td>
+                                    <input type="number" class="form-control text-center" readonly value="@Sale.TradeDifference()" />
+                                </td>
+                            </tr>
+                        }
+                        <tr>
+                            <th scope="row">
+                                <InputCheckbox class="form-check-input" id="IsOutOfState" @bind-Value="Sale.IsOutOfState" />
+                                <label class="form-check-label" for="IsOutOfState">Out of State</label>
+                                <div class="input-group w-75 mx-auto">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">Tax:</div>
+                                    </div>
+                                    <InputNumber class="form-control text-center" @bind-Value="Sale.TaxRate" />
+                                    <div class="input-group-append">
+                                        <div class="input-group-text">%</div>
+                                    </div>
+                                </div>
+                            </th>
+                            <td>
+                                <input type="number" class="form-control text-center" readonly value="@Sale.TaxAmount()" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <InputCheckbox class="form-check-input" id="HasLien" @bind-Value="Sale.HasLien" />
+                                <label class="form-check-label" for="HasLien">Lien Release</label>
+                            </th>
+                            <td>
+                                <InputNumber class="form-control text-center" @bind-Value="Sale.LienAmount" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <InputCheckbox class="form-check-input" id="HasTag" @bind-Value="Sale.HasTag" />
+                                <label class="form-check-label" for="HasTag">Temporary Tag</label>
+                            </th>
+                            <td>
+                                <InputNumber class="form-control text-center" @bind-Value="Sale.TagAmount" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="Subtotal">Subtotal:</label>
+                            </th>
+                            <td>
+                                <input type="number" class="form-control text-center" value="@Sale.Subtotal()" id="Subtotal" readonly />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="DownPayment">Down Payment:</label>
+                            </th>
+                            <td class="text-center">
+                                <InputNumber class="form-control text-center" id="DownPayment" @bind-Value="Sale.DownPayment" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="TotalDue">Total Due</label>
+                            </th>
+                            <td>
+                                <input type="number" class="form-control text-center" value="@Sale.TotalDue()" id="TotalDue" readonly />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
     <p class="text-right">
         <button type="submit" class="btn btn-secondary no-print">Complete Sale</button>
     </p>
@@ -182,10 +279,19 @@
 
     private async Task DecodeVin(Car car)
     {
-        if(!await decoder.TryDecodeAsync(car))
+        if (!await decoder.TryDecodeAsync(car))
         {
             Errors.Clear();
             Errors.Add("Could not decode the car's VIN.");
         }
+    }
+
+    private void ToggleTrade()
+    {
+        if (HasTradeIn)
+            Sale.TradeIn = null;
+        else
+            Sale.TradeIn = new Car();
+        HasTradeIn = !HasTradeIn;
     }
 }
