@@ -29,7 +29,10 @@ namespace LopezAutoSales.Shared.Models
         [Column(TypeName = "decimal(9,2)")]
         public decimal DownPayment { get; set; }
         [Column(TypeName = "decimal(5,3)")]
-        public decimal TaxRate { get; set; }
+        public decimal TaxRate { get; set; } = Dealership.TaxRate;
+        public int? Warranty { get; set; } = Dealership.Warranty;
+        [Column(TypeName = "decimal(9,2)")]
+        public decimal FinanceCharge { get; set; }
         public bool HasTag { get; set; }
         [Required]
         [Column(TypeName = "decimal(9,2)")]
@@ -61,19 +64,6 @@ namespace LopezAutoSales.Shared.Models
         }
         private decimal lienAmount = Dealership.LienAmount;
         public bool IsOutOfState { get; set; }
-
-        public Sale()
-        {
-            Date = DateTime.Now;
-            Car = new Car();
-            Address = new Address();
-            TaxRate = Dealership.TaxRate;
-            Lienholder = new Lienholder
-            {
-                Address = Dealership.Address,
-                Name = Dealership.Name
-            };
-        }
 
         public decimal TradeDifference()
         {
@@ -107,7 +97,17 @@ namespace LopezAutoSales.Shared.Models
             decimal total = TotalDue();
             if (total <= 0)
                 return 0;
-            return (int)Math.Ceiling(total / Account?.MonthlyPayment ?? Dealership.MonthlyPayment);
+            if (Account == null || Account.MonthlyPayment == 0)
+                return 0;
+            return (int)Math.Ceiling(total / Account.MonthlyPayment);
         }
+
+        public decimal TotalPayments()
+        {
+            return TotalDue() + FinanceCharge;
+        }
+
+        [NotMapped]
+        public bool HasTrade { get; set; }
     }
 }

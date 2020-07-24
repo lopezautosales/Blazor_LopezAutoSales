@@ -15,6 +15,6 @@ namespace LopezAutoSales.Shared.Models
         public IEnumerable<Payment> Payments { get; set; }
         [Required]
         [Column(TypeName = "decimal(9,2)")]
-        public decimal MonthlyPayment { get; set; }
+        public decimal MonthlyPayment { get; set; } = Dealership.MonthlyPayment;
     }
 }

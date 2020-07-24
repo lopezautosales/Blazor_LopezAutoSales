@@ -9,8 +9,7 @@
     <DataAnnotationsValidator />
     <ErrorDisplay @bind-Errors="Errors" />
     <div class="form-row">
-        <div class="col-sm-6 col-lg-9"></div>
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-lg-3 col-print-3 ml-auto">
             <div class="form-group">
                 <label for="Date">Date:</label>
                 <InputDate id="Date" class="form-control text-center" @bind-Value="Sale.Date" />
@@ -19,43 +18,43 @@
     </div>
     <!--Buyer information-->
     <div class="form-row">
-        <div class="col-sm-6 col-lg-4">
+        <div class="col-sm-6 col-lg-4 col-print-4">
             <div class="form-group">
                 <label for="Buyer">Buyer:</label>
                 <InputText class="form-control" id="Buyer" @bind-Value="Sale.Buyer" />
             </div>
         </div>
-        <div class="col-sm-6 col-lg-4">
+        <div class="col-sm-6 col-lg-4 col-print-4">
             <div class="form-group">
                 <label for="CoBuyer">CoBuyer:</label>
                 <InputText class="form-control" id="CoBuyer" @bind-Value="Sale.CoBuyer" />
             </div>
         </div>
-        <div class="col-sm-6 col-lg-4">
+        <div class="col-sm-6 col-lg-4 col-print-4">
             <div class="form-group">
                 <label for="Phone">Phone:</label>
                 <input type="tel" class="form-control" id="Phone" @bind-value="Sale.Phone" />
             </div>
         </div>
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-lg-3 col-print-3">
             <div class="form-group">
                 <label for="Street">Street:</label>
                 <InputText class="form-control" id="Street" @bind-Value="Sale.Address.Street" />
             </div>
         </div>
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-lg-3 col-print-3">
             <div class="form-group">
                 <label for="City">City:</label>
                 <InputText class="form-control" id="City" @bind-Value="Sale.Address.City" />
             </div>
         </div>
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-lg-3 col-print-3">
             <div class="form-group">
                 <label for="State">State:</label>
                 <InputText class="form-control" id="State" @bind-Value="Sale.Address.State" />
             </div>
         </div>
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-lg-3 col-print-3">
             <div class="form-group">
                 <label for="ZIP">ZIP:</label>
                 <InputText class="form-control" id="ZIP" @bind-Value="Sale.Address.ZIP" />
@@ -64,42 +63,42 @@
     </div>
     <hr />
     <div class="form-row">
-        <div class="col-sm-6 col-lg-1">
+        <div class="col-sm-6 col-lg-1 col-print-1">
             <div class="form-group">
                 <label for="Year">Year:</label>
                 <InputNumber class="form-control" id="Year" @bind-Value="Sale.Car.Year" />
             </div>
         </div>
-        <div class="col-sm-6 col-lg-2">
+        <div class="col-sm-6 col-lg-2 col-print-2">
             <div class="form-group">
                 <label for="Make">Make:</label>
                 <InputText class="form-control" id="Make" @bind-Value="Sale.Car.Make" />
             </div>
         </div>
-        <div class="col-sm-6 col-lg-2">
+        <div class="col-sm-6 col-lg-2 col-print-2">
             <div class="form-group">
                 <label for="Model">Model:</label>
                 <InputText class="form-control" id="Model" @bind-Value="Sale.Car.Model" />
             </div>
         </div>
-        <div class="col-sm-6 col-lg-2">
+        <div class="col-sm-6 col-lg-2 col-print-2">
             <div class="form-group">
                 <label for="Mileage">Mileage:</label>
                 <InputNumber class="form-control" id="Mileage" @bind-Value="Sale.Car.Mileage" />
             </div>
         </div>
-        <div class="col-sm-4 col-lg-1">
+        <div class="col-sm-4 col-lg-1 col-print-1">
             <div class="form-group">
                 <label for="Color">Color:</label>
                 <InputText class="form-control" id="Color" @bind-Value="Sale.Car.Color" />
             </div>
         </div>
-        <div class="col-sm-8 col-lg-4">
+        <div class="col-sm-8 col-lg-4 col-print-4">
             <div class="form-group">
                 <label for="VIN">VIN:</label>
                 <div class="input-group">
                     <InputText class="form-control" id="VIN" @bind-Value="Sale.Car.VIN" />
-                    <div class="input-group-append">
+                    <div class="input-group-append no-print">
                         <button type="button" class="btn btn-secondary" @onclick="async () => await DecodeVin(Sale.Car)">Verify</button>
                     </div>
                 </div>
@@ -107,50 +106,50 @@
         </div>
     </div>
     <p>
-        <button class="btn btn-secondary no-print" type="button" @onclick="ToggleTrade">
-            Trade-in <Chevron Down="!HasTradeIn" />
+        <button class="btn btn-secondary no-print" type="button" @onclick="() => Sale.HasTrade = !Sale.HasTrade">
+            Trade-in <Chevron Down="!Sale.HasTrade" />
         </button>
     </p>
-    @if (HasTradeIn)
+    @if (Sale.HasTrade)
     {
         <div class="card card-body">
             <div class="form-row">
-                <div class="col-sm-6 col-lg-1">
+                <div class="col-sm-6 col-lg-1 col-print-1">
                     <div class="form-group">
                         <label for="TradeYear">Year:</label>
                         <InputNumber class="form-control" id="TradeYear" @bind-Value="Sale.TradeIn.Year" />
                     </div>
                 </div>
-                <div class="col-sm-6 col-lg-2">
+                <div class="col-sm-6 col-lg-2 col-print-2">
                     <div class="form-group">
                         <label for="TradeMake">Make:</label>
                         <InputText class="form-control" id="TradeMake" @bind-Value="Sale.TradeIn.Make" />
                     </div>
                 </div>
-                <div class="col-sm-6 col-lg-2">
+                <div class="col-sm-6 col-lg-2 col-print-2">
                     <div class="form-group">
                         <label for="TradeModel">Model:</label>
                         <InputText class="form-control" id="TradeModel" @bind-Value="Sale.TradeIn.Model" />
                     </div>
                 </div>
-                <div class="col-sm-6 col-lg-2">
+                <div class="col-sm-6 col-lg-2 col-print-2">
                     <div class="form-group">
                         <label for="TradeMileage">Mileage:</label>
                         <InputNumber class="form-control" id="TradeMileage" @bind-Value="Sale.TradeIn.Mileage" />
                     </div>
                 </div>
-                <div class="col-sm-4 col-lg-1">
+                <div class="col-sm-4 col-lg-1 col-print-1">
                     <div class="form-group">
                         <label for="TradeColor">Color:</label>
                         <InputText class="form-control" id="TradeColor" @bind-Value="Sale.TradeIn.Color" />
                     </div>
                 </div>
-                <div class="col-sm-8 col-lg-4">
+                <div class="col-sm-8 col-lg-4 col-print-4">
                     <div class="form-group">
                         <label for="TradeVIN">VIN:</label>
                         <div class="input-group">
                             <InputText class="form-control" id="TradeVIN" @bind-Value="Sale.TradeIn.VIN" />
-                            <div class="input-group-append">
+                            <div class="input-group-append no-print">
                                 <button type="button" class="btn btn-secondary" @onclick="async () => await DecodeVin(Sale.TradeIn)">Verify</button>
                             </div>
                         </div>
@@ -159,8 +158,8 @@
             </div>
         </div>
     }
-    <div class="form-row">
-        <div class="col-lg-6">
+    <div class="form-row mt-3">
+        <div class="col-lg-6 col-print-6">
             <div class="table-responsive">
                 <table class="table text-center">
                     <tbody>
@@ -172,7 +171,7 @@
                                 <InputNumber class="form-control text-center" id="SellingPrice" @bind-Value="Sale.SellingPrice" />
                             </td>
                         </tr>
-                        @if (HasTradeIn)
+                        @if (Sale.HasTrade)
                         {
                             <tr>
                                 <th scope="row">
@@ -255,6 +254,35 @@
                 </table>
             </div>
         </div>
+        <div class="col-md-6 col-lg-3 col-print-3 ml-auto">
+            <div class="form-group no-print">
+                <label for="BoughtPrice">Bought Price:</label>
+                <InputNumber class="form-control" id="BoughtPrice" @bind-Value="Sale.Car.BoughtPrice" />
+            </div>
+            <div class="form-group">
+                <label for="Warranty">Warranty:</label>
+                <InputNumber class="form-control" @bind-Value="Sale.Warranty" />
+            </div>
+            @if (Sale.TotalDue() > 0)
+            {
+                <div class="form-group">
+                    <label for="MonthlyPayment">Monthly Payment:</label>
+                    <InputNumber class="form-control" id="MonthlyPayment" @bind-Value="Sale.Account.MonthlyPayment" />
+                </div>
+                <div class="form-group">
+                    <label for="FinanceCharge">Finance Charge:</label>
+                    <InputNumber class="form-control" id="FinanceCharge" @bind-Value="Sale.FinanceCharge" />
+                </div>
+                <div class="form-group">
+                    <label for="TotalPayments">Total Payments:</label>
+                    <input type="number" readonly class="form-control" id="TotalPayments" value="@Sale.TotalPayments()" />
+                </div>
+                <div class="form-group">
+                    <label for="MonthsToPay">Months to Pay:</label>
+                    <input type="number" readonly class="form-control" id="MonthsToPay" value="@Sale.MonthsToPay()" />
+                </div>
+            }
+        </div>
     </div>
     <p class="text-right">
         <button type="submit" class="btn btn-secondary no-print">Complete Sale</button>
@@ -265,8 +293,14 @@
     [Parameter]
     public int? Id { get; set; }
     private List<string> Errors { get; set; }
-    private Sale Sale { get; set; } = new Sale();
-    private bool HasTradeIn { get; set; }
+    private Sale Sale { get; set; } = new Sale
+    {
+        Car = new Car(),
+        TradeIn = new Car(),
+        Address = new Address(),
+        Lienholder = new Lienholder(),
+        Account = new Account()
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -284,14 +318,5 @@
             Errors.Clear();
             Errors.Add("Could not decode the car's VIN.");
         }
-    }
-
-    private void ToggleTrade()
-    {
-        if (HasTradeIn)
-            Sale.TradeIn = null;
-        else
-            Sale.TradeIn = new Car();
-        HasTradeIn = !HasTradeIn;
     }
 }
