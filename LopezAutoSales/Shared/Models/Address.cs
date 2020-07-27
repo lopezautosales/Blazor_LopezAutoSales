@@ -26,5 +26,13 @@ namespace LopezAutoSales.Shared.Models
                 return $"{City}, {State}, {ZIP}";
             }
         }
+
+        public void Update(Address address)
+        {
+            Street = address.Street;
+            City = address.City;
+            State = address.State;
+            ZIP = address.ZIP;
+        }
     }
 }

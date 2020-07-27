@@ -45,5 +45,14 @@ namespace LopezAutoSales.Shared.Models
         {
             Data = JsonSerializer.Deserialize<CarData>(JsonData);
         }
+
+        public void Update(Car car)
+        {
+            Year = car.Year;
+            Make = car.Make;
+            Model = car.Model;
+            Mileage = car.Mileage;
+            Color = car.Color;
+        }
     }
 }

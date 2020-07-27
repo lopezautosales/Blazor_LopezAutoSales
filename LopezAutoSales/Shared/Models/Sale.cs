@@ -7,7 +7,7 @@ namespace LopezAutoSales.Shared.Models
     public class Sale
     {
         public int Id { get; set; }
-        public int? LienholderId { get; set; }
+        public string LienholderNormalizedName { get; set; }
         public Lienholder Lienholder { get; set; }
         public int AddressId { get; set; }
         public Address Address { get; set; }
@@ -18,7 +18,7 @@ namespace LopezAutoSales.Shared.Models
         public int? AccountId { get; set; }
         public Account Account { get; set; }
 
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; } = DateTime.Now;
         [Required]
         public string Phone { get; set; }
         [Required]

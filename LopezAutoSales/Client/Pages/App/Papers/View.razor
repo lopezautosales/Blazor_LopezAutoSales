@@ -1,0 +1,10 @@
+﻿@page "/app/papers/view/{id:int}"
+
+@attribute [Authorize(Roles = "Admin")]
+
+<h1 class="text-center">View</h1>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+}

@@ -17,6 +17,7 @@ namespace LopezAutoSales.Server.Data
         public DbSet<Payment> Payments { get; set; }
         public DbSet<UserSale> UserSales { get; set; }
         public DbSet<Picture> Pictures { get; set; }
+        public DbSet<Lienholder> Lienholders { get; set; }
         private OperationalStoreOptions _operationalStoreOptions { get; }
 
         public ApplicationDbContext(
@@ -40,7 +41,7 @@ namespace LopezAutoSales.Server.Data
             {
                 Name = Dealership.Name,
                 AddressId = 1,
-                Id = 1,
+                NormalizedName = Dealership.Name.ToUpper()
             };
             builder.Entity<Car>().HasIndex(x => x.IsListed);
             builder.Entity<UserSale>().HasKey(x => new { x.UserId, x.SaleId });
