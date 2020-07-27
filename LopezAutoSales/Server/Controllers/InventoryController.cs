@@ -116,7 +116,7 @@ namespace LopezAutoSales.Server.Controllers
             }
             _context.Sales.Add(sale);
             _context.SaveChanges();
-            return Ok();
+            return Ok(sale.Id);
         }
     }
 }
