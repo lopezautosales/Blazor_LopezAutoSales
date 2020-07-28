@@ -1,10 +1,11 @@
 ﻿@page "/app/payments"
 @attribute [Authorize(Roles = "Admin")]
+@inject AuthHttp auth 
 
 <h1 class="text-center">Payments</h1>
-@if (Sales == null)
+@if (Accounts == null)
 {
-    <p class="lead">There's currently no active sales with payments.</p>
+    <p class="lead">There's currently no active accounts.</p>
 }
 else
 {
@@ -21,15 +22,15 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (Sale sale in Sales)
+                @foreach (Account account in Accounts)
                 {
                     <tr>
                         <td>
-                            @sale.Buyer &Aacute; @sale.CoBuyer
+                            @account.Sale.Buyer &Aacute; @account.Sale.CoBuyer
                         </td>
                         <td>
-                            <a class="btn btn-secondary" href="/app/payments/@sale.Id">
-                                @sale.Car.Name
+                            <a class="btn btn-secondary" href="/app/payments/@account.Id">
+                                @account.Sale.Car.Name
                             </a>
                         </td>
                     </tr>
@@ -40,10 +41,11 @@ else
 }
 
 @code {
-    public List<Sale> Sales { get; set; }
+    public List<Account> Accounts { get; set; }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        return base.OnInitializedAsync();
+        Accounts = await auth.Client.GetFromJsonAsync<List<Account>>("/api/account");
+        await base.OnInitializedAsync();
     }
 }

@@ -366,7 +366,7 @@
         if (response.IsSuccessStatusCode)
         {
             string id = await response.Content.ReadAsStringAsync();
-            navManager.NavigateTo($"/app/papers/view/{id}");
+            navManager.NavigateTo($"/app/papers/{id}");
         }
         else
         {

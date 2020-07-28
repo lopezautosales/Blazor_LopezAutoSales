@@ -1,0 +1,26 @@
+﻿@page "/app/payments/{id:int}"
+@attribute [Authorize(Roles = "Admin")]
+@inject AuthHttp auth
+
+<h1 class="text-center">Payments</h1>
+@if (Account == null)
+{
+    <p class="lead">Could not load the account.</p>
+}
+else
+{
+
+}
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Account Account { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Account = await auth.Client.GetFromJsonAsync<Account>($"/api/account/{Id}");
+        await base.OnInitializedAsync();
+    }
+}

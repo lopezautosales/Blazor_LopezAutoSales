@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -7,6 +8,8 @@ namespace LopezAutoSales.Shared.Models
     public class Account
     {
         public int Id { get; set; }
+        public int SaleId { get; set; }
+        public Sale Sale { get; set; }
 
         public bool IsPaid { get; set; }
         [Required]
@@ -16,5 +19,10 @@ namespace LopezAutoSales.Shared.Models
         [Required]
         [Column(TypeName = "decimal(9,2)")]
         public decimal MonthlyPayment { get; set; } = Dealership.MonthlyPayment;
+        public bool HasContractExpired()
+        {
+            TimeSpan span = DateTime.Now - Sale.Date;
+            Sale.MonthsToPay()
+        }
     }
 }

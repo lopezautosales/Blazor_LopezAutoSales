@@ -13,22 +13,24 @@ namespace LopezAutoSales.Server.Data
     public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>
     {
         public DbSet<Sale> Sales { get; set; }
+        public DbSet<Account> Accounts { get; set; }
         public DbSet<Car> Cars { get; set; }
         public DbSet<Payment> Payments { get; set; }
-        public DbSet<UserSale> UserSales { get; set; }
+        public DbSet<UserAccount> UserAccounts { get; set; }
         public DbSet<Picture> Pictures { get; set; }
         public DbSet<Lienholder> Lienholders { get; set; }
-        private OperationalStoreOptions _operationalStoreOptions { get; }
+        private OperationalStoreOptions OperationalStoreOptions { get; }
 
         public ApplicationDbContext(
             DbContextOptions options,
             IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
         {
-            _operationalStoreOptions = operationalStoreOptions.Value;
+            OperationalStoreOptions = operationalStoreOptions.Value;
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<Account>().HasOne(x => x.Sale).WithOne(x => x.Account).HasForeignKey<Account>(x => x.SaleId);
             builder.Entity<IdentityRole>().HasData(new IdentityRole
             {
                 Id = "2301D884-221A-4E7D-B509-0113DCC043E1",
@@ -44,10 +46,10 @@ namespace LopezAutoSales.Server.Data
                 NormalizedName = Dealership.Name.ToUpper()
             };
             builder.Entity<Car>().HasIndex(x => x.IsListed);
-            builder.Entity<UserSale>().HasKey(x => new { x.UserId, x.SaleId });
+            builder.Entity<UserAccount>().HasKey(x => new { x.UserId, x.AccountId });
             builder.Entity<Address>().HasData(Dealership.Address);
             builder.Entity<Lienholder>().HasData(dealership);
-            builder.ConfigurePersistedGrantContext(_operationalStoreOptions);
+            builder.ConfigurePersistedGrantContext(OperationalStoreOptions);
             base.OnModelCreating(builder);
         }
     }

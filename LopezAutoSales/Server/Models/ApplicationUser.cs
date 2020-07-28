@@ -5,6 +5,6 @@ namespace LopezAutoSales.Server.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        public List<UserSale> Sales { get; set; } = new List<UserSale>();
+        public List<UserAccount> Sales { get; set; } = new List<UserAccount>();
     }
 }

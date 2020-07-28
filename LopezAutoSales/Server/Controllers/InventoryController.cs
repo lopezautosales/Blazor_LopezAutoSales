@@ -62,15 +62,10 @@ namespace LopezAutoSales.Server.Controllers
             Car car = await _context.Cars.FirstOrDefaultAsync(x => x.Id == id);
             if (car == null)
                 return BadRequest();
+            car.Update(data);
             car.IsSalvage = data.IsSalvage;
             car.JsonData = data.JsonData;
             car.ListPrice = data.ListPrice;
-            car.Make = data.Make;
-            car.Model = data.Model;
-            car.Year = data.Year;
-            car.VIN = data.VIN;
-            car.Color = data.Color;
-            car.Mileage = data.Mileage;
             _context.SaveChanges();
             return Ok();
         }
@@ -85,10 +80,17 @@ namespace LopezAutoSales.Server.Controllers
                 sale.TradeIn = null;
             decimal due = sale.TotalDue();
 
-            if (due < 0)
+            if (due == 0)
+            {
+                if (sale.HasLien)
+                    ModelState.AddModelError(string.Empty, "Cannot have a lien on a paid vehicle.");
+                sale.Account = null;
+            }
+            else if (due < 0)
                 ModelState.AddModelError(string.Empty, "Total due cannot be less than 0.");
-            if (due == 0 && sale.HasLien)
-                ModelState.AddModelError(string.Empty, "Cannot have a lien on a paid vehicle.");
+            else
+                sale.Account.InitialDue = due;
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
             Car car = await _context.Cars.Where(x => x.IsListed).Where(x => x.VIN == sale.Car.VIN).FirstOrDefaultAsync();
@@ -109,10 +111,6 @@ namespace LopezAutoSales.Server.Controllers
                     lienholder.Update(sale.Lienholder);
                     sale.Lienholder = null;
                 }
-            }
-            if(due > 0)
-            {
-                sale.Account.InitialDue = due;
             }
             _context.Sales.Add(sale);
             _context.SaveChanges();
