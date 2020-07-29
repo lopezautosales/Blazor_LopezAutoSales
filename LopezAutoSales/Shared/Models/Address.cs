@@ -19,12 +19,14 @@ namespace LopezAutoSales.Shared.Models
         [MaxLength(10)]
         public string ZIP { get; set; }
 
-        public string Area
+        public override string ToString()
         {
-            get
-            {
-                return $"{City}, {State}, {ZIP}";
-            }
+            return $"{Street}, {City}, {State}, {ZIP}";
+        }
+
+        public string Area()
+        {
+            return $"{City}, {State}, {ZIP}";
         }
 
         public void Update(Address address)

@@ -1,0 +1,374 @@
+﻿<h1 class="text-right">Kansas Used Vehicle Sales Contract</h1>
+<p class="font-weight-bold">This Contract is made and entered into effective on @Sale.Date.ToShortDateString() by and between:</p>
+<div class="row align-items-center">
+    <div class="col-5">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Dealer
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            @Dealership.Name
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            @Dealership.Address.Street
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            @Dealership.Address.Area()
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            @Dealership.Phone
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-2 text-center">
+        and
+    </div>
+    <div class="col-5">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Buyer</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>
+                            Buyer:
+                        </th>
+                        <td>
+                            @Sale.Buyer
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Co-Buyer:
+                        </th>
+                        <td>
+                            @Sale.CoBuyer
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Address:
+                        </th>
+                        <td>
+                            @Sale.Address.ToString()
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Phone:
+                        </th>
+                        <td>
+                            @Sale.Phone
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        Buyer hereby agrees to buy and Dealer agrees to sell the following used motor vehicle:
+    </div>
+</div>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered text-center">
+        <thead>
+            <tr>
+                <th>
+                    Year
+                </th>
+                <th>
+                    Make
+                </th>
+                <th>
+                    Model
+                </th>
+                <th>
+                    Color
+                </th>
+                <th>
+                    Mileage
+                </th>
+                <th>
+                    VIN
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    @Sale.Car.Year
+                </td>
+                <td>
+                    @Sale.Car.Make
+                </td>
+                <td>
+                    @Sale.Car.Model
+                </td>
+                <td>
+                    @Sale.Car.Color
+                </td>
+                <td>
+                    @Sale.Car.MileageString()
+                </td>
+                <td>
+                    @Sale.Car.VIN
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="row">
+    <div class="col-12">
+        Buyer hereby trades in and Dealer accepts the following used motor vehicle:
+    </div>
+</div>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered text-center">
+        <thead>
+            <tr>
+                <th>
+                    Year
+                </th>
+                <th>
+                    Make
+                </th>
+                <th>
+                    Model
+                </th>
+                <th>
+                    Color
+                </th>
+                <th>
+                    Mileage
+                </th>
+                <th>
+                    VIN
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    @if (Sale.TradeIn == null)
+                    {
+                        <div id="placeholder"></div>
+                    }
+                    @Sale.TradeIn?.Year
+                </td>
+                <td>
+                    @Sale.TradeIn?.Make
+                </td>
+                <td>
+                    @Sale.TradeIn?.Model
+                </td>
+                <td>
+                    @Sale.TradeIn?.Color
+                </td>
+                <td>
+                    @Sale.TradeIn?.MileageString()
+                </td>
+                <td>
+                    @Sale.TradeIn?.VIN
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="row">
+    <div class="col-6"></div>
+    <div class="col-6">
+        <div class="table-responsive">
+            <table class="table table-bordered text-center">
+                <tbody>
+                    <tr>
+                        <th>
+                            Price
+                        </th>
+                        <td>
+                            @Sale.SellingPrice.ToString("C")
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Trade Value
+                        </th>
+                        <td>
+                            @Sale.TradeIn?.BoughtPrice?.ToString("C")
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Trade Difference
+                        </th>
+                        <td>
+                            @Sale.TradeDifference().ToString("C")
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Tax @Sale.TaxRate%
+                        </th>
+                        <td>
+                            @Sale.TaxAmount().ToString("C")
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Temporary Permit
+                        </th>
+                        <td>
+                            @Sale.TagAmount.ToString("C")
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Secured Lien Fee
+                        </th>
+                        <td>
+                            @Sale.LienAmount.ToString("C")
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Subtotal
+                        </th>
+                        <td>
+                            @Sale.Subtotal().ToString("C")
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Down Payment
+                        </th>
+                        <td>
+                            @Sale.DownPayment.ToString("C")
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Total Due
+                        </th>
+                        <td>
+                            @Sale.TotalDue().ToString("C")
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="text-center">
+    Disclosure Required by Federal Law
+</div>
+<div class="table-responsive">
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>
+                    Amount Financed
+                    <div class="font-weight-normal">
+                        The amount of credit provided by the dealer to the buyer.
+                    </div>
+                </th>
+                <th>
+                    Finance Charge
+                    <div class="font-weight-normal">
+                        The cost of financing through the dealer.
+                    </div>
+                </th>
+                <th>
+                    Total of Payments
+                    <div class="font-weight-normal">
+                        The total amount to be paid.
+                    </div>
+                </th>
+                <th>
+                    Annual Percentage Rate
+                    <div class="font-weight-normal">
+                        The cost of credit as a yearly rate.
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    @Sale.TotalDue().ToString("C")
+                </td>
+                <td>
+                    @Sale.FinanceCharge.ToString("C")
+                </td>
+                <td>
+                    @Sale.TotalPayments().ToString("C")
+                </td>
+                <td>
+                    @Dealership.APR%
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="table-responsive">
+    <table class="table table-bordered table-sm text-center">
+        <thead>
+            <tr>
+                <th>
+                    Number of Payments
+                </th>
+                <th>
+                    Amount of Payment
+                </th>
+                <th>
+                    When Payment is Due
+                </th>
+                <th>
+                    Loan Begins
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    @Sale.MonthsToPay()
+                </td>
+                <td>
+                    @Sale.Account.MonthlyPayment.ToString("C")
+                </td>
+                <td>
+                    Monthly
+                </td>
+                <td>
+                    @Sale.Date.ToShortDateString()
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<Signature />
+
+@code {
+    [Parameter]
+    public Sale Sale { get; set; }
+}

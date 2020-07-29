@@ -24,7 +24,7 @@ else
             <tbody>
                 @foreach (Account account in Accounts)
                 {
-                    <tr>
+                    <tr class="@(account.HasContractExpired() ? "table-danger" : string.Empty)" >
                         <td>
                             @account.Sale.Buyer &Aacute; @account.Sale.CoBuyer
                         </td>

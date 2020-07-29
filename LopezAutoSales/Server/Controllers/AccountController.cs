@@ -4,6 +4,7 @@ using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -47,6 +48,33 @@ namespace LopezAutoSales.Server.Controllers
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
             return Ok(account);
+        }
+
+        [HttpPost("payment/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddPayment([FromRoute] int id, [FromBody] Payment payment)
+        {
+            Account account = await _context.Accounts.FindAsync(id);
+            if (account == null)
+                return BadRequest(new string[] { "Could not find the account." });
+            payment.AccountId = account.Id;
+            if (payment.Date.Date == DateTime.Today)
+                payment.Date = DateTime.Now;
+            _context.Payments.Add(payment);
+            _context.SaveChanges();
+            return Ok(payment.Id);
+        }
+
+        [HttpDelete("payment/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RemovePayment([FromRoute] int id)
+        {
+            Payment payment = await _context.Payments.FindAsync(id);
+            if (payment == null)
+                return BadRequest(new string[] { "Payment was not found." });
+            _context.Payments.Remove(payment);
+            _context.SaveChanges();
+            return Ok();
         }
     }
 }

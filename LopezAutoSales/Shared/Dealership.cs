@@ -19,5 +19,6 @@ namespace LopezAutoSales.Shared
         public const int MonthlyPayment = 300;
         public const decimal TagAmount = 10;
         public const decimal LienAmount = 20;
+        public const decimal APR = 0;
     }
 }

@@ -1,10 +1,25 @@
 ﻿@page "/app/papers/{id:int}"
-
+@inject AuthHttp auth
 @attribute [Authorize(Roles = "Admin")]
+@using LopezAutoSales.Client.Shared.Papers
 
-<h1 class="text-center">View</h1>
+@if (Sale == null)
+{
+    <p class="lead">Loading...</p>
+}
+else
+{
+    <Contract Sale="Sale" />
+}
 
 @code {
     [Parameter]
     public int Id { get; set; }
+    public Sale Sale { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Sale = await auth.Client.GetFromJsonAsync<Sale>($"/api/sale/{Id}");
+        await base.OnInitializedAsync();
+    }
 }

@@ -21,8 +21,37 @@ namespace LopezAutoSales.Shared.Models
         public decimal MonthlyPayment { get; set; } = Dealership.MonthlyPayment;
         public bool HasContractExpired()
         {
-            TimeSpan span = DateTime.Now - Sale.Date;
-            Sale.MonthsToPay()
+            if (ExpirationDate() > DateTime.Now)
+                return true;
+            return false;
+        }
+
+        private int MonthsToPay()
+        {
+            if (MonthlyPayment == 0)
+                return 0;
+            return (int)Math.Ceiling(InitialDue / MonthlyPayment);
+        }
+
+        public decimal LateDue()
+        {
+            if (Sale == null)
+                throw new Exception("Sale is null.");
+            DateTime date = Sale.Date.AddMonths(1);
+            decimal expected = 0;
+            while(date < DateTime.Now)
+            {
+                expected += MonthlyPayment;
+                date.AddMonths(1);
+            }
+            return expected;
+        }
+
+        public DateTime ExpirationDate()
+        {
+            if (Sale == null)
+                throw new Exception("Sale is null");
+            return Sale.Date.AddMonths(MonthsToPay());
         }
     }
 }

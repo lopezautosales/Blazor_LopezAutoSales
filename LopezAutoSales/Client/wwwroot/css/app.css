@@ -11,6 +11,10 @@
     border-bottom: 1px solid #000;
 }
 
+#placeholder {
+    height: 1.3em;
+}
+
 @media print {
     .no-print {
         display: none;

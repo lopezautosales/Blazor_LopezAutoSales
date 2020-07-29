@@ -6,7 +6,7 @@ namespace LopezAutoSales.Client
     {
         public static string MileageString(this Car car)
         {
-            return car.Mileage.HasValue ? car.Mileage.Value.ToString("N0") + " miles" : "Exempt";
+            return car.Mileage.HasValue ? car.Mileage.Value.ToString("N0") : "Exempt";
         }
     }
 }
