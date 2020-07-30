@@ -1,18 +1,18 @@
-﻿@foreach (string error in EditContext.GetValidationMessages())
-{
-    <div class="alert alert-danger">@error</div>
-}
-@if (Errors != null)
-    @foreach (string error in Errors)
+﻿<div class="no-print">
+    @foreach (string error in EditContext.GetValidationMessages())
     {
         <div class="alert alert-danger">@error</div>
     }
+    @if (Errors != null)
+        @foreach (string error in Errors)
+        {
+            <div class="alert alert-danger">@error</div>
+        }
+</div>
 
 @code {
     [CascadingParameter]
     public EditContext EditContext { get; set; }
     [Parameter]
     public List<string> Errors { get; set; }
-    [Parameter]
-    public EventCallback<List<string>> ErrorsChanged { get; set; }
 }

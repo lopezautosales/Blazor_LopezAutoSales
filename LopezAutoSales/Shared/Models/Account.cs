@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace LopezAutoSales.Shared.Models
 {
@@ -19,6 +20,12 @@ namespace LopezAutoSales.Shared.Models
         [Required]
         [Column(TypeName = "decimal(9,2)")]
         public decimal MonthlyPayment { get; set; } = Dealership.MonthlyPayment;
+
+        public decimal Balance()
+        {
+            return InitialDue - Payments.Sum(x => x.Amount);
+        }
+
         public bool HasContractExpired()
         {
             if (ExpirationDate() > DateTime.Now)
@@ -36,7 +43,7 @@ namespace LopezAutoSales.Shared.Models
         public decimal LateDue()
         {
             if (Sale == null)
-                throw new Exception("Sale is null.");
+                throw new NullReferenceException();
             DateTime date = Sale.Date.AddMonths(1);
             decimal expected = 0;
             while(date < DateTime.Now)
@@ -50,7 +57,7 @@ namespace LopezAutoSales.Shared.Models
         public DateTime ExpirationDate()
         {
             if (Sale == null)
-                throw new Exception("Sale is null");
+                throw new NullReferenceException();
             return Sale.Date.AddMonths(MonthsToPay());
         }
     }

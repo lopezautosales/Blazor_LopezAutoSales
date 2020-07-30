@@ -9,7 +9,7 @@
 <h1 class="text-center">Sales Agreement</h1>
 <EditForm Model="Sale" OnValidSubmit="CompleteSale">
     <DataAnnotationsValidator />
-    <ErrorDisplay @bind-Errors="Errors" />
+    <ErrorDisplay Errors="Errors" />
     <div class="form-row">
         <div class="col-3 ml-auto">
             <div class="form-group">
@@ -101,7 +101,7 @@
                 <div class="input-group">
                     <InputText class="form-control" id="VIN" @bind-Value="Sale.Car.VIN" />
                     <div class="input-group-append no-print">
-                        <button type="button" class="btn btn-secondary" @onclick="async () => await DecodeVin(Sale.Car)">Verify</button>
+                        <button type="button" class="btn btn-secondary" @onclick="async () => await decoder.TryDecodeAsync(Sale.Car)">Verify</button>
                     </div>
                 </div>
             </div>
@@ -152,7 +152,7 @@
                         <div class="input-group">
                             <InputText class="form-control" id="TradeVIN" @bind-Value="Sale.TradeIn.VIN" />
                             <div class="input-group-append no-print">
-                                <button type="button" class="btn btn-secondary" @onclick="async () => await DecodeVin(Sale.TradeIn)">Verify</button>
+                                <button type="button" class="btn btn-secondary" @onclick="async () => await decoder.TryDecodeAsync(Sale.TradeIn)">Verify</button>
                             </div>
                         </div>
                     </div>
@@ -329,7 +329,7 @@
 @code {
     [Parameter]
     public int? Id { get; set; }
-    private List<string> Errors { get; set; }
+    private List<string> Errors { get; set; } = new List<string>();
     private Sale Sale { get; set; } = new Sale
     {
         Car = new Car(),
@@ -349,15 +349,6 @@
         else
             Sale.Car = new Car();
         await base.OnInitializedAsync();
-    }
-
-    private async Task DecodeVin(Car car)
-    {
-        if (!await decoder.TryDecodeAsync(car))
-        {
-            Errors.Clear();
-            Errors.Add("Could not decode the car's VIN.");
-        }
     }
 
     private async Task CompleteSale()

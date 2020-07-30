@@ -1,4 +1,5 @@
 ﻿using LopezAutoSales.Shared.Models;
+using Microsoft.JSInterop;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -8,27 +9,32 @@ namespace LopezAutoSales.Client
     {
         public const string Path = "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/{0}?format=json";
         private readonly HttpClient _client;
+        private readonly IJSRuntime _js;
 
         private string DecodedVIN { get; set; }
         private string JsonData { get; set; }
 
-        public VINDecoder(HttpClient client)
+        public VINDecoder(HttpClient client, IJSRuntime js)
         {
             _client = client;
+            _js = js;
         }
 
-        public async Task<bool> TryDecodeAsync(Car car)
+        public async Task TryDecodeAsync(Car car)
         {
             if (DecodedVIN != car.VIN)
-            {
                 JsonData = await _client.GetStringAsync(string.Format(Path, car.VIN));
-            }
-            DecodedVIN = car.VIN;
+            else
+                await _js.InvokeVoidAsync("blazorAlert", $"{car.VIN} has already been decoded.");
             car.JsonData = JsonData;
-            return SetVariables(car);
+            if (!TrySetVariables(car))
+                await _js.InvokeVoidAsync("blazorAlert", $"{car.VIN} could not be decoded.");
+            else if (DecodedVIN != car.VIN)
+                await _js.InvokeVoidAsync("blazorAlert", $"{car.VIN} was successfully decoded.");
+            DecodedVIN = car.VIN;
         }
 
-        private bool SetVariables(Car car)
+        private bool TrySetVariables(Car car)
         {
             car.DeserializeJson();
             if (car.Data.Results.Find(x => x.VariableId == 143).Value != "0")

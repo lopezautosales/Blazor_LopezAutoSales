@@ -22,7 +22,7 @@ else
             <div class="input-group">
                 <InputText class="form-control" @bind-Value="Car.VIN"></InputText>
                 <div class="input-group-append">
-                    <button type="button" class="btn btn-secondary" @onclick="async () => await DecodeVin()">Verify</button>
+                    <button type="button" class="btn btn-secondary" @onclick="async () => await decoder.TryDecodeAsync(Car)">Verify</button>
                 </div>
             </div>
         </div>
@@ -113,7 +113,7 @@ else
 
     private async Task EditVehicle()
     {
-        await DecodeVin();
+        await decoder.TryDecodeAsync(Car);
         var response = await auth.Client.PutAsJsonAsync<Car>($"/api/inventory/edit/{Id}", Car);
         if (response.IsSuccessStatusCode)
         {
@@ -165,15 +165,6 @@ else
         if (response.IsSuccessStatusCode)
         {
             Car.Pictures.Remove(picture);
-        }
-    }
-
-    private async Task DecodeVin()
-    {
-        if(!await decoder.TryDecodeAsync(Car))
-        {
-            Errors.Clear();
-            Errors.Add("Could not decode the car's VIN.");
         }
     }
 }

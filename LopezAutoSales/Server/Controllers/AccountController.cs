@@ -54,24 +54,32 @@ namespace LopezAutoSales.Server.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddPayment([FromRoute] int id, [FromBody] Payment payment)
         {
-            Account account = await _context.Accounts.FindAsync(id);
+            Account account = await _context.Accounts.Where(x => x.Id == id).Include(x => x.Payments).FirstOrDefaultAsync();
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
             payment.AccountId = account.Id;
             if (payment.Date.Date == DateTime.Today)
                 payment.Date = DateTime.Now;
+
+            account.IsPaid = account.Balance() <= 0;
             _context.Payments.Add(payment);
             _context.SaveChanges();
             return Ok(payment.Id);
         }
 
-        [HttpDelete("payment/{id}")]
+        [HttpPost("delete/payment")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> RemovePayment([FromRoute] int id)
+        public async Task<IActionResult> RemovePayment([FromBody] DeletePayment request)
         {
-            Payment payment = await _context.Payments.FindAsync(id);
+            Account account = await _context.Accounts.Where(x => x.Id == request.AccountId).Include(x => x.Payments).FirstOrDefaultAsync();
+            if (account == null)
+                return BadRequest(new string[] { "Could not find the account." });
+            Payment payment = account.Payments.FirstOrDefault(x => x.Id == request.PaymentId);
+
             if (payment == null)
-                return BadRequest(new string[] { "Payment was not found." });
+                return BadRequest(new string[] { "Could not find the payment." });
+
+            account.IsPaid = account.Balance() <= payment.Amount;
             _context.Payments.Remove(payment);
             _context.SaveChanges();
             return Ok();
