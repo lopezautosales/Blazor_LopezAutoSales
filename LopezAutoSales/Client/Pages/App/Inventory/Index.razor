@@ -27,25 +27,25 @@ else
             <thead class="text-center">
                 <tr>
                     <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.Year)">
-                        Year
+                        Year <Chevron Down="Inventory.Method == Inventory.SortMethod.Year" />
                     </th>
                     <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.Make)">
-                        Make
+                        Make <Chevron Down="Inventory.Method == Inventory.SortMethod.Make" />
                     </th>
                     <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.Model)">
-                        Model
+                        Model <Chevron Down="Inventory.Method == Inventory.SortMethod.Model" />
                     </th>
                     <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.Mileage)">
-                        Mileage
+                        Mileage <Chevron Down="Inventory.Method == Inventory.SortMethod.Mileage" />
                     </th>
                     <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.BoughtPrice)">
-                        Bought Price
+                        Bought Price <Chevron Down="Inventory.Method == Inventory.SortMethod.BoughtPrice" />
                     </th>
                     <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.ListPrice)">
-                        List Price
+                        List Price <Chevron Down="Inventory.Method == Inventory.SortMethod.ListPrice" />
                     </th>
                     <th class="pointer" scope="col" @onclick="() => Inventory.Sort(Inventory.SortMethod.Salvage)">
-                        Salvage
+                        Salvage <Chevron Down="Inventory.Method == Inventory.SortMethod.Salvage" />
                     </th>
                     <th scope="col">Actions</th>
                 </tr>

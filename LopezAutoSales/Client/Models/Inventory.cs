@@ -7,7 +7,7 @@ namespace LopezAutoSales.Client.Models
     public class Inventory
     {
         public IEnumerable<Car> Cars { get; private set; }
-        private SortMethod Method { get; set; }
+        public SortMethod Method { get; private set; } = SortMethod.Make;
         private bool Repeated { get; set; }
 
         public enum SortMethod
@@ -23,7 +23,7 @@ namespace LopezAutoSales.Client.Models
 
         public Inventory(IEnumerable<Car> cars)
         {
-            Cars = cars;
+            Cars = cars.OrderBy(x => x.Make);
         }
 
         public void Sort(SortMethod method)

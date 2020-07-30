@@ -46,7 +46,7 @@ namespace LopezAutoSales.Shared.Models
                 throw new NullReferenceException();
             DateTime date = Sale.Date.AddMonths(1);
             decimal expected = 0;
-            while(date < DateTime.Now)
+            while (date < DateTime.Now)
             {
                 expected += MonthlyPayment;
                 date.AddMonths(1);
