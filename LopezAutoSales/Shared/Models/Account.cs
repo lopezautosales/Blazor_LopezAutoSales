@@ -16,7 +16,7 @@ namespace LopezAutoSales.Shared.Models
         [Required]
         [Column(TypeName = "decimal(9,2)")]
         public decimal InitialDue { get; set; }
-        public IEnumerable<Payment> Payments { get; set; }
+        public List<Payment> Payments { get; set; }
         [Required]
         [Column(TypeName = "decimal(9,2)")]
         public decimal MonthlyPayment { get; set; } = Dealership.MonthlyPayment;
@@ -28,7 +28,7 @@ namespace LopezAutoSales.Shared.Models
 
         public bool HasContractExpired()
         {
-            if (ExpirationDate() > DateTime.Now)
+            if (ExpirationDate() <= DateTime.Now)
                 return true;
             return false;
         }
@@ -51,7 +51,7 @@ namespace LopezAutoSales.Shared.Models
                 expected += MonthlyPayment;
                 date.AddMonths(1);
             }
-            return expected;
+            return expected - Payments.Sum(x => x.Amount);
         }
 
         public DateTime ExpirationDate()

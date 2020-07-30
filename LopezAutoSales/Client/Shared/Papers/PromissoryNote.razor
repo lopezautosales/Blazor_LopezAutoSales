@@ -1,5 +1,80 @@
-﻿<h3>PromissoryNote</h3>
+﻿<h1 class="text-center">Promissory Note and Security Agreement</h1>
+<div class="row my-3">
+    <div class="col-6">
+        @Sale.TotalDue().ToString("C")
+    </div>
+    <div class="col-6 text-right">
+        Date: @Sale.Date.ToShortDateString()
+    </div>
+</div>
+<p>
+    &emsp; For value received, the undersigned, @Sale.Buyers() (Borrower) promise to pay @Dealership.Name (Lender) or its order, and the undersigned further agrees to the terms below.
+</p>
+<p>
+    &emsp; PAYMENT TERMS: The principal sum of @Sale.TotalDue().ToString("C") in monthly installments of @Sale.Account.MonthlyPayment.ToString("C") commencing
+    on @Sale.Date.AddMonths(1).ToShortDateString() and a like payment each month until the entire balance is paid in full.
+</p>
+<p>
+    &emsp; LATE CHARGE: If Borrower is more than @Dealership.LateDays days late in making any payment, in addition to such payment, Borrower will pay a late fee of either the greater between @Dealership.LateFee.ToString("C") or @Dealership.LateRate% of the payment in default via discretion of Lender.
+</p>
+<p>
+    &emsp; LATE TERMS: If Borrower is significantly late (30 days), the Lender can apply the following term to the vehicle: The principal sum of @Sale.TotalDue().ToString("C") with interest thereon at @Dealership.LateAPR% per annum in monthly installments of @Sale.Account.MonthlyPayment.ToString("C") commencing
+    on @Sale.Date.AddMonths(1).ToShortDateString() and a like payment each month until the entire balance is paid in full.
+</p>
+<p>
+    &emsp; This note is secured by the following described personal property. Enforcement of this note shall be governed by Kansas law. The undersigned also grants to Lender a security interest under the Unfirom Commercial Code in the following described property:
+</p>
+<div class="container border border-dark">
+    <p class="font-weight-bold">
+        Description of Property:
+    </p>
+    <div>
+        @Sale.Car.Name
+    </div>
+    <div>
+        VIN: @Sale.Car.VIN
+    </div>
+    <div class="mb-2">
+        Mileage: @Sale.Car.MileageString()
+    </div>
+</div>
+<p>
+    together with all parts and equipment used in connection therewith, additions, replacements, accessions, proceeds, products, and similar after-acquired property; provided, this security interest shall not attach to after-acquired consumer goods, except accessions, unless the undersigned acqure rights in such after-acquired consumer goods within 10 days after the Lender gives value.
+    The undersigned grant to Lender a security interest by an assignment in any returned or unearned insurance premiums. This security interest is given to secure payment of all the Borrower's present and future indebtedness of any type to Lender, including without limitation; future advances, overdrafts, all expenditures by Lender for taxes, insurance, repairs to and maintenance of collateral, and all expenses of the Lender in realizing on its security interest.
+</p>
+<p>
+    &emsp; If Borrower is in default, the note holder may send Borrower a written note telling him that if Borrower does not pay the overdue amount by a certain date, the note holder may require Borrower to pay immediately the full amount of principal which has not been paid and all interest that Borrower owes on that amount.
+    That date must be at least 30 days after the date on which the notice is delivered or mailed to Borrower at @Sale.Address.Street (Street Address), @Sale.Address.City (City), @Sale.Address.State (State), @Sale.Address.ZIP (ZIP).
+</p>
+<p>
+    &emsp; All or any part of the principal sum may be paid in advance and without penalty at any time. Any advance payments so made may be applied upon principal or the payees may apply a portion to interest accrued with respect to the payment and the balance of the payment upon principal.
+</p>
+<p>
+    &emsp; The undersigned also agree that the Lender may, at any time without notice, release all or any part of the security for this note; grant extensions, deferments, renewals, or reamortization of the debt evidenced herby or any part thereof and release from personal liability any one or more of the parties who are or may become liable for such debt without affecting the personal liability of any other party.
+</p>
+<p>
+    &emsp; All persons or entities, who are or who may become liable on this debt, expressly waive demand for payment, protest, and notice of dishonor on payment.
+</p>
+<p>
+    Borrower(s):
+</p>
+<div class="row pt-4 text-center">
+    <div class="col-6">
+        <p>
+            Signature: <input class="signature ml-1" type="text" />
+        </p>
+        <p>Print: <input class="signature ml-1" type="text" /></p>
+        <p>Social Security: <input class="signature ml-1" type="text" /></p>
+    </div>
+    <div class="col-6">
+        <p>
+            Signature: <input class="signature ml-1" type="text" />
+        </p>
+        <p>Print: <input class="signature ml-1" type="text" /></p>
+    </div>
+</div>
 
 @code {
-
+    [Parameter]
+    public Sale Sale { get; set; }
 }

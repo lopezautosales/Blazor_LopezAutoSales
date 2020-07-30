@@ -1,0 +1,69 @@
+﻿@page "/app/papers"
+@attribute [Authorize(Roles = "Admin")]
+@inject AuthHttp auth
+
+<h1 class="text-center">Papers</h1>
+@if (Sales == null)
+{
+    <p class="lead">Loading...</p>
+
+}
+else if (Sales.Count == 0)
+{
+    <p class="lead">No papers could be found.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table text-center">
+            <thead>
+                <tr>
+                    <th scope="col">
+                        Date
+                    </th>
+                    <th scope="col">
+                        Buyers
+                    </th>
+                    <th scope="col">
+                        Vehicle
+                    </th>
+                    <th scope="col">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Sale sale in Sales)
+                {
+                    <tr>
+                        <td>
+                            @sale.Date
+                        </td>
+                        <td>
+                            @sale.Buyers()
+                        </td>
+                        <td>
+                            @sale.Car.Name
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a class="btn btn-secondary" href="/app/papers/@sale.Id">View</a>
+                                <a class="btn btn-secondary" href="/app/papers/edit/@sale.Id">Edit</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    public List<Sale> Sales { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Sales = await auth.Client.GetFromJsonAsync<List<Sale>>("/api/sale");
+        await base.OnInitializedAsync();
+    }
+}

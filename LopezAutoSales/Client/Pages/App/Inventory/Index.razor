@@ -4,10 +4,19 @@
 @inject CarManager carManager
 
 <h1 class="text-center">Inventory</h1>
-<div class="text-right my-2">
-    <a href="/app/inventory/add" class="btn btn-secondary"><i class="mdi mdi-plus"></i> Add Vehicle</a>
+<div class="row mb-2">
+    <div class="col-6">
+        <a class="btn btn-secondary" href="/app/inventory/sell">Sell Vehicle</a>
+    </div>
+    <div class="col-6 text-right">
+        <a href="/app/inventory/add" class="btn btn-secondary"><i class="mdi mdi-plus"></i> Add Vehicle</a>
+    </div>
 </div>
-@if (Inventory == null || Inventory.Cars.Count() == 0)
+@if (Inventory == null)
+{
+    <p class="lead">Loading...</p>
+}
+else if (Inventory.Cars.Count() == 0)
 {
     <p class="lead">There's currently no active vehicles in inventory.</p>
 }
@@ -62,7 +71,7 @@ else
                             <div class="btn-group" role="group">
                                 <a href="/warranty/@car.Id" class="btn btn-secondary">Warranty</a>
                                 <a href="/app/inventory/edit/@car.Id" class="btn btn-secondary" @onclick="() => SetData(car)">Edit</a>
-                                <a href="/app/sell/@car.Id" class="btn btn-secondary">Sell</a>
+                                <a href="/app/inventory/sell/@car.Id" class="btn btn-secondary">Sell</a>
                             </div>
                         </td>
                     </tr>

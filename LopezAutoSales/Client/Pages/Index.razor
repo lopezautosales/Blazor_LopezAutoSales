@@ -4,7 +4,11 @@
 @inject NavigationManager nav
 
 <h1 class="text-center">Inventory</h1>
-@if (Cars == null || Cars.Count == 0)
+@if (Cars == null)
+{
+    <p class="lead">Loading...</p>
+}
+else if (Cars.Count == 0)
 {
     <p class="lead">There's currently no vehicles available.</p>
 }

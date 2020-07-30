@@ -3,10 +3,10 @@
 <div class="row align-items-center">
     <div class="col-5">
         <div class="table-responsive">
-            <table class="table">
+            <table class="table table-sm">
                 <thead>
                     <tr>
-                        <th>
+                        <th scope="col">
                             Dealer
                         </th>
                     </tr>
@@ -44,39 +44,28 @@
             <table class="table table-sm">
                 <thead>
                     <tr>
-                        <th>Buyer</th>
-                        <th></th>
+                        <th scope="col">
+                            Buyer(s)
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <th>
-                            Buyer:
-                        </th>
                         <td>
-                            @Sale.Buyer
+                            @Sale.Buyers()
                         </td>
                     </tr>
                     <tr>
-                        <th>
-                            Co-Buyer:
-                        </th>
                         <td>
-                            @Sale.CoBuyer
+                            @Sale.Address.Street
                         </td>
                     </tr>
                     <tr>
-                        <th>
-                            Address:
-                        </th>
                         <td>
-                            @Sale.Address.ToString()
+                            @Sale.Address.Area()
                         </td>
                     </tr>
                     <tr>
-                        <th>
-                            Phone:
-                        </th>
                         <td>
                             @Sale.Phone
                         </td>
@@ -95,22 +84,22 @@
     <table class="table table-sm table-bordered text-center">
         <thead>
             <tr>
-                <th>
+                <th scope="col">
                     Year
                 </th>
-                <th>
+                <th scope="col">
                     Make
                 </th>
-                <th>
+                <th scope="col">
                     Model
                 </th>
-                <th>
+                <th scope="col">
                     Color
                 </th>
-                <th>
+                <th scope="col">
                     Mileage
                 </th>
-                <th>
+                <th scope="col">
                     VIN
                 </th>
             </tr>
@@ -148,22 +137,22 @@
     <table class="table table-sm table-bordered text-center">
         <thead>
             <tr>
-                <th>
+                <th scope="col">
                     Year
                 </th>
-                <th>
+                <th scope="col">
                     Make
                 </th>
-                <th>
+                <th scope="col">
                     Model
                 </th>
-                <th>
+                <th scope="col">
                     Color
                 </th>
-                <th>
+                <th scope="col">
                     Mileage
                 </th>
-                <th>
+                <th scope="col">
                     VIN
                 </th>
             </tr>
@@ -203,7 +192,7 @@
             <table class="table table-bordered text-center">
                 <tbody>
                     <tr>
-                        <th>
+                        <th scope="row">
                             Price
                         </th>
                         <td>
@@ -211,7 +200,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             Trade Value
                         </th>
                         <td>
@@ -219,7 +208,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             Trade Difference
                         </th>
                         <td>
@@ -227,15 +216,15 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>
-                            Tax @Sale.TaxRate%
+                        <th scope="row">
+                            Tax @Sale.TaxRate.ToString("G29")%
                         </th>
                         <td>
                             @Sale.TaxAmount().ToString("C")
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             Temporary Permit
                         </th>
                         <td>
@@ -243,7 +232,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             Secured Lien Fee
                         </th>
                         <td>
@@ -251,7 +240,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             Subtotal
                         </th>
                         <td>
@@ -259,7 +248,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             Down Payment
                         </th>
                         <td>
@@ -267,7 +256,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             Total Due
                         </th>
                         <td>
@@ -286,27 +275,27 @@
     <table class="table table-bordered text-center">
         <thead>
             <tr>
-                <th>
+                <th scope="col">
                     Amount Financed
-                    <div class="font-weight-normal">
+                    <div class="font-weight-normal small">
                         The amount of credit provided by the dealer to the buyer.
                     </div>
                 </th>
-                <th>
+                <th scope="col">
                     Finance Charge
-                    <div class="font-weight-normal">
+                    <div class="font-weight-normal small">
                         The cost of financing through the dealer.
                     </div>
                 </th>
-                <th>
+                <th scope="col">
                     Total of Payments
-                    <div class="font-weight-normal">
+                    <div class="font-weight-normal small">
                         The total amount to be paid.
                     </div>
                 </th>
-                <th>
+                <th scope="col">
                     Annual Percentage Rate
-                    <div class="font-weight-normal">
+                    <div class="font-weight-normal small">
                         The cost of credit as a yearly rate.
                     </div>
                 </th>
@@ -331,19 +320,19 @@
     </table>
 </div>
 <div class="table-responsive">
-    <table class="table table-bordered table-sm text-center">
+    <table class="table table-bordered text-center">
         <thead>
             <tr>
-                <th>
+                <th scope="col">
                     Number of Payments
                 </th>
-                <th>
+                <th scope="col">
                     Amount of Payment
                 </th>
-                <th>
+                <th scope="col">
                     When Payment is Due
                 </th>
-                <th>
+                <th scope="col">
                     Loan Begins
                 </th>
             </tr>

@@ -1,5 +1,185 @@
-﻿<h3>TransferAgreement</h3>
+﻿<h1 class="text-center">Vehicle Ownership Transfer Agreement</h1>
+<p>
+    Date of Agreement: @Sale.Date.ToShortDateString()
+</p>
+<h3>Vehicle Information:</h3>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered text-center">
+        <tr>
+            <td>
+                @Sale.Car.Year
+            </td>
+            <td>
+                @Sale.Car.Make
+            </td>
+            <td>
+                @Sale.Car.Model
+            </td>
+            <td>
+                @Sale.Car.VIN
+            </td>
+        </tr>
+        <tr class="small">
+            <td>
+                (Year)
+            </td>
+            <td>
+                (Make)
+            </td>
+            <td>
+                (Model)
+            </td>
+            <td>
+                (VIN)
+            </td>
+        </tr>
+    </table>
+</div>
+<h3>Purchaser Information:</h3>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered text-center">
+        <tr>
+            <td>
+                @Sale.Buyers()
+            </td>
+            <td>
+                @Sale.Address.Street
+            </td>
+            <td>
+                @Sale.Address.City
+            </td>
+            <td>
+                @Sale.Address.State
+            </td>
+            <td>
+                @Sale.Address.ZIP
+            </td>
+        </tr>
+        <tr class="small">
+            <td>
+                (Name)
+            </td>
+            <td>
+                (Address)
+            </td>
+            <td>
+                (City)
+            </td>
+            <td>
+                (State)
+            </td>
+            <td>
+                (ZIP)
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered text-center">
+        <tr>
+            <td>
+                @if (Sale.Lienholder == null)
+                {
+                    <div id="placeholder"></div>
+                }
+                @Sale.Lienholder?.Name
+            </td>
+            <td>
+                @Sale.Lienholder?.Address.Street
+            </td>
+            <td>
+                @Sale.Lienholder?.Address.City
+            </td>
+            <td>
+                @Sale.Lienholder?.Address.State
+            </td>
+            <td>
+                @Sale.Lienholder?.Address.ZIP
+            </td>
+        </tr>
+        <tr class="small">
+            <td>
+                (Lienholder's Name if applicable)
+            </td>
+            <td>
+                (Address)
+            </td>
+            <td>
+                (City)
+            </td>
+            <td>
+                (State)
+            </td>
+            <td>
+                (ZIP)
+            </td>
+        </tr>
+    </table>
+</div>
+<h3>Seller Information:</h3>
+<div class="table-responsive">
+    <table class="table table-sm table-bordered text-center">
+        <tr>
+            <td>
+                @Dealership.Name
+            </td>
+            <td>
+                @Dealership.Phone
+            </td>
+            <td>
+                @Dealership.Address.Street
+            </td>
+            <td>
+                @Dealership.Address.City
+            </td>
+            <td>
+                @Dealership.Address.State
+            </td>
+            <td>
+                @Dealership.Address.ZIP
+            </td>
+        </tr>
+        <tr class="small">
+            <td>
+                (Dealer)
+            </td>
+            <td>
+                (Dealer Number)
+            </td>
+            <td>
+                (Address)
+            </td>
+            <td>
+                (City)
+            </td>
+            <td>
+                (State)
+            </td>
+            <td>
+                (ZIP)
+            </td>
+        </tr>
+    </table>
+</div>
+<p>
+    Seller has a valid negotiable Kansas Certificate of Title or Manufacturer’s Statement/Certificate of Origin for the vehicle
+    listed herein and certifies that the same vehicle has been sold to the person(s) shown as purchaser(s). This Certificate of
+    Title or Manufacturer’s Statement/Certificate of Origin is either in the seller’s name or properly assigned to seller (only if
+    seller is a licensed Kansas dealer) and shall be in the seller’s possession when the transfer is by Certificate of Title.
+</p>
+<p>
+    Seller further agrees to deliver a Certificate of title properly negotiated and assigned to the purchaser(s) personally or by
+    registered or certified mail within sixty (60) days from the date of the agreement (inclusive of weekends and holidays).
+    KS8-135(c) (7).
+</p>
+<p>
+    This form must be in the vehicle while: driving with a 60 day permit displayed or, while driving with a current Kansas
+    license plate from a vehicle that was disposed of and that will be transferred to the vehicle described herein at the time of
+    application for title and registration. If application for title and registration is not made within 60 days of the purchase date,
+    penalty and interest will be assessed.
+</p>
 
 @code {
-
+    [Parameter]
+    public Sale Sale { get; set; }
 }

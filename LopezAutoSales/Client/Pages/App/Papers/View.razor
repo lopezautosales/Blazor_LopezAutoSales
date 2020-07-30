@@ -10,6 +10,15 @@
 else
 {
     <Contract Sale="Sale" />
+    <div id="page-break" />
+    <TransferAgreement Sale="Sale" />
+    <div id="page-break" />
+    <Warranty Car="Sale.Car" Amount="Sale.Warranty" />
+    @if (Sale.TotalDue() > 0)
+    {
+        <div id="page-break" />
+        <PromissoryNote Sale="Sale" />
+    }
 }
 
 @code {

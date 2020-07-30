@@ -9,7 +9,7 @@ namespace LopezAutoSales.Shared.Models
         public int AccountId { get; set; }
         public Account Account { get; set; }
 
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; } = DateTime.Today;
         [Column(TypeName = "decimal(9,2)")]
         public decimal Amount { get; set; }
     }

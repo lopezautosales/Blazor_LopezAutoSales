@@ -1,15 +1,113 @@
 ﻿@page "/app/payments/{id:int}"
 @attribute [Authorize(Roles = "Admin")]
 @inject AuthHttp auth
+@inject IJSRuntime js
 
-<h1 class="text-center">Payments</h1>
 @if (Account == null)
 {
-    <p class="lead">Could not load the account.</p>
+    <p class="lead">Loading...</p>
 }
 else
 {
-
+    <h1 class="text-center">Payments for @Account.Sale.Car.Name</h1>
+    <h3>@Account.Sale.Buyers()</h3>
+    <div class="row">
+        <div class="col">
+            <h6>Down Payment: @Account.Sale.DownPayment.ToString("C")</h6>
+        </div>
+        <div class="col">
+            <h6>Purchase Date: @Account.Sale.Date.ToShortDateString()</h6>
+        </div>
+    </div>
+    <h5>Initial Due: @Account.InitialDue.ToString("C")</h5>
+    <h4>Payments</h4>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover table-striped text-center">
+            <thead>
+                <tr>
+                    <th scope="col">
+                        Date
+                    </th>
+                    <th scope="col">
+                        Amount
+                    </th>
+                    <th class="no-print"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Payment payment in Account.Payments.OrderBy(x => x.Date))
+                {
+                    <tr>
+                        <td>
+                            @payment.Date.ToShortDateString()
+                        </td>
+                        <td>
+                            @payment.Amount.ToString("C")
+                        </td>
+                        <td class="no-print">
+                            <a class="btn btn-secondary" href="/app/payments/edit/@payment.Id">Edit Payment</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <EditForm Model="Payment" OnValidSubmit="SubmitPayment">
+        <div class="no-print form-row pt-5">
+            <div class="form-group col-3">
+                <label for="PaymentDate">Date:</label>
+                <InputDate class="form-control text-center" placeholder="Payment date..." id="PaymentDate" @bind-Value="Payment.Date" />
+            </div>
+            <div class="form-group col-3">
+                <label for="PaymentAmount">Amount</label>
+                <InputNumber class="form-control text-center" placeholder="Payment amount..." id="PaymentAmount" @bind-Value="Payment.Amount" />
+            </div>
+            <div class="form-group text-right mt-auto col">
+                <button class="btn btn-secondary" type="submit">Submit</button>
+            </div>
+        </div>
+    </EditForm>
+    <div class="text-right font-weight-bold">
+        Balance: @Account.Balance().ToString("C")
+    </div>
+    <div class="table-responsive mt-5 no-print">
+        <table class="table text-center">
+            <thead>
+                <tr>
+                    <th>
+                        Contract Ends
+                    </th>
+                    <th>
+                        Late Due
+                    </th>
+                    <th>
+                        Monthly Payments
+                    </th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        @Account.ExpirationDate().ToShortDateString()
+                    </td>
+                    <td>
+                        @Account.LateDue().ToString("C")
+                    </td>
+                    <td>
+                        @Account.MonthlyPayment.ToString("C")
+                    </td>
+                    <td>
+                        <div class="btn-group no-print" role="group">
+                            <button class="btn btn-secondary" type="button" @onclick="Print"><i class="mdi mdi-printer"></i> Print</button>
+                            <a class="btn btn-secondary" href="/app/papers/@Account.SaleId" target="_blank">View Papers</a>
+                            <a class="btn btn-secondary" href="/app/papers/edit/@Account.SaleId" target="_blank">Edit Papers</a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 }
 
 
@@ -17,10 +115,28 @@ else
     [Parameter]
     public int Id { get; set; }
     private Account Account { get; set; }
+    private Payment Payment { get; set; } = new Payment();
 
     protected override async Task OnInitializedAsync()
     {
         Account = await auth.Client.GetFromJsonAsync<Account>($"/api/account/{Id}");
+        if (Account != null)
+            Payment.Amount = Account.MonthlyPayment;
         await base.OnInitializedAsync();
+    }
+
+    private async Task SubmitPayment()
+    {
+        var response = await auth.Client.PostAsJsonAsync($"/api/account/payment/{Account.Id}", Payment);
+        if (response.IsSuccessStatusCode)
+        {
+            Payment.Id = int.Parse(await response.Content.ReadAsStringAsync());
+            Account.Payments.Add(Payment);
+        }
+    }
+
+    private async Task Print()
+    {
+        await js.InvokeVoidAsync("print");
     }
 }

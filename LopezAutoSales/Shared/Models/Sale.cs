@@ -107,7 +107,11 @@ namespace LopezAutoSales.Shared.Models
             return TotalDue() + FinanceCharge;
         }
 
-        [NotMapped]
-        public bool HasTrade { get; set; }
+        public string Buyers()
+        {
+            if (string.IsNullOrEmpty(CoBuyer))
+                return Buyer;
+            return $"{Buyer} & {CoBuyer}";
+        }
     }
 }

@@ -1,9 +1,13 @@
 ﻿@page "/app/payments"
 @attribute [Authorize(Roles = "Admin")]
-@inject AuthHttp auth 
+@inject AuthHttp auth
 
 <h1 class="text-center">Payments</h1>
 @if (Accounts == null)
+{
+    <p class="lead">Loading...</p>
+}
+else if (Accounts.Count == 0)
 {
     <p class="lead">There's currently no active accounts.</p>
 }
@@ -14,19 +18,19 @@ else
             <thead>
                 <tr>
                     <th>
-                        User
+                        Buyer(s)
                     </th>
                     <th>
-                        Vehicles
+                        Vehicle
                     </th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (Account account in Accounts)
                 {
-                    <tr class="@(account.HasContractExpired() ? "table-danger" : string.Empty)" >
+                    <tr class="@(account.HasContractExpired() ? "table-danger" : string.Empty)">
                         <td>
-                            @account.Sale.Buyer &Aacute; @account.Sale.CoBuyer
+                            @account.Sale.Buyers()
                         </td>
                         <td>
                             <a class="btn btn-secondary" href="/app/payments/@account.Id">

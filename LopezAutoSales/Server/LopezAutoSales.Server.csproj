@@ -32,6 +32,8 @@
     <Compile Remove="Migrations\20200722233749_Accounts.Designer.cs" />
     <Compile Remove="Migrations\20200728174218_AccountForeign.cs" />
     <Compile Remove="Migrations\20200728174218_AccountForeign.Designer.cs" />
+    <Compile Remove="Migrations\20200730164949_Liens2.cs" />
+    <Compile Remove="Migrations\20200730164949_Liens2.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

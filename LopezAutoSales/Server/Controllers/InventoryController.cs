@@ -69,52 +69,5 @@ namespace LopezAutoSales.Server.Controllers
             _context.SaveChanges();
             return Ok();
         }
-
-        [HttpPost("sell")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> SellVehicle(Sale sale)
-        {
-            if (!sale.HasLien)
-                sale.Lienholder = null;
-            if (!sale.HasTrade)
-                sale.TradeIn = null;
-            decimal due = sale.TotalDue();
-
-            if (due == 0)
-            {
-                if (sale.HasLien)
-                    ModelState.AddModelError(string.Empty, "Cannot have a lien on a paid vehicle.");
-                sale.Account = null;
-            }
-            else if (due < 0)
-                ModelState.AddModelError(string.Empty, "Total due cannot be less than 0.");
-            else
-                sale.Account.InitialDue = due;
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState.GetErrors());
-            Car car = await _context.Cars.Where(x => x.IsListed).Where(x => x.VIN == sale.Car.VIN).FirstOrDefaultAsync();
-            if (car != null)
-            {
-                sale.Car.Id = car.Id;
-                car.Update(sale.Car);
-                car.IsListed = false;
-                sale.Car = null;
-            }
-            if (sale.HasLien)
-            {
-                string normalized = sale.Lienholder.Name.ToUpper();
-                Lienholder lienholder = _context.Lienholders.Find(normalized);
-                if (lienholder != null)
-                {
-                    sale.LienholderNormalizedName = normalized;
-                    lienholder.Update(sale.Lienholder);
-                    sale.Lienholder = null;
-                }
-            }
-            _context.Sales.Add(sale);
-            _context.SaveChanges();
-            return Ok(sale.Id);
-        }
     }
 }

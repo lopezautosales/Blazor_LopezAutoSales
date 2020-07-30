@@ -22,7 +22,7 @@
     <div class="row">
         <div class="col-1 text-right">
             <div class="form-check">
-                <input class="form-check-input position-static" type="checkbox" style="width: 30px; height: 30px;" checked="@(Amount==0)">
+                <input class="form-check-input position-static" type="checkbox" style="width: 30px; height: 30px;" checked="@(!Amount.HasValue)">
             </div>
         </div>
         <div class="col-11" style="border-bottom: 2px dashed black; padding-bottom:.5em;">
@@ -33,7 +33,7 @@
     <div class="row">
         <div class="col-1 text-right">
             <div class="form-check">
-                <input class="form-check-input position-static" type="checkbox" style="width: 30px; height: 30px;" checked="@(Amount!=0)">
+                <input class="form-check-input position-static" type="checkbox" style="width: 30px; height: 30px;" checked="@Amount.HasValue">
             </div>
         </div>
         <div class="col-11">
@@ -53,7 +53,7 @@
     <div class="row">
         <div class="col-1 text-right">
             <div class="form-check">
-                <input class="form-check-input position-static" checked="@(Amount!=0)" type="checkbox">
+                <input class="form-check-input position-static" checked="@Amount.HasValue" type="checkbox">
             </div>
         </div>
         <div class="col-11">
@@ -149,5 +149,5 @@
     [Parameter]
     public Car Car { get; set; }
     [Parameter]
-    public int Amount { get; set; }
+    public int? Amount { get; set; }
 }

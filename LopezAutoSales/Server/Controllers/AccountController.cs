@@ -27,7 +27,7 @@ namespace LopezAutoSales.Server.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAccounts([FromQuery] bool showPaid = false)
         {
-            List<Account> accounts = await _context.Accounts.AsNoTracking().Where(x => showPaid || x.IsPaid).Include(x => x.Sale).ToListAsync();
+            List<Account> accounts = await _context.Accounts.AsNoTracking().Where(x => showPaid || !x.IsPaid).Include(x => x.Sale).ThenInclude(x => x.Car).ToListAsync();
             return Ok(accounts);
         }
 
@@ -44,7 +44,7 @@ namespace LopezAutoSales.Server.Controllers
                 if (userAccount == null)
                     return BadRequest(new string[] { "User is not authorized for viewing this account." });
             }
-            Account account = await _context.Accounts.AsNoTracking().Where(x => x.Id == id).Include(x => x.Payments).Include(x => x.Sale).FirstOrDefaultAsync();
+            Account account = await _context.Accounts.AsNoTracking().Where(x => x.Id == id).Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefaultAsync();
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
             return Ok(account);

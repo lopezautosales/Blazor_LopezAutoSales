@@ -3,6 +3,7 @@ using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -20,6 +21,13 @@ namespace LopezAutoSales.Server.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetSales()
+        {
+            List<Sale> sales = await _context.Sales.Include(x => x.Car).ToListAsync();
+            return Ok(sales);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSale(int id)
         {
@@ -27,6 +35,47 @@ namespace LopezAutoSales.Server.Controllers
             if (sale == null)
                 return BadRequest(new string[] { "Account was not found." });
             return Ok(sale);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SellVehicle(Sale sale)
+        {
+            decimal due = sale.TotalDue();
+            if (due == 0)
+            {
+                if (sale.HasLien)
+                    ModelState.AddModelError(string.Empty, "Cannot have a lien on a paid vehicle.");
+                sale.Account = null;
+            }
+            else if (due < 0)
+                ModelState.AddModelError(string.Empty, "Total due cannot be less than 0.");
+            else
+                sale.Account.InitialDue = due;
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.GetErrors());
+            Car car = await _context.Cars.Where(x => x.IsListed).Where(x => x.VIN == sale.Car.VIN).FirstOrDefaultAsync();
+            if (car != null)
+            {
+                sale.CarId = car.Id;
+                car.Update(sale.Car);
+                car.IsListed = false;
+                sale.Car = null;
+            }
+            if (sale.HasLien)
+            {
+                string normalized = sale.Lienholder.Name.ToUpper();
+                Lienholder lienholder = await _context.Lienholders.Where(x => x.NormalizedName == normalized).Include(x => x.Address).FirstOrDefaultAsync();
+                if (lienholder != null)
+                {
+                    sale.LienholderNormalizedName = normalized;
+                    lienholder.Update(sale.Lienholder);
+                    sale.Lienholder = null;
+                }
+            }
+            _context.Sales.Add(sale);
+            _context.SaveChanges();
+            return Ok(sale.Id);
         }
     }
 }

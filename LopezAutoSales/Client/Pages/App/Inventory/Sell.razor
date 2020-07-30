@@ -1,10 +1,10 @@
-﻿@page "/app/sell/{id:int}"
-@page "/app/sell"
+﻿@page "/app/inventory/sell/{id:int}"
+@page "/app/inventory/sell"
 @inject AuthHttp auth
 @inject CarManager carManager
 @inject VINDecoder decoder
 @inject NavigationManager navManager
-@attribute [Authorize(Roles = "Admin")]  
+@attribute [Authorize(Roles = "Admin")]
 
 <h1 class="text-center">Sales Agreement</h1>
 <EditForm Model="Sale" OnValidSubmit="CompleteSale">
@@ -108,11 +108,11 @@
         </div>
     </div>
     <p>
-        <button class="btn btn-secondary no-print" type="button" @onclick="() => Sale.HasTrade = !Sale.HasTrade">
-            Trade-in <Chevron Down="!Sale.HasTrade" />
+        <button class="btn btn-secondary no-print" type="button" @onclick="ToggleTrade">
+            Trade-in <Chevron Down="!HasTrade" />
         </button>
     </p>
-    @if (Sale.HasTrade)
+    @if (HasTrade)
     {
         <div class="card card-body">
             <div class="form-row">
@@ -173,7 +173,7 @@
                                 <InputNumber class="form-control text-center" id="SellingPrice" @bind-Value="Sale.SellingPrice" />
                             </td>
                         </tr>
-                        @if (Sale.HasTrade)
+                        @if (HasTrade)
                         {
                             <tr>
                                 <th scope="row">
@@ -212,7 +212,7 @@
                         </tr>
                         <tr>
                             <th scope="row">
-                                <InputCheckbox class="form-check-input" id="HasLien" @bind-Value="Sale.HasLien" />
+                                <input type="checkbox" class="form-check-input" id="HasLien" @onclick="ToggleLien" />
                                 <label class="form-check-label" for="HasLien">Lien Release</label>
                             </th>
                             <td>
@@ -333,27 +333,42 @@
     private Sale Sale { get; set; } = new Sale
     {
         Car = new Car(),
-        TradeIn = new Car(),
         Address = new Address(),
-        Lienholder = new Lienholder
-        {
-            Address = new Address()
-        },
         Account = new Account()
     };
+    private bool HasTrade { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         if (Id.HasValue)
+        {
             Sale.Car = await carManager.GetCarAsync(auth.Client, Id.Value);
-        else
-            Sale.Car = new Car();
+            Sale.SellingPrice = Sale.Car.ListPrice;
+        }
         await base.OnInitializedAsync();
+    }
+
+    private void ToggleTrade()
+    {
+        HasTrade = !HasTrade;
+        if (HasTrade)
+            Sale.TradeIn = new Car();
+        else
+            Sale.TradeIn = null;
+    }
+
+    private void ToggleLien()
+    {
+        Sale.HasLien = !Sale.HasLien;
+        if (Sale.HasLien)
+            Sale.Lienholder = new Lienholder { Address = Dealership.Address };
+        else
+            Sale.Lienholder = null;
     }
 
     private async Task CompleteSale()
     {
-        var response = await auth.Client.PostAsJsonAsync<Sale>("/api/inventory/sell", Sale);
+        var response = await auth.Client.PostAsJsonAsync<Sale>("/api/sale", Sale);
         if (response.IsSuccessStatusCode)
         {
             string id = await response.Content.ReadAsStringAsync();
@@ -361,7 +376,7 @@
         }
         else
         {
-            Errors.AddRange(await response.Content.ReadFromJsonAsync<IEnumerable<string>>());
+            Errors.AddRange(await response.Content.ReadFromJsonAsync<List<string>>());
         }
     }
 }

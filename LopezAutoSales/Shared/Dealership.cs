@@ -20,5 +20,9 @@ namespace LopezAutoSales.Shared
         public const decimal TagAmount = 10;
         public const decimal LienAmount = 20;
         public const decimal APR = 0;
+        public const int LateDays = 15;
+        public const decimal LateFee = 15m;
+        public const decimal LateRate = 5m;
+        public const decimal LateAPR = 10;
     }
 }
