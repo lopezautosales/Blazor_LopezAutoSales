@@ -16,7 +16,7 @@ else
 {
     <EditForm Model="Car" OnValidSubmit="EditVehicle">
         <DataAnnotationsValidator />
-        <ErrorDisplay @bind-Errors="Errors" />
+        <ErrorDisplay Errors="Errors" />
         <div class="form-group">
             <label>VIN</label>
             <div class="input-group">

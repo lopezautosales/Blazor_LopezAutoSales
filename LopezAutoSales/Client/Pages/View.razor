@@ -44,6 +44,54 @@ else
             </tbody>
         </table>
     </div>
+    <div class="lead">
+        @Car.TitleStatus() Title
+    </div>
+    @if (Car.Pictures.Count > 0)
+    {
+        <div id="carousel" class="carousel slide ml-auto mr-auto no-print" data-ride="carousel">
+            <ol class="carousel-indicators">
+                @for (int i = 0; i < Car.Pictures.Count; i++)
+                {
+                    <li data-target="#carousel" data-slide-to="@i" class="@(i == 0 ? "active" : string.Empty)"></li>
+                }
+            </ol>
+            <div class="carousel-inner">
+                @foreach (Picture p in Car.Pictures.OrderByDescending(x => x.IsThumbnail))
+                {
+                    <div class="carousel-item @(p.IsThumbnail ? "active": string.Empty)">
+                        <img src="@p.URL" class="d-block w-100">
+                    </div>
+                }
+            </div>
+            @if (Car.Pictures.Count > 1)
+            {
+                <a class="carousel-control-prev" href="#carousel" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#carousel" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                </a>
+            }
+        </div>
+    }
+    <div class="lead">Data provided by the NHTSA:</div>
+    @foreach (CarProperty property in Car.Data.Results.OrderBy(x => x.Variable))
+    {
+        @if (!string.IsNullOrEmpty(property.Value) && property.Value != "Not Applicable")
+        {
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">@property.Variable</h5>
+                    <div class="card-text">
+                        @property.Value
+                    </div>
+                </div>
+            </div>
+        }
+    }
 }
 
 @code {
@@ -54,6 +102,8 @@ else
     protected override async Task OnInitializedAsync()
     {
         Car = await carManager.GetCarAsync(http, Id);
+        if (Car != null)
+            Car.DeserializeJson();
         await base.OnInitializedAsync();
     }
 }

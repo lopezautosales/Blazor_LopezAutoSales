@@ -9,7 +9,7 @@
 <h1 class="text-center">Add Vehicle</h1>
 <EditForm Model="Car" OnValidSubmit="SubmitVehicle">
     <DataAnnotationsValidator />
-    <ErrorDisplay @bind-Errors="Errors" />
+    <ErrorDisplay Errors="Errors" />
     <div class="form-group">
         <label>VIN</label>
         <div class="input-group">
