@@ -7,12 +7,22 @@
 {
     <p class="lead">Loading...</p>
 }
-else if (Accounts.Count == 0)
+else if (Results.Count() == 0)
 {
     <p class="lead">There's currently no active accounts.</p>
 }
 else
 {
+    <div class="row">
+        <div class="form-group col">
+            <label for="Buyer">Search Buyers:</label>
+            <input type="text" class="form-control" id="Buyer" @bind-value="Buyer" />
+        </div>
+        <div class="form-group col">
+            <label for="Vehicle">Search Vehicles:</label>
+            <input type="text" class="form-control" id="Vehicle" @bind-value="Vehicle" />
+        </div>
+    </div>
     <div class="table-responsive">
         <table class="table text-center">
             <thead>
@@ -43,13 +53,34 @@ else
         </table>
     </div>
 }
-
 @code {
-    public List<Account> Accounts { get; set; }
+    public IEnumerable<Account> Accounts { get; set; }
+    private IEnumerable<Account> Results { get; set; }
+    private string buyer;
+    private string Buyer { get { return buyer; } set { buyer = value; Search(); } }
+    private string vehicle;
+    private string Vehicle { get { return vehicle; } set { vehicle = value; Search(); } }
 
     protected override async Task OnInitializedAsync()
     {
-        Accounts = await auth.Client.GetFromJsonAsync<List<Account>>("/api/account");
+        Accounts = Results = await auth.Client.GetFromJsonAsync<IEnumerable<Account>>("/api/account");
         await base.OnInitializedAsync();
+    }
+
+    private void Search()
+    {
+        IEnumerable<Account> search = Results;
+        string query;
+        if (!string.IsNullOrEmpty(Buyer))
+        {
+            query = Buyer.ToUpper();
+            search = search.Where(x => x.Sale.Buyer.ToUpper().Contains(query) || (!string.IsNullOrEmpty(x.Sale.CoBuyer) && x.Sale.CoBuyer.ToUpper().Contains(query)));
+        }
+        if (!string.IsNullOrEmpty(Vehicle))
+        {
+            query = Vehicle.ToUpper();
+            search = search.Where(x => x.Sale.Car.Name.ToUpper().Contains(query));
+        }
+        Accounts = search;
     }
 }
