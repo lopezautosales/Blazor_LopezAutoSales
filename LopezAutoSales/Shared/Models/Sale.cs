@@ -15,7 +15,6 @@ namespace LopezAutoSales.Shared.Models
         public Car Car { get; set; }
         public int? TradeInId { get; set; }
         public Car TradeIn { get; set; }
-        public int? AccountId { get; set; }
         public Account Account { get; set; }
 
         public DateTime Date { get; set; } = DateTime.Now;

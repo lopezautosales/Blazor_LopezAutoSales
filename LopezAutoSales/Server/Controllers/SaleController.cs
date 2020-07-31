@@ -37,13 +37,12 @@ namespace LopezAutoSales.Server.Controllers
             return Ok(sale);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> EditSale([FromRoute] int id, [FromBody] Sale data)
+        [HttpPut]
+        public IActionResult EditSale([FromBody] Sale data)
         {
-            SetDue(data);
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
-            //create new lienholder entry if different
+            SetLien(data);
             _context.Update(data);
             _context.SaveChanges();
             return Ok();
@@ -52,46 +51,24 @@ namespace LopezAutoSales.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> SellVehicle(Sale sale)
         {
-            SetDue(sale);
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
             Car car = await _context.Cars.Where(x => x.IsListed).Where(x => x.VIN == sale.Car.VIN).FirstOrDefaultAsync();
             if (car != null)
             {
                 sale.CarId = car.Id;
-                car.Update(sale.Car);
                 car.IsListed = false;
-                sale.Car = null;
             }
-            if (sale.HasLien)
-            {
-                string normalized = sale.Lienholder.Name.ToUpper();
-                Lienholder lienholder = await _context.Lienholders.Where(x => x.NormalizedName == normalized).Include(x => x.Address).FirstOrDefaultAsync();
-                if (lienholder != null)
-                {
-                    sale.LienholderNormalizedName = normalized;
-                    lienholder.Update(sale.Lienholder);
-                    sale.Lienholder = null;
-                }
-            }
+            SetLien(sale);
             _context.Sales.Add(sale);
             _context.SaveChanges();
             return Ok(sale.Id);
         }
 
-        private void SetDue(Sale sale)
+        private void SetLien(Sale sale)
         {
-            decimal due = sale.TotalPayments();
-            if (due == 0)
-            {
-                if (sale.HasLien)
-                    ModelState.AddModelError(string.Empty, "Cannot have a lien on a paid vehicle.");
-                sale.Account = null;
-            }
-            else if (due < 0)
-                ModelState.AddModelError(string.Empty, "Total due cannot be less than 0.");
-            else
-                sale.Account.InitialDue = due;
+            if (sale.HasLien)
+                sale.LienholderNormalizedName = sale.Lienholder.Name.ToUpper();
         }
     }
 }

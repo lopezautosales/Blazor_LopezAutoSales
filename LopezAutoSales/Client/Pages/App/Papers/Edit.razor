@@ -12,7 +12,7 @@
 }
 else
 {
-    <EditForm Model="Sale" OnValidSubmit="EditSale">
+    <EditForm Model="Sale" OnSubmit="EditSale">
         <DataAnnotationsValidator />
         <ErrorDisplay Errors="Errors" />
         <div class="form-row">
@@ -217,7 +217,7 @@ else
                             </tr>
                             <tr>
                                 <th scope="row">
-                                    <input type="checkbox" class="form-check-input" id="HasLien" @onclick="ToggleLien" />
+                                    <InputCheckbox class="form-check-input" id="HasLien" @bind-Value="Sale.HasLien" />
                                     <label class="form-check-label" for="HasLien">Lien Release</label>
                                 </th>
                                 <td>
@@ -337,38 +337,72 @@ else
     public int Id { get; set; }
     private List<string> Errors { get; set; } = new List<string>();
     private Sale Sale { get; set; }
-    private Sale Original { get; set; }
     private bool HasTrade { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        Sale = Original = await auth.Client.GetFromJsonAsync<Sale>($"/api/sale/{Id}");
+        Sale = await auth.Client.GetFromJsonAsync<Sale>($"/api/sale/{Id}");
         if (Sale != null)
+        {
             HasTrade = Sale.TradeInId.HasValue;
+            if (!HasTrade)
+                Sale.TradeIn = new Car();
+            if (Sale.Account == null)
+                Sale.Account = new Account();
+            if (!Sale.HasLien)
+            {
+                Sale.Lienholder = new Lienholder { Address = Dealership.Address };
+                Sale.LienAmount = Dealership.LienAmount;
+            }
+            if(!Sale.HasTag)
+                Sale.TagAmount = Dealership.TagAmount;
+        }
         await base.OnInitializedAsync();
     }
 
     private void ToggleTrade()
     {
         HasTrade = !HasTrade;
-        if (HasTrade)
-            Sale.TradeIn = Original.TradeIn;
-        else
-            Sale.TradeIn = null;
+        if (HasTrade == false)
+            Sale.TradeIn.BoughtPrice = null;
     }
 
-    private void ToggleLien()
+    private async Task EditSale(EditContext e)
     {
-        Sale.HasLien = !Sale.HasLien;
-        if (Sale.HasLien)
-            Sale.Lienholder = Original.Lienholder;
-        else
+        Errors.Clear();
+        if (!Sale.HasLien)
+        {
+            Sale.LienholderNormalizedName = null;
             Sale.Lienholder = null;
-    }
+        }
+        if (!HasTrade)
+        {
+            Sale.TradeInId = null;
+            Sale.TradeIn = null;
+        }
+        decimal due = Sale.TotalDue();
+        if (due < 0)
+        {
+            Errors.Add("Total due cannot be less than 0");
+            return;
+        }
+        else if (due == 0)
+        {
+            if (Sale.HasLien)
+            {
+                Errors.Add("Cannot have a lien on a paid sale.");
+                return;
+            }
+            Sale.Account = null;
+        }
+        else
+        {
+            Sale.Account.InitialDue = due;
+        }
 
-    private async Task EditSale()
-    {
-        var response = await auth.Client.PutAsJsonAsync<Sale>($"/api/sale/{Id}", Sale);
+        if (!e.Validate())
+            return;
+        var response = await auth.Client.PutAsJsonAsync<Sale>($"/api/sale", Sale);
         if (response.IsSuccessStatusCode)
         {
             navManager.NavigateTo($"/app/papers/{Id}");

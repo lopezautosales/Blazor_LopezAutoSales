@@ -7,7 +7,7 @@
 @attribute [Authorize(Roles = "Admin")]
 
 <h1 class="text-center">Sales Agreement</h1>
-<EditForm Model="Sale" OnValidSubmit="CompleteSale">
+<EditForm Model="Sale" OnSubmit="CompleteSale">
     <DataAnnotationsValidator />
     <ErrorDisplay Errors="Errors" />
     <div class="form-row">
@@ -212,7 +212,7 @@
                         </tr>
                         <tr>
                             <th scope="row">
-                                <input type="checkbox" class="form-check-input" id="HasLien" @onclick="ToggleLien" />
+                                <InputCheckbox class="form-check-input" id="HasLien" @bind-Value="Sale.HasLien" />
                                 <label class="form-check-label" for="HasLien">Lien Release</label>
                             </th>
                             <td>
@@ -333,8 +333,10 @@
     private Sale Sale { get; set; } = new Sale
     {
         Car = new Car(),
+        TradeIn = new Car(),
         Address = new Address(),
-        Account = new Account()
+        Account = new Account(),
+        Lienholder = new Lienholder { Address = Dealership.Address }
     };
     private bool HasTrade { get; set; }
 
@@ -342,8 +344,12 @@
     {
         if (Id.HasValue)
         {
-            Sale.Car = await carManager.GetCarAsync(auth.Client, Id.Value);
-            Sale.SellingPrice = Sale.Car.ListPrice;
+            Car car = await carManager.GetCarAsync(auth.Client, Id.Value);
+            if(car != null)
+            {
+                Sale.SellingPrice = car.ListPrice;
+                Sale.Car = car;
+            }
         }
         await base.OnInitializedAsync();
     }
@@ -351,23 +357,37 @@
     private void ToggleTrade()
     {
         HasTrade = !HasTrade;
-        if (HasTrade)
-            Sale.TradeIn = new Car();
-        else
-            Sale.TradeIn = null;
+        if (HasTrade == false)
+            Sale.TradeIn.BoughtPrice = null;
     }
 
-    private void ToggleLien()
+    private async Task CompleteSale(EditContext e)
     {
-        Sale.HasLien = !Sale.HasLien;
-        if (Sale.HasLien)
-            Sale.Lienholder = new Lienholder { Address = Dealership.Address };
-        else
+        Errors.Clear();
+        if (!Sale.HasLien)
             Sale.Lienholder = null;
-    }
+        if (!HasTrade)
+            Sale.TradeIn = null;
+        decimal due = Sale.TotalDue();
+        if (due < 0)
+        {
+            Errors.Add("Total due cannot be less than 0");
+            return;
+        }
+        else if (due == 0)
+        {
+            if (Sale.HasLien)
+            {
+                Errors.Add("Cannot have a lien on a paid sale.");
+                return;
+            }
+            Sale.Account = null;
+        }
+        else
+            Sale.Account.InitialDue = due;
 
-    private async Task CompleteSale()
-    {
+        if (!e.Validate())
+            return;
         var response = await auth.Client.PostAsJsonAsync<Sale>("/api/sale", Sale);
         if (response.IsSuccessStatusCode)
         {

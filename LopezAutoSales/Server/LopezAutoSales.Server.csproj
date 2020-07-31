@@ -34,6 +34,10 @@
     <Compile Remove="Migrations\20200728174218_AccountForeign.Designer.cs" />
     <Compile Remove="Migrations\20200730164949_Liens2.cs" />
     <Compile Remove="Migrations\20200730164949_Liens2.Designer.cs" />
+    <Compile Remove="Migrations\20200731194518_FK.cs" />
+    <Compile Remove="Migrations\20200731194518_FK.Designer.cs" />
+    <Compile Remove="Migrations\20200731195732_FK.cs" />
+    <Compile Remove="Migrations\20200731195732_FK.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

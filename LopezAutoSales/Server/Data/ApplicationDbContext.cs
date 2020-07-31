@@ -30,7 +30,6 @@ namespace LopezAutoSales.Server.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<Account>().HasOne(x => x.Sale).WithOne(x => x.Account).HasForeignKey<Account>(x => x.SaleId);
             builder.Entity<IdentityRole>().HasData(new IdentityRole
             {
                 Id = "2301D884-221A-4E7D-B509-0113DCC043E1",
