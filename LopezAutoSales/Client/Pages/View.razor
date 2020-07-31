@@ -78,20 +78,22 @@ else
         </div>
     }
     <div class="lead">Data provided by the NHTSA:</div>
-    @foreach (CarProperty property in Car.Data.Results.OrderBy(x => x.Variable))
-    {
-        @if (!string.IsNullOrEmpty(property.Value) && property.Value != "Not Applicable")
+    <div class="text-center">
+        @foreach (CarProperty property in Car.Data.Results.OrderBy(x => x.Variable))
         {
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">@property.Variable</h5>
-                    <div class="card-text">
-                        @property.Value
+            @if (!string.IsNullOrEmpty(property.Value) && property.Value != "Not Applicable")
+            {
+                <div class="card d-inline-block m-1">
+                    <div class="card-body">
+                        <h5 class="card-title">@property.Variable</h5>
+                        <div class="card-text">
+                            @property.Value
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
         }
-    }
+    </div>
 }
 
 @code {

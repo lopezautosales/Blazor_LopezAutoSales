@@ -1,0 +1,381 @@
+﻿@page "/app/papers/edit/{id:int}"
+@attribute [Authorize(Roles = "Admin")]
+@inject AuthHttp auth
+@inject CarManager carManager
+@inject VINDecoder decoder
+@inject NavigationManager navManager
+
+<h1 class="text-center">Edit Sale</h1>
+@if (Sale == null)
+{
+    <p class="lead">Loading...</p>
+}
+else
+{
+    <EditForm Model="Sale" OnValidSubmit="EditSale">
+        <DataAnnotationsValidator />
+        <ErrorDisplay Errors="Errors" />
+        <div class="form-row">
+            <div class="col-3 ml-auto">
+                <div class="form-group">
+                    <label for="Date">Date:</label>
+                    <InputDate id="Date" class="form-control text-center" @bind-Value="Sale.Date" />
+                </div>
+            </div>
+        </div>
+        <!--Buyer information-->
+        <div class="form-row">
+            <div class="col-4">
+                <div class="form-group">
+                    <label for="Buyer">Buyer:</label>
+                    <InputText class="form-control" id="Buyer" @bind-Value="Sale.Buyer" />
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="form-group">
+                    <label for="CoBuyer">CoBuyer:</label>
+                    <InputText class="form-control" id="CoBuyer" @bind-Value="Sale.CoBuyer" />
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="form-group">
+                    <label for="Phone">Phone:</label>
+                    <input type="tel" class="form-control" id="Phone" @bind-value="Sale.Phone" />
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="form-group">
+                    <label for="Street">Street:</label>
+                    <InputText class="form-control" id="Street" @bind-Value="Sale.Address.Street" />
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="form-group">
+                    <label for="City">City:</label>
+                    <InputText class="form-control" id="City" @bind-Value="Sale.Address.City" />
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="form-group">
+                    <label for="State">State:</label>
+                    <InputText class="form-control" id="State" @bind-Value="Sale.Address.State" />
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="form-group">
+                    <label for="ZIP">ZIP:</label>
+                    <InputText class="form-control" id="ZIP" @bind-Value="Sale.Address.ZIP" />
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="form-row">
+            <div class="col-1">
+                <div class="form-group">
+                    <label for="Year">Year:</label>
+                    <InputNumber class="form-control" id="Year" @bind-Value="Sale.Car.Year" />
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="form-group">
+                    <label for="Make">Make:</label>
+                    <InputText class="form-control" id="Make" @bind-Value="Sale.Car.Make" />
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="form-group">
+                    <label for="Model">Model:</label>
+                    <InputText class="form-control" id="Model" @bind-Value="Sale.Car.Model" />
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="form-group">
+                    <label for="Mileage">Mileage:</label>
+                    <InputNumber class="form-control" id="Mileage" @bind-Value="Sale.Car.Mileage" />
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="form-group">
+                    <label for="Color">Color:</label>
+                    <InputText class="form-control" id="Color" @bind-Value="Sale.Car.Color" />
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="form-group">
+                    <label for="VIN">VIN:</label>
+                    <div class="input-group">
+                        <InputText class="form-control" id="VIN" @bind-Value="Sale.Car.VIN" />
+                        <div class="input-group-append no-print">
+                            <button type="button" class="btn btn-secondary" @onclick="async () => await decoder.TryDecodeAsync(Sale.Car)">Verify</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p>
+            <button class="btn btn-secondary no-print" type="button" @onclick="ToggleTrade">
+                Trade-in <Chevron Down="!HasTrade" />
+            </button>
+        </p>
+        @if (HasTrade)
+        {
+            <div class="card card-body">
+                <div class="form-row">
+                    <div class="col-1">
+                        <div class="form-group">
+                            <label for="TradeYear">Year:</label>
+                            <InputNumber class="form-control" id="TradeYear" @bind-Value="Sale.TradeIn.Year" />
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="form-group">
+                            <label for="TradeMake">Make:</label>
+                            <InputText class="form-control" id="TradeMake" @bind-Value="Sale.TradeIn.Make" />
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="form-group">
+                            <label for="TradeModel">Model:</label>
+                            <InputText class="form-control" id="TradeModel" @bind-Value="Sale.TradeIn.Model" />
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="form-group">
+                            <label for="TradeMileage">Mileage:</label>
+                            <InputNumber class="form-control" id="TradeMileage" @bind-Value="Sale.TradeIn.Mileage" />
+                        </div>
+                    </div>
+                    <div class="col-1">
+                        <div class="form-group">
+                            <label for="TradeColor">Color:</label>
+                            <InputText class="form-control" id="TradeColor" @bind-Value="Sale.TradeIn.Color" />
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label for="TradeVIN">VIN:</label>
+                            <div class="input-group">
+                                <InputText class="form-control" id="TradeVIN" @bind-Value="Sale.TradeIn.VIN" />
+                                <div class="input-group-append no-print">
+                                    <button type="button" class="btn btn-secondary" @onclick="async () => await decoder.TryDecodeAsync(Sale.TradeIn)">Verify</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="form-row mt-3">
+            <div class="col-6">
+                <div class="table-responsive">
+                    <table class="table text-center">
+                        <tbody>
+                            <tr>
+                                <th scope="row">
+                                    <label for="SellingPrice">Price:</label>
+                                </th>
+                                <td>
+                                    <InputNumber class="form-control text-center" id="SellingPrice" @bind-Value="Sale.SellingPrice" />
+                                </td>
+                            </tr>
+                            @if (HasTrade)
+                            {
+                                <tr>
+                                    <th scope="row">
+                                        <label for="TradeValue">Trade Value:</label>
+                                    </th>
+                                    <td class="text-center">
+                                        <InputNumber class="form-control text-center" id="TradeValue" @bind-Value="Sale.TradeIn.BoughtPrice" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">
+                                        Trade Difference:
+                                    </th>
+                                    <td>
+                                        <input type="number" class="form-control text-center" readonly value="@Sale.TradeDifference()" />
+                                    </td>
+                                </tr>
+                            }
+                            <tr>
+                                <th scope="row">
+                                    <InputCheckbox class="form-check-input" id="IsOutOfState" @bind-Value="Sale.IsOutOfState" />
+                                    <label class="form-check-label" for="IsOutOfState">Out of State</label>
+                                    <div class="input-group w-75 mx-auto">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text">Tax:</div>
+                                        </div>
+                                        <InputNumber class="form-control text-center" @bind-Value="Sale.TaxRate" />
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">%</div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <td>
+                                    <input type="number" class="form-control text-center" readonly value="@Sale.TaxAmount()" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <input type="checkbox" class="form-check-input" id="HasLien" @onclick="ToggleLien" />
+                                    <label class="form-check-label" for="HasLien">Lien Release</label>
+                                </th>
+                                <td>
+                                    <InputNumber class="form-control text-center" @bind-Value="Sale.LienAmount" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <InputCheckbox class="form-check-input" id="HasTag" @bind-Value="Sale.HasTag" />
+                                    <label class="form-check-label" for="HasTag">Temporary Tag</label>
+                                </th>
+                                <td>
+                                    <InputNumber class="form-control text-center" @bind-Value="Sale.TagAmount" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="Subtotal">Subtotal:</label>
+                                </th>
+                                <td>
+                                    <input type="number" class="form-control text-center" value="@Sale.Subtotal()" id="Subtotal" readonly />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="DownPayment">Down Payment:</label>
+                                </th>
+                                <td class="text-center">
+                                    <InputNumber class="form-control text-center" id="DownPayment" @bind-Value="Sale.DownPayment" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="TotalDue">Total Due</label>
+                                </th>
+                                <td>
+                                    <input type="number" class="form-control text-center" value="@Sale.TotalDue()" id="TotalDue" readonly />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-3 ml-auto">
+                <div class="form-group no-print">
+                    <label for="BoughtPrice">Bought Price:</label>
+                    <InputNumber class="form-control" id="BoughtPrice" @bind-Value="Sale.Car.BoughtPrice" />
+                </div>
+                <div class="form-group">
+                    <label for="Warranty">Warranty:</label>
+                    <InputNumber class="form-control" @bind-Value="Sale.Warranty" />
+                </div>
+                @if (Sale.TotalDue() > 0)
+                {
+                    <div class="form-group">
+                        <label for="MonthlyPayment">Monthly Payment:</label>
+                        <InputNumber class="form-control" id="MonthlyPayment" @bind-Value="Sale.Account.MonthlyPayment" />
+                    </div>
+                    <div class="form-group">
+                        <label for="FinanceCharge">Finance Charge:</label>
+                        <InputNumber class="form-control" id="FinanceCharge" @bind-Value="Sale.FinanceCharge" />
+                    </div>
+                    <div class="form-group">
+                        <label for="TotalPayments">Total Payments:</label>
+                        <input type="number" readonly class="form-control" id="TotalPayments" value="@Sale.TotalPayments()" />
+                    </div>
+                    <div class="form-group">
+                        <label for="MonthsToPay">Months to Pay:</label>
+                        <input type="number" readonly class="form-control" id="MonthsToPay" value="@Sale.MonthsToPay()" />
+                    </div>
+                }
+            </div>
+        </div>
+        @if (Sale.HasLien)
+        {
+            <div class="form-row">
+                <div class="col-3">
+                    <div class="form-group">
+                        <label for="LienholderName">Lienholder Name:</label>
+                        <InputText class="form-control" id="LienholderName" @bind-Value="Sale.Lienholder.Name" />
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="form-group">
+                        <label for="LienholderStreet">Street:</label>
+                        <InputText class="form-control" id="LienholderStreet" @bind-Value="Sale.Lienholder.Address.Street" />
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="form-group">
+                        <label for="LienholderCity">City:</label>
+                        <InputText class="form-control" id="LienholderCity" @bind-Value="Sale.Lienholder.Address.City" />
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="form-group">
+                        <label for="LienholderState">State:</label>
+                        <InputText class="form-control" id="LienholderState" @bind-Value="Sale.Lienholder.Address.State" />
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="form-group">
+                        <label for="LienholderZIP">ZIP:</label>
+                        <InputText class="form-control" id="LienholderZIP" @bind-Value="Sale.Lienholder.Address.ZIP" />
+                    </div>
+                </div>
+            </div>
+        }
+        <p class="text-right">
+            <button type="submit" class="btn btn-secondary no-print">Complete Sale</button>
+        </p>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private List<string> Errors { get; set; } = new List<string>();
+    private Sale Sale { get; set; }
+    private Sale Original { get; set; }
+    private bool HasTrade { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Sale = Original = await auth.Client.GetFromJsonAsync<Sale>($"/api/sale/{Id}");
+        if (Sale != null)
+            HasTrade = Sale.TradeInId.HasValue;
+        await base.OnInitializedAsync();
+    }
+
+    private void ToggleTrade()
+    {
+        HasTrade = !HasTrade;
+        if (HasTrade)
+            Sale.TradeIn = Original.TradeIn;
+        else
+            Sale.TradeIn = null;
+    }
+
+    private void ToggleLien()
+    {
+        Sale.HasLien = !Sale.HasLien;
+        if (Sale.HasLien)
+            Sale.Lienholder = Original.Lienholder;
+        else
+            Sale.Lienholder = null;
+    }
+
+    private async Task EditSale()
+    {
+        var response = await auth.Client.PutAsJsonAsync<Sale>($"/api/sale/{Id}", Sale);
+        if (response.IsSuccessStatusCode)
+        {
+            navManager.NavigateTo($"/app/papers/{Id}");
+        }
+        else
+        {
+            Errors.AddRange(await response.Content.ReadFromJsonAsync<List<string>>());
+        }
+    }
+}

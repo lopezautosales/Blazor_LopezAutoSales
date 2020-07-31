@@ -120,7 +120,7 @@ else
             nav.NavigateTo($"/app/inventory");
         }
         else
-            await js.InvokeVoidAsync("blazorAlert", response.ReasonPhrase);
+            await js.InvokeVoidAsync("alert", response.ReasonPhrase);
     }
 
     private async Task HandleSelection(IFileListEntry[] files)

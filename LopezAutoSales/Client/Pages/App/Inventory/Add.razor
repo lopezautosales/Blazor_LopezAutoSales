@@ -77,6 +77,6 @@
             nav.NavigateTo($"/app/inventory/edit/{id}");
         }
         else
-            await js.InvokeVoidAsync("blazorAlert", response.ReasonPhrase);
+            await js.InvokeVoidAsync("alert", response.ReasonPhrase);
     }
 }

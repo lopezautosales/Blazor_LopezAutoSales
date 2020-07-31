@@ -25,12 +25,12 @@ namespace LopezAutoSales.Client
             if (DecodedVIN != car.VIN)
                 JsonData = await _client.GetStringAsync(string.Format(Path, car.VIN));
             else
-                await _js.InvokeVoidAsync("blazorAlert", $"{car.VIN} has already been decoded.");
+                await _js.InvokeVoidAsync("alert", $"{car.VIN} has already been decoded.");
             car.JsonData = JsonData;
             if (!TrySetVariables(car))
-                await _js.InvokeVoidAsync("blazorAlert", $"{car.VIN} could not be decoded.");
+                await _js.InvokeVoidAsync("alert", $"{car.VIN} could not be decoded.");
             else if (DecodedVIN != car.VIN)
-                await _js.InvokeVoidAsync("blazorAlert", $"{car.VIN} was successfully decoded.");
+                await _js.InvokeVoidAsync("alert", $"{car.VIN} was successfully decoded.");
             DecodedVIN = car.VIN;
         }
 

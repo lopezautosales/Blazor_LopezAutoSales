@@ -37,21 +37,22 @@ namespace LopezAutoSales.Server.Controllers
             return Ok(sale);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditSale([FromRoute] int id, [FromBody] Sale data)
+        {
+            SetDue(data);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.GetErrors());
+            //create new lienholder entry if different
+            _context.Update(data);
+            _context.SaveChanges();
+            return Ok();
+        }
+
         [HttpPost]
         public async Task<IActionResult> SellVehicle(Sale sale)
         {
-            decimal due = sale.TotalDue();
-            if (due == 0)
-            {
-                if (sale.HasLien)
-                    ModelState.AddModelError(string.Empty, "Cannot have a lien on a paid vehicle.");
-                sale.Account = null;
-            }
-            else if (due < 0)
-                ModelState.AddModelError(string.Empty, "Total due cannot be less than 0.");
-            else
-                sale.Account.InitialDue = due;
-
+            SetDue(sale);
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
             Car car = await _context.Cars.Where(x => x.IsListed).Where(x => x.VIN == sale.Car.VIN).FirstOrDefaultAsync();
@@ -76,6 +77,21 @@ namespace LopezAutoSales.Server.Controllers
             _context.Sales.Add(sale);
             _context.SaveChanges();
             return Ok(sale.Id);
+        }
+
+        private void SetDue(Sale sale)
+        {
+            decimal due = sale.TotalPayments();
+            if (due == 0)
+            {
+                if (sale.HasLien)
+                    ModelState.AddModelError(string.Empty, "Cannot have a lien on a paid vehicle.");
+                sale.Account = null;
+            }
+            else if (due < 0)
+                ModelState.AddModelError(string.Empty, "Total due cannot be less than 0.");
+            else
+                sale.Account.InitialDue = due;
         }
     }
 }
