@@ -31,7 +31,7 @@ else
                     <th scope="col">
                         Amount
                     </th>
-                    <th class="no-print"></th>
+                    <th class="no-print" scope="col"></th>
                 </tr>
             </thead>
             <tbody>
@@ -45,7 +45,48 @@ else
                             @payment.Amount.ToString("C")
                         </td>
                         <td class="no-print">
-                            <a class="btn btn-secondary" href="/app/payments/edit/@payment.Id">Edit Payment</a>
+                            @{ string id = $"editPaymentModal{payment.Id}"; }
+                            <button class="btn btn-secondary" data-toggle="modal" data-target="#@id">Edit</button>
+                            <div class="modal fade" id="@id" tabindex="-1" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Edit Payment</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <i class="mdi mdi-close"></i>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form-group">
+                                                <label>Original Payment Date:</label>
+                                                <input type="datetime" value="@payment.Date" readonly class="form-control" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Original Payment Amount:</label>
+                                                <input type="number" value="@payment.Amount" readonly class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form-group">
+                                                <label>New Payment Date:</label>
+                                                <input type="date" @bind-value="EditPayment.Date" class="form-control" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label>New Payment Amount:</label>
+                                                <input type="number" @bind-value="EditPayment.Amount" class="form-control" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Reason:</label>
+                                                <input type="text" @bind-value="EditPayment.Reason" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-danger" @onclick="async () => await Delete(payment, id)">Delete</button>
+                                            <button type="button" class="btn btn-success" @onclick="async () => await Save(payment, id)">Save</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 }
@@ -116,22 +157,52 @@ else
     public int Id { get; set; }
     private Account Account { get; set; }
     private Payment Payment { get; set; } = new Payment();
+    private Payment EditPayment { get; set; } = new Payment();
 
     protected override async Task OnInitializedAsync()
     {
         Account = await auth.Client.GetFromJsonAsync<Account>($"/api/account/{Id}");
         if (Account != null)
-            Payment.Amount = Account.MonthlyPayment;
+        {
+            Payment.AccountId = Account.Id;
+            Payment.Amount = EditPayment.Amount = Account.MonthlyPayment;
+        }
         await base.OnInitializedAsync();
     }
 
     private async Task SubmitPayment()
     {
-        var response = await auth.Client.PostAsJsonAsync($"/api/account/payment/{Account.Id}", Payment);
+        var response = await auth.Client.PostAsJsonAsync("/api/account/payment", Payment);
         if (response.IsSuccessStatusCode)
         {
             Payment.Id = int.Parse(await response.Content.ReadAsStringAsync());
             Account.Payments.Add(Payment);
+        }
+    }
+
+    private async Task Delete(Payment payment, string id)
+    {
+        EditPayment.Id = payment.Id;
+        EditPayment.AccountId = payment.AccountId;
+        var response = await auth.Client.PostAsJsonAsync($"/api/account/payment/delete", EditPayment);
+        if (response.IsSuccessStatusCode)
+        {
+            Account.Payments.Remove(payment);
+            await js.InvokeVoidAsync("modal", id, "hide");
+        }
+    }
+
+    private async Task Save(Payment payment, string id)
+    {
+        EditPayment.Id = payment.Id;
+        EditPayment.AccountId = payment.AccountId;
+        var response = await auth.Client.PutAsJsonAsync($"/api/account/payment", EditPayment);
+        if (response.IsSuccessStatusCode)
+        {
+            payment.Date = EditPayment.Date;
+            payment.Amount = EditPayment.Amount;
+            EditPayment = new Payment { Amount = Account.MonthlyPayment };
+            await js.InvokeVoidAsync("modal", id, "hide");
         }
     }
 
