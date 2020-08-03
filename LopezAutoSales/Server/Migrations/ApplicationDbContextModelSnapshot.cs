@@ -486,7 +486,7 @@ namespace LopezAutoSales.Server.Migrations
                         new
                         {
                             Id = "2301D884-221A-4E7D-B509-0113DCC043E1",
-                            ConcurrencyStamp = "6e734a4f-0014-41c9-a199-b5f746db0666",
+                            ConcurrencyStamp = "3f845eda-caba-4efe-aa5b-b34fe7e13735",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });

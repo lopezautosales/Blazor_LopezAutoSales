@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LopezAutoSales.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200717063655_Initial")]
+    [Migration("20200803215014_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -168,22 +168,49 @@ namespace LopezAutoSales.Server.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("LopezAutoSales.Server.Models.UserSale", b =>
+            modelBuilder.Entity("LopezAutoSales.Server.Models.UserAccount", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("SaleId")
+                    b.Property<int>("AccountId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DateSet")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("UserId", "SaleId");
+                    b.HasKey("UserId", "AccountId");
 
-                    b.HasIndex("SaleId");
+                    b.HasIndex("AccountId");
 
-                    b.ToTable("UserSales");
+                    b.ToTable("UserAccounts");
+                });
+
+            modelBuilder.Entity("LopezAutoSales.Shared.Models.Account", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<decimal>("InitialDue")
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MonthlyPayment")
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<int>("SaleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SaleId")
+                        .IsUnique();
+
+                    b.ToTable("Accounts");
                 });
 
             modelBuilder.Entity("LopezAutoSales.Shared.Models.Address", b =>
@@ -236,7 +263,7 @@ namespace LopezAutoSales.Server.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<decimal?>("BoughtPrice")
-                        .HasColumnType("money");
+                        .HasColumnType("decimal(9,2)");
 
                     b.Property<string>("Color")
                         .IsRequired()
@@ -255,7 +282,7 @@ namespace LopezAutoSales.Server.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("ListPrice")
-                        .HasColumnType("money");
+                        .HasColumnType("decimal(9,2)");
 
                     b.Property<string>("Make")
                         .IsRequired()
@@ -284,27 +311,26 @@ namespace LopezAutoSales.Server.Migrations
 
             modelBuilder.Entity("LopezAutoSales.Shared.Models.Lienholder", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<string>("NormalizedName")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("AddressId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("NormalizedName");
 
                     b.HasIndex("AddressId");
 
-                    b.ToTable("Lienholder");
+                    b.ToTable("Lienholders");
 
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            NormalizedName = "LOPEZ AUTO SALES, INC.",
                             AddressId = 1,
                             Name = "Lopez Auto Sales, Inc."
                         });
@@ -317,18 +343,18 @@ namespace LopezAutoSales.Server.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Amount")
-                        .HasColumnType("money");
+                        .HasColumnType("decimal(9,2)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("SaleId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("SaleId");
+                    b.HasIndex("AccountId");
 
                     b.ToTable("Payments");
                 });
@@ -367,6 +393,7 @@ namespace LopezAutoSales.Server.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Buyer")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("CarId")
@@ -379,7 +406,13 @@ namespace LopezAutoSales.Server.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("DownPayment")
-                        .HasColumnType("money");
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<decimal>("FinanceCharge")
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<bool>("HasLien")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("HasTag")
                         .HasColumnType("bit");
@@ -387,28 +420,29 @@ namespace LopezAutoSales.Server.Migrations
                     b.Property<bool>("IsOutOfState")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsPaid")
-                        .HasColumnType("bit");
+                    b.Property<decimal>("LienAmount")
+                        .HasColumnType("decimal(9,2)");
 
-                    b.Property<int?>("LienholderId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("MonthlyPayment")
-                        .HasColumnType("money");
+                    b.Property<string>("LienholderNormalizedName")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("SellingPrice")
-                        .HasColumnType("money");
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<decimal>("TagAmount")
+                        .HasColumnType("decimal(9,2)");
 
                     b.Property<decimal>("TaxRate")
-                        .HasColumnType("decimal(5,5)");
+                        .HasColumnType("decimal(5,3)");
 
-                    b.Property<string>("TradeInId")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("TradeInId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("TradeInId1")
+                    b.Property<int?>("Warranty")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -417,9 +451,9 @@ namespace LopezAutoSales.Server.Migrations
 
                     b.HasIndex("CarId");
 
-                    b.HasIndex("LienholderId");
+                    b.HasIndex("LienholderNormalizedName");
 
-                    b.HasIndex("TradeInId1");
+                    b.HasIndex("TradeInId");
 
                     b.ToTable("Sales");
                 });
@@ -454,7 +488,7 @@ namespace LopezAutoSales.Server.Migrations
                         new
                         {
                             Id = "2301D884-221A-4E7D-B509-0113DCC043E1",
-                            ConcurrencyStamp = "82d4f977-f5ff-4419-b7aa-bb8091b1514d",
+                            ConcurrencyStamp = "3f845eda-caba-4efe-aa5b-b34fe7e13735",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
@@ -568,17 +602,26 @@ namespace LopezAutoSales.Server.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("LopezAutoSales.Server.Models.UserSale", b =>
+            modelBuilder.Entity("LopezAutoSales.Server.Models.UserAccount", b =>
                 {
-                    b.HasOne("LopezAutoSales.Shared.Models.Sale", "Sale")
+                    b.HasOne("LopezAutoSales.Shared.Models.Account", "Account")
                         .WithMany()
-                        .HasForeignKey("SaleId")
+                        .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("LopezAutoSales.Server.Models.ApplicationUser", "User")
                         .WithMany("Sales")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("LopezAutoSales.Shared.Models.Account", b =>
+                {
+                    b.HasOne("LopezAutoSales.Shared.Models.Sale", "Sale")
+                        .WithOne("Account")
+                        .HasForeignKey("LopezAutoSales.Shared.Models.Account", "SaleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -594,9 +637,9 @@ namespace LopezAutoSales.Server.Migrations
 
             modelBuilder.Entity("LopezAutoSales.Shared.Models.Payment", b =>
                 {
-                    b.HasOne("LopezAutoSales.Shared.Models.Sale", "Sale")
+                    b.HasOne("LopezAutoSales.Shared.Models.Account", "Account")
                         .WithMany("Payments")
-                        .HasForeignKey("SaleId")
+                        .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -626,11 +669,11 @@ namespace LopezAutoSales.Server.Migrations
 
                     b.HasOne("LopezAutoSales.Shared.Models.Lienholder", "Lienholder")
                         .WithMany()
-                        .HasForeignKey("LienholderId");
+                        .HasForeignKey("LienholderNormalizedName");
 
                     b.HasOne("LopezAutoSales.Shared.Models.Car", "TradeIn")
                         .WithMany()
-                        .HasForeignKey("TradeInId1");
+                        .HasForeignKey("TradeInId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

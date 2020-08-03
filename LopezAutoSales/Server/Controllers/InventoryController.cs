@@ -1,8 +1,10 @@
-﻿using LopezAutoSales.Server.Data;
+﻿using IdentityServer4.Extensions;
+using LopezAutoSales.Server.Data;
 using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +17,12 @@ namespace LopezAutoSales.Server.Controllers
     public class InventoryController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<InventoryController> _logger;
 
-        public InventoryController(ApplicationDbContext context)
+        public InventoryController(ApplicationDbContext context, ILogger<InventoryController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -47,7 +51,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
-
+            _logger.LogInformation($"{User.GetDisplayName()} ADDED {car.Name} FOR {car.ListPrice}");
             car.IsListed = true;
             car.Date = DateTime.Now;
             _context.Cars.Add(car);
@@ -62,6 +66,7 @@ namespace LopezAutoSales.Server.Controllers
             Car car = await _context.Cars.FirstOrDefaultAsync(x => x.Id == id);
             if (car == null)
                 return BadRequest();
+            _logger.LogInformation($"{User.GetDisplayName()} EDITED {car.Name} FOR {car.ListPrice}");
             car.Update(data);
             car.IsSalvage = data.IsSalvage;
             car.JsonData = data.JsonData;

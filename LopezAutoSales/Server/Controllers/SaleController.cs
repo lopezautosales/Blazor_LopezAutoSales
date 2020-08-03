@@ -1,8 +1,10 @@
-﻿using LopezAutoSales.Server.Data;
+﻿using IdentityServer4.Extensions;
+using LopezAutoSales.Server.Data;
 using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,10 +17,12 @@ namespace LopezAutoSales.Server.Controllers
     public class SaleController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<SaleController> _logger;
 
-        public SaleController(ApplicationDbContext context)
+        public SaleController(ApplicationDbContext context, ILogger<SaleController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -42,6 +46,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
+            _logger.LogInformation($"{User.GetDisplayName()} EDITED SALE {data.Id} {data.Buyers()} {data.Car.Name}");
             SetLien(data);
             _context.Update(data);
             _context.SaveChanges();
@@ -62,6 +67,7 @@ namespace LopezAutoSales.Server.Controllers
             SetLien(sale);
             _context.Sales.Add(sale);
             _context.SaveChanges();
+            _logger.LogInformation($"{User.GetDisplayName()} SALE {sale.Id} {sale.Buyers()} {sale.Car.Name}");
             return Ok(sale.Id);
         }
 

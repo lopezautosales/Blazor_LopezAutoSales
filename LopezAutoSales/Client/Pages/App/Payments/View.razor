@@ -164,7 +164,8 @@ else
         Account = await auth.Client.GetFromJsonAsync<Account>($"/api/account/{Id}");
         if (Account != null)
         {
-            Payment.AccountId = Account.Id;
+            Payment.AccountId = Id;
+            EditPayment.AccountId = Id;
             Payment.Amount = EditPayment.Amount = Account.MonthlyPayment;
         }
         await base.OnInitializedAsync();
@@ -183,7 +184,6 @@ else
     private async Task Delete(Payment payment, string id)
     {
         EditPayment.Id = payment.Id;
-        EditPayment.AccountId = payment.AccountId;
         var response = await auth.Client.PostAsJsonAsync($"/api/account/payment/delete", EditPayment);
         if (response.IsSuccessStatusCode)
         {
@@ -195,7 +195,6 @@ else
     private async Task Save(Payment payment, string id)
     {
         EditPayment.Id = payment.Id;
-        EditPayment.AccountId = payment.AccountId;
         var response = await auth.Client.PutAsJsonAsync($"/api/account/payment", EditPayment);
         if (response.IsSuccessStatusCode)
         {

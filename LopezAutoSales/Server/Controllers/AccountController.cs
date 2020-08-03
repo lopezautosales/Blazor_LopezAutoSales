@@ -4,6 +4,7 @@ using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,10 +18,12 @@ namespace LopezAutoSales.Server.Controllers
     public class AccountController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(ApplicationDbContext context)
+        public AccountController(ApplicationDbContext context, ILogger<AccountController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -54,13 +57,14 @@ namespace LopezAutoSales.Server.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddPayment([FromBody] Payment data)
         {
-            Account account = await _context.Accounts.Where(x => x.Id == data.AccountId).Include(x => x.Payments).FirstOrDefaultAsync();
+            Account account = await _context.Accounts.Where(x => x.Id == data.AccountId).Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefaultAsync();
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
             if (data.Date.Date == DateTime.Today)
                 data.Date = DateTime.Now;
-
             account.IsPaid = account.Balance() <= 0;
+
+            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name}]: PAYMENT {data.Date} {data.Amount}");
             _context.Payments.Add(data);
             _context.SaveChanges();
             return Ok(data.Id);
@@ -70,18 +74,17 @@ namespace LopezAutoSales.Server.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EditPayment(Payment data)
         {
-            Account account = await _context.Accounts.Where(x => x.Id == data.AccountId).Include(x => x.Payments).FirstOrDefaultAsync();
+            Account account = await _context.Accounts.Where(x => x.Id == data.AccountId).Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefaultAsync();
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
-            Payment payment = account.Payments.FirstOrDefault(x => x.Id == data.Id);
+            Payment payment = account.Payments.First(x => x.Id == data.Id);
 
             if (data.Date.Date == DateTime.Today)
                 data.Date = DateTime.Now;
-
-            account.IsPaid = account.Balance() <= 0;
+            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name}]: ORIGINAL {payment.Date} {payment.Amount} EDIT {data.Date} {data.Amount}");
             payment.Amount = data.Amount;
             payment.Date = data.Date;
-            //log reason
+            account.IsPaid = account.Balance() <= 0;
             _context.Accounts.Update(account);
             _context.SaveChanges();
             return Ok();
@@ -94,11 +97,11 @@ namespace LopezAutoSales.Server.Controllers
             Account account = await _context.Accounts.Where(x => x.Id == data.AccountId).Include(x => x.Payments).FirstOrDefaultAsync();
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
-            Payment payment = account.Payments.FirstOrDefault(x => x.Id == data.Id);
-
-            account.IsPaid = account.Balance() <= payment.Amount;
-            //log reason
-            _context.Payments.Remove(payment);
+            Payment payment = account.Payments.First(x => x.Id == data.Id);
+            account.Payments.Remove(payment);
+            account.IsPaid = account.Balance() <= 0;
+            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name}]: PAYMENT REMOVED {payment.Date} {payment.Amount}");
+            _context.Accounts.Update(account);
             _context.SaveChanges();
             return Ok();
         }

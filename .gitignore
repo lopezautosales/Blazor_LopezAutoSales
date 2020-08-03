@@ -353,3 +353,4 @@ MigrationBackup/
 .ionide/
 
 LopezAutoSales/Server/wwwroot/Images
+LopezAutoSales/Server/appsettings.Production.json
