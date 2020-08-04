@@ -14,6 +14,9 @@
 }
 else
 {
+    <div class="text-right my-2">
+        <a class="btn btn-secondary" href="/warranty/@Car.Id">Warranty</a>
+    </div>
     <EditForm Model="Car" OnValidSubmit="EditVehicle">
         <DataAnnotationsValidator />
         <ErrorDisplay Errors="Errors" />
@@ -81,17 +84,19 @@ else
             }
         </label>
     </div>
-    <div class="card-deck">
+    <div class="row">
         @foreach (Picture picture in Car.Pictures)
         {
-            <div class="card card-picture">
-                <img src="@picture.URL" class="card-img-top" />
-                <div class="card-body text-center">
-                    @if (!picture.IsThumbnail)
-                    {
-                        <button class="btn card-link" @onclick="async () => await SetThumbnail(picture)">Set Thumbnail</button>
-                    }
-                    <button class="btn card-link text-danger" @onclick="async () => await DeletePicture(picture)">Delete</button>
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mt-2">
+                <div class="card card-picture">
+                    <img src="@picture.URL" class="card-img-top" />
+                    <div class="card-body text-center">
+                        @if (!picture.IsThumbnail)
+                        {
+                            <button class="btn card-link" @onclick="async () => await SetThumbnail(picture)">Set Thumbnail</button>
+                        }
+                        <button class="btn card-link text-danger" @onclick="async () => await DeletePicture(picture)">Delete</button>
+                    </div>
                 </div>
             </div>
         }

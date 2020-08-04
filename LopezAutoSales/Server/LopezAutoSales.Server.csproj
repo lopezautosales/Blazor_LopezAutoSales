@@ -1,91 +1,91 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <UserSecretsId>LopezAutoSales.Server-7DB5AABA-F32C-4043-B375-7E5DE2AC90F0</UserSecretsId>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netcoreapp3.1</TargetFramework>
+		<StartupObject></StartupObject>
+		<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Services\**" />
-    <Content Remove="Services\**" />
-    <EmbeddedResource Remove="Services\**" />
-    <None Remove="Services\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Services\**" />
+		<Content Remove="Services\**" />
+		<EmbeddedResource Remove="Services\**" />
+		<None Remove="Services\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="Migrations\20200714023313_Initial.cs" />
-    <Compile Remove="Migrations\20200714023313_Initial.Designer.cs" />
-    <Compile Remove="Migrations\20200714024113_Initial.cs" />
-    <Compile Remove="Migrations\20200714024113_Initial.Designer.cs" />
-    <Compile Remove="Migrations\20200716183458_Initial.cs" />
-    <Compile Remove="Migrations\20200716183458_Initial.Designer.cs" />
-    <Compile Remove="Migrations\20200717014819_Picture.cs" />
-    <Compile Remove="Migrations\20200717014819_Picture.Designer.cs" />
-    <Compile Remove="Migrations\20200717043625_Builder.cs" />
-    <Compile Remove="Migrations\20200717043625_Builder.Designer.cs" />
-    <Compile Remove="Migrations\20200717060555_IntId.cs" />
-    <Compile Remove="Migrations\20200717060555_IntId.Designer.cs" />
-    <Compile Remove="Migrations\20200717060644_IntId.cs" />
-    <Compile Remove="Migrations\20200717060644_IntId.Designer.cs" />
-    <Compile Remove="Migrations\20200717060742_IntId.cs" />
-    <Compile Remove="Migrations\20200717060742_IntId.Designer.cs" />
-    <Compile Remove="Migrations\20200717063500_needs.cs" />
-    <Compile Remove="Migrations\20200717063500_needs.Designer.cs" />
-    <Compile Remove="Migrations\20200717063614_PictureId.cs" />
-    <Compile Remove="Migrations\20200717063614_PictureId.Designer.cs" />
-    <Compile Remove="Migrations\20200722233434_Accounts.cs" />
-    <Compile Remove="Migrations\20200722233434_Accounts.Designer.cs" />
-    <Compile Remove="Migrations\20200722233749_Accounts.cs" />
-    <Compile Remove="Migrations\20200722233749_Accounts.Designer.cs" />
-    <Compile Remove="Migrations\20200728174218_AccountForeign.cs" />
-    <Compile Remove="Migrations\20200728174218_AccountForeign.Designer.cs" />
-    <Compile Remove="Migrations\20200730164949_Liens2.cs" />
-    <Compile Remove="Migrations\20200730164949_Liens2.Designer.cs" />
-    <Compile Remove="Migrations\20200731194518_FK.cs" />
-    <Compile Remove="Migrations\20200731194518_FK.Designer.cs" />
-    <Compile Remove="Migrations\20200731195732_FK.cs" />
-    <Compile Remove="Migrations\20200731195732_FK.Designer.cs" />
-    <Compile Remove="Migrations\20200803220137_Test.cs" />
-    <Compile Remove="Migrations\20200803220137_Test.Designer.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Migrations\20200714023313_Initial.cs" />
+		<Compile Remove="Migrations\20200714023313_Initial.Designer.cs" />
+		<Compile Remove="Migrations\20200714024113_Initial.cs" />
+		<Compile Remove="Migrations\20200714024113_Initial.Designer.cs" />
+		<Compile Remove="Migrations\20200716183458_Initial.cs" />
+		<Compile Remove="Migrations\20200716183458_Initial.Designer.cs" />
+		<Compile Remove="Migrations\20200717014819_Picture.cs" />
+		<Compile Remove="Migrations\20200717014819_Picture.Designer.cs" />
+		<Compile Remove="Migrations\20200717043625_Builder.cs" />
+		<Compile Remove="Migrations\20200717043625_Builder.Designer.cs" />
+		<Compile Remove="Migrations\20200717060555_IntId.cs" />
+		<Compile Remove="Migrations\20200717060555_IntId.Designer.cs" />
+		<Compile Remove="Migrations\20200717060644_IntId.cs" />
+		<Compile Remove="Migrations\20200717060644_IntId.Designer.cs" />
+		<Compile Remove="Migrations\20200717060742_IntId.cs" />
+		<Compile Remove="Migrations\20200717060742_IntId.Designer.cs" />
+		<Compile Remove="Migrations\20200717063500_needs.cs" />
+		<Compile Remove="Migrations\20200717063500_needs.Designer.cs" />
+		<Compile Remove="Migrations\20200717063614_PictureId.cs" />
+		<Compile Remove="Migrations\20200717063614_PictureId.Designer.cs" />
+		<Compile Remove="Migrations\20200722233434_Accounts.cs" />
+		<Compile Remove="Migrations\20200722233434_Accounts.Designer.cs" />
+		<Compile Remove="Migrations\20200722233749_Accounts.cs" />
+		<Compile Remove="Migrations\20200722233749_Accounts.Designer.cs" />
+		<Compile Remove="Migrations\20200728174218_AccountForeign.cs" />
+		<Compile Remove="Migrations\20200728174218_AccountForeign.Designer.cs" />
+		<Compile Remove="Migrations\20200730164949_Liens2.cs" />
+		<Compile Remove="Migrations\20200730164949_Liens2.Designer.cs" />
+		<Compile Remove="Migrations\20200731194518_FK.cs" />
+		<Compile Remove="Migrations\20200731194518_FK.Designer.cs" />
+		<Compile Remove="Migrations\20200731195732_FK.cs" />
+		<Compile Remove="Migrations\20200731195732_FK.Designer.cs" />
+		<Compile Remove="Migrations\20200803220137_Test.cs" />
+		<Compile Remove="Migrations\20200803220137_Test.Designer.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Remove="compilerconfig.json" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Remove="compilerconfig.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="compilerconfig.json" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="compilerconfig.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="3.2.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.6" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.3" />
-    <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-rc0003" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="3.2.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.6" />
+		<PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-rc0003" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Client\LopezAutoSales.Client.csproj" />
-    <ProjectReference Include="..\Shared\LopezAutoSales.Shared.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Client\LopezAutoSales.Client.csproj" />
+		<ProjectReference Include="..\Shared\LopezAutoSales.Shared.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.6" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.6" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="3.1.6" />
-    <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="3.1.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.6">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.6" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.6" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="3.1.6" />
+		<PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="3.1.6" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.6" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.6">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Logs\" />
-    <Folder Include="wwwroot\Images\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="Logs\" />
+		<Folder Include="wwwroot\Images\" />
+	</ItemGroup>
 
 </Project>

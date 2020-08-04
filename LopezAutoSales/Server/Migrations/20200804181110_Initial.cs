@@ -396,7 +396,7 @@ namespace LopezAutoSales.Server.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[] { "2301D884-221A-4E7D-B509-0113DCC043E1", "3f845eda-caba-4efe-aa5b-b34fe7e13735", "Admin", "ADMIN" });
+                values: new object[] { "2301D884-221A-4E7D-B509-0113DCC043E1", "f962c3f4-bd92-4a50-aaed-f87f73c199ac", "Admin", "ADMIN" });
 
             migrationBuilder.InsertData(
                 table: "Lienholders",

@@ -15,23 +15,25 @@ else if (Cars.Count == 0)
 else
 {
     <p class="lead">Click on the vehicles to see more information.</p>
-    <div class="card-deck">
+    <div class="row">
         @foreach (Car car in Cars)
         {
-            <div class="card card-picture">
-                @if (car.Pictures.Any(x => x.IsThumbnail))
-                {
-                    <img src="@car.Pictures.First(x => x.IsThumbnail).ThumbnailURL()" class="card-img-top" />
-                }
-                <div class="card-body">
-                    <h5 class="card-title">@car.Name</h5>
-                    <p class="card-text">
-                        @car.ListPrice.ToString("C") <br />
-                        @car.MileageString()
-                    </p>
-                </div>
-                <div class="text-right mb-3 mr-3">
-                    <a href="/view/@car.Id" @onclick="() => SetData(car)" class="card-link">View</a>
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mt-2">
+                <div class="card card-picture">
+                    @if (car.Pictures.Any(x => x.IsThumbnail))
+                    {
+                        <img src="@car.Pictures.First(x => x.IsThumbnail).ThumbnailURL()" class="card-img-top" />
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@car.Name</h5>
+                        <p class="card-text">
+                            @car.ListPrice.ToString("C") <br />
+                            @car.MileageString()
+                        </p>
+                    </div>
+                    <div class="text-right mb-3 mr-3">
+                        <a href="/view/@car.Id" @onclick="() => SetData(car)" class="card-link">View</a>
+                    </div>
                 </div>
             </div>
         }

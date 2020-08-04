@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LopezAutoSales.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200803215014_Initial")]
+    [Migration("20200804181110_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -488,7 +488,7 @@ namespace LopezAutoSales.Server.Migrations
                         new
                         {
                             Id = "2301D884-221A-4E7D-B509-0113DCC043E1",
-                            ConcurrencyStamp = "3f845eda-caba-4efe-aa5b-b34fe7e13735",
+                            ConcurrencyStamp = "f962c3f4-bd92-4a50-aaed-f87f73c199ac",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });

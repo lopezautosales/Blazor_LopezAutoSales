@@ -7,7 +7,7 @@ namespace LopezAutoSales.Shared
         public const string Name = "Lopez Auto Sales, Inc.";
         public static Address Address = new Address
         {
-            Street = "710 Lantern Lane",
+            Street = "515 Albert St",
             City = "Emporia",
             State = "Kansas",
             ZIP = "66801"
