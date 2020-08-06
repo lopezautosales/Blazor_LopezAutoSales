@@ -1,29 +1,20 @@
 ﻿<nav class="navbar sticky-top navbar-expand-lg navbar-light bg-gradient-primary">
     <div class="container">
-        <a class="navbar-brand font-weight-bold" href="/">Lopez Auto Sales</a>
+        <a class="navbar-brand font-weight-bold" href="/app">Lopez Auto Sales</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
             <i class="mdi mdi-menu"></i>
         </button>
         <div class="collapse navbar-collapse" id="navbarTop">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All"><i class="mdi mdi-home"></i> Home</NavLink>
+                    <NavLink class="nav-link" href="/app/inventory" Match="NavLinkMatch.Prefix"><i class="mdi mdi-car"></i> Inventory</NavLink>
                 </li>
                 <li class="nav-item">
-                    <NavLink class="nav-link" href="/about" Match="NavLinkMatch.Prefix"><i class="mdi mdi-information-outline"></i> About</NavLink>
+                    <NavLink class="nav-link" href="/app/payments" Match="NavLinkMatch.Prefix"><i class="mdi mdi-cash"></i> Payments</NavLink>
                 </li>
-                <AuthorizeView Roles="Admin">
-                    <li class="nav-item dropdown">
-                        <NavLink class="nav-link dropdown-toggle" Match="NavLinkMatch.Prefix" href="/app" id="appDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="mdi mdi-clipboard"></i> App
-                        </NavLink>
-                        <div class="dropdown-menu" aria-labelledby="appDropdown">
-                            <NavLink Match="NavLinkMatch.Prefix" class="dropdown-item" href="/app/payments">Payments</NavLink>
-                            <NavLink Match="NavLinkMatch.Prefix" class="dropdown-item" href="/app/papers">Papers</NavLink>
-                            <NavLink Match="NavLinkMatch.Prefix" class="dropdown-item" href="/app/inventory">Inventory</NavLink>
-                        </div>
-                    </li>
-                </AuthorizeView>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/app/papers" Match="NavLinkMatch.Prefix"><i class="mdi mdi-file"></i> Papers</NavLink>
+                </li>
                 <LoginDisplay />
             </ul>
         </div>

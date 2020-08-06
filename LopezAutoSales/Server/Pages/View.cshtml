@@ -1,8 +1,10 @@
-﻿@page "/view/{id:int}"
-@inject HttpClient http
-@inject CarManager carManager
+﻿@page "{id:int}"
+@model LopezAutoSales.Server.Pages.ViewModel
+@{
+    ViewData["Title"] = "View";
+}
 
-@if (Car == null)
+@if (Model.Car == null)
 {
     <p class="lead">Could not load the vehicle.</p>
 }
@@ -29,42 +31,42 @@ else
             <tbody>
                 <tr class="h5">
                     <td>
-                        @Car.ListPrice.ToString("C")
+                        @Model.Car.ListPrice.ToString("C")
                     </td>
                     <td>
-                        @Car.Name
+                        @Model.Car.Name
                     </td>
                     <td>
-                        @Car.MileageString()
+                        @Model.Car.MileageString()
                     </td>
                     <td>
-                        @Car.VIN
+                        @Model.Car.VIN
                     </td>
                 </tr>
             </tbody>
         </table>
     </div>
     <div class="lead">
-        @Car.TitleStatus() Title
+        @Model.Car.TitleStatus() Title
     </div>
-    @if (Car.Pictures.Count > 0)
+    @if (Model.Car.Pictures.Count > 0)
     {
         <div id="carousel" class="carousel slide ml-auto mr-auto no-print" data-ride="carousel">
             <ol class="carousel-indicators">
-                @for (int i = 0; i < Car.Pictures.Count; i++)
+                @for (int i = 0; i < Model.Car.Pictures.Count; i++)
                 {
                     <li data-target="#carousel" data-slide-to="@i" class="@(i == 0 ? "active" : string.Empty)"></li>
                 }
             </ol>
             <div class="carousel-inner">
-                @foreach (Picture p in Car.Pictures.OrderByDescending(x => x.IsThumbnail))
+                @foreach (Picture p in Model.Car.Pictures.OrderByDescending(x => x.IsThumbnail))
                 {
                     <div class="carousel-item @(p.IsThumbnail ? "active": string.Empty)">
                         <img src="@p.URL" class="d-block w-100">
                     </div>
                 }
             </div>
-            @if (Car.Pictures.Count > 1)
+            @if (Model.Car.Pictures.Count > 1)
             {
                 <a class="carousel-control-prev" href="#carousel" role="button" data-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -79,7 +81,7 @@ else
     }
     <div class="lead">Data provided by the NHTSA:</div>
     <div class="text-center">
-        @foreach (CarProperty property in Car.Data.Results.OrderBy(x => x.Variable))
+        @foreach (CarProperty property in Model.Car.Data.Results.OrderBy(x => x.Variable))
         {
             @if (!string.IsNullOrEmpty(property.Value) && property.Value != "Not Applicable")
             {
@@ -94,18 +96,4 @@ else
             }
         }
     </div>
-}
-
-@code {
-    [Parameter]
-    public int Id { get; set; }
-    private Car Car { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        Car = await carManager.GetCarAsync(http, Id);
-        if (Car != null)
-            Car.DeserializeJson();
-        await base.OnInitializedAsync();
-    }
 }

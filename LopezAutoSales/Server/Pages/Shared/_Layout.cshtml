@@ -1,12 +1,11 @@
-﻿@using LopezAutoSales.Shared
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html class="h-100">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>@ViewBag.Title</title>
+    <title>@ViewBag.Title - Lopez Auto Sales</title>
+    <meta name="theme-color" content="#02bbee" />
     <link href="~/css/bootstrap.min.css" rel="stylesheet" />
     <link href="~/lib/css/materialdesignicons.min.css" rel="stylesheet" />
     <link href="~/css/app.css" rel="stylesheet" />
@@ -21,6 +20,18 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarTop">
                 <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="mdi mdi-car"></i> Inventory</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about"><i class="mdi mdi-information"></i> About</a>
+                    </li>
+                    @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/app"><i class="mdi mdi-clipboard"></i> App</a>
+                        </li>
+                    }
                     <partial name="_LoginPartial" />
                 </ul>
             </div>
@@ -29,21 +40,9 @@
     <div role="main" class="container">
         @RenderBody()
     </div>
-    <footer class="mt-auto">
-        <hr />
-        <address class="text-center">
-            <strong>@Dealership.Name</strong><br />
-            <a class="text-decoration-none text-dark" href="https://goo.gl/maps/YZoFvQTUptU8cASW8" target="_blank">
-                @Dealership.Address.Street
-            </a><br />
-            @Dealership.Address.Area()<br />
-            <a class="text-decoration-none text-dark" href="tel:16202086250">(620)208-6250</a><br />
-            <a class="text-decoration-none text-dark" href="mailto:lopezauto@outlook.com">lopezauto@outlook.com</a>
-        </address>
-    </footer>
+    <component type="typeof(Client.Shared.Footer)" render-mode="Static"/>
     <script src="~/lib/dist/js/jquery.slim.min.js"></script>
     <script src="~/lib/dist/js/bootstrap.bundle.min.js"></script>
-    @RenderSection("Scripts", false);
+    @RenderSection("Scripts", false)
 </body>
-
 </html>

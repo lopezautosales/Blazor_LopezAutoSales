@@ -43,7 +43,8 @@ namespace LopezAutoSales.Shared.Models
 
         public void DeserializeJson()
         {
-            Data = JsonSerializer.Deserialize<CarData>(JsonData);
+            if (!string.IsNullOrEmpty(JsonData))
+                Data = JsonSerializer.Deserialize<CarData>(JsonData);
         }
 
         public void Update(Car car)
@@ -53,6 +54,16 @@ namespace LopezAutoSales.Shared.Models
             Model = car.Model;
             Mileage = car.Mileage;
             Color = car.Color;
+        }
+
+        public string MileageString()
+        {
+            return Mileage.HasValue ? Mileage.Value.ToString("N0") : "Exempt";
+        }
+
+        public string TitleStatus()
+        {
+            return IsSalvage ? "Rebuilt Salvage" : "Clean";
         }
     }
 }
