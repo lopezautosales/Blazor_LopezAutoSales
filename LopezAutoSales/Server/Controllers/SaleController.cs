@@ -46,7 +46,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
-            _logger.LogInformation($"{User.GetDisplayName()} EDITED SALE {data.Id} {data.Buyers()} {data.Car.Name}");
+            _logger.LogInformation($"{User.GetDisplayName()} EDITED SALE {data.Id} {data.Buyers()} {data.Car.Name()}");
             SetLien(data);
             _context.Update(data);
             _context.SaveChanges();
@@ -67,7 +67,7 @@ namespace LopezAutoSales.Server.Controllers
             SetLien(sale);
             _context.Sales.Add(sale);
             _context.SaveChanges();
-            _logger.LogInformation($"{User.GetDisplayName()} SALE {sale.Id} {sale.Buyers()} {sale.Car.Name}");
+            _logger.LogInformation($"{User.GetDisplayName()} SALE {sale.Id} {sale.Buyers()} {sale.Car.Name()}");
             return Ok(sale.Id);
         }
 

@@ -7,7 +7,7 @@
 <AuthorizeView>
     <Authorized>
         <li class="nav-item">
-            <a class="nav-link" href="authentication/profile"><i class="mdi mdi-account"></i> @context.User.Identity.Name</a>
+            <a class="nav-link" href="/authentication/profile"><i class="mdi mdi-account"></i> @context.User.Identity.Name</a>
         </li>
         <li class="nav-item">
             <button class="btn nav-link" @onclick="BeginSignOut"><i class="mdi mdi-logout"></i> Logout</button>
@@ -15,10 +15,10 @@
     </Authorized>
     <NotAuthorized>
         <li class="nav-item">
-            <a class="nav-link" href="authentication/register"><i class="mdi mdi-account-plus"></i> Register</a>
+            <a class="nav-link" href="/authentication/register"><i class="mdi mdi-account-plus"></i> Register</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="authentication/login"><i class="mdi mdi-login"></i> Login</a>
+            <a class="nav-link" href="/authentication/login"><i class="mdi mdi-login"></i> Login</a>
         </li>
     </NotAuthorized>
 </AuthorizeView>
@@ -27,6 +27,6 @@
     private async Task BeginSignOut(MouseEventArgs args)
     {
         await SignOutManager.SetSignOutState();
-        Navigation.NavigateTo("authentication/logout");
+        Navigation.NavigateTo("/authentication/logout");
     }
 }

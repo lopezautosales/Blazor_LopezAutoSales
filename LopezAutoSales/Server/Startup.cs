@@ -1,3 +1,4 @@
+using IdentityServer4.Services;
 using LopezAutoSales.Server.Data;
 using LopezAutoSales.Server.Models;
 using LopezAutoSales.Shared;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -32,8 +34,9 @@ namespace LopezAutoSales.Server
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddDefaultIdentity<ApplicationUser>()
-                .AddRoles<IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddDefaultUI()
+                .AddDefaultTokenProviders()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddIdentityServer()

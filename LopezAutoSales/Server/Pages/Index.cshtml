@@ -1,4 +1,4 @@
-﻿@page
+﻿@page "/"
 @model IndexModel
 @{
     ViewBag.Title = "Inventory";
@@ -24,13 +24,13 @@ else
                 <div class="card card-picture">
                     @if (car.Pictures.Any(x => x.IsThumbnail))
                     {
-                        <img src="@car.Pictures.First(x => x.IsThumbnail).ThumbnailURL()" class="card-img-top" />
+                        <img data-src="/@car.Pictures.First(x => x.IsThumbnail).ThumbnailURL()" class="lazy card-img-top" />
                     }
                     <div class="card-body">
-                        <h5 class="card-title">@car.Name</h5>
+                        <h5 class="card-title">@car.Name()</h5>
                         <p class="card-text">
                             @car.ListPrice.ToString("C") <br />
-                            @car.MileageString()
+                            @car.MileageString() miles
                         </p>
                     </div>
                     <div class="text-right mb-3 mr-3">
@@ -40,4 +40,31 @@ else
             </div>
         }
     </div>
+}
+
+@section Scripts{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
+
+            if ("IntersectionObserver" in window) {
+                let lazyImageObserver = new IntersectionObserver(function (entries, observer) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            let lazyImage = entry.target;
+                            lazyImage.src = lazyImage.dataset.src;
+                            lazyImage.classList.remove("lazy");
+                            lazyImageObserver.unobserve(lazyImage);
+                        }
+                    });
+                });
+
+                lazyImages.forEach(function (lazyImage) {
+                    lazyImageObserver.observe(lazyImage);
+                });
+            } else {
+                // Possibly fall back to a more compatible method here
+            }
+        });
+    </script>
 }

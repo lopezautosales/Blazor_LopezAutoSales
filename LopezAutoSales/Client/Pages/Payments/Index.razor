@@ -44,7 +44,7 @@ else
                         </td>
                         <td>
                             <a class="btn btn-secondary" href="/app/payments/@account.Id">
-                                @account.Sale.Car.Name
+                                @account.Sale.Car.Name()
                             </a>
                         </td>
                     </tr>
@@ -79,7 +79,7 @@ else
         if (!string.IsNullOrEmpty(Vehicle))
         {
             query = Vehicle.ToUpper();
-            search = search.Where(x => x.Sale.Car.Name.ToUpper().Contains(query));
+            search = search.Where(x => x.Sale.Car.Name().ToUpper().Contains(query));
         }
         Accounts = search;
     }

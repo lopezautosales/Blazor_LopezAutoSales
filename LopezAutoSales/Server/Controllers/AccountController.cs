@@ -64,7 +64,7 @@ namespace LopezAutoSales.Server.Controllers
                 data.Date = DateTime.Now;
             account.IsPaid = account.Balance() <= 0;
 
-            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name}]: PAYMENT {data.Date} {data.Amount}");
+            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: PAYMENT {data.Date} {data.Amount}");
             _context.Payments.Add(data);
             _context.SaveChanges();
             return Ok(data.Id);
@@ -81,7 +81,7 @@ namespace LopezAutoSales.Server.Controllers
 
             if (data.Date.Date == DateTime.Today)
                 data.Date = DateTime.Now;
-            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name}]: ORIGINAL {payment.Date} {payment.Amount} EDIT {data.Date} {data.Amount}");
+            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: ORIGINAL {payment.Date} {payment.Amount} EDIT {data.Date} {data.Amount}");
             payment.Amount = data.Amount;
             payment.Date = data.Date;
             account.IsPaid = account.Balance() <= 0;
@@ -100,7 +100,7 @@ namespace LopezAutoSales.Server.Controllers
             Payment payment = account.Payments.First(x => x.Id == data.Id);
             account.Payments.Remove(payment);
             account.IsPaid = account.Balance() <= 0;
-            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name}]: PAYMENT REMOVED {payment.Date} {payment.Amount}");
+            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: PAYMENT REMOVED {payment.Date} {payment.Amount}");
             _context.Accounts.Update(account);
             _context.SaveChanges();
             return Ok();

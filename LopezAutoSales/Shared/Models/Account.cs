@@ -42,22 +42,18 @@ namespace LopezAutoSales.Shared.Models
 
         public decimal LateDue()
         {
-            if (Sale == null)
-                throw new NullReferenceException();
             DateTime date = Sale.Date.AddMonths(1);
             decimal expected = 0;
             while (date < DateTime.Now)
             {
                 expected += MonthlyPayment;
-                date.AddMonths(1);
+                date = date.AddMonths(1);
             }
             return expected - Payments.Sum(x => x.Amount);
         }
 
         public DateTime ExpirationDate()
         {
-            if (Sale == null)
-                throw new NullReferenceException();
             return Sale.Date.AddMonths(MonthsToPay());
         }
     }

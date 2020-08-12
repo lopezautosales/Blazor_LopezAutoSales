@@ -6,94 +6,121 @@
 
 @if (Model.Car == null)
 {
-    <p class="lead">Could not load the vehicle.</p>
+<p class="lead">Could not load the vehicle.</p>
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-sm text-center table-borderless">
-            <thead>
-                <tr>
-                    <th>
-                        Price
-                    </th>
-                    <th>
-                        Car
-                    </th>
-                    <th>
-                        Mileage
-                    </th>
-                    <th>
-                        VIN
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="h5">
-                    <td>
-                        @Model.Car.ListPrice.ToString("C")
-                    </td>
-                    <td>
-                        @Model.Car.Name
-                    </td>
-                    <td>
-                        @Model.Car.MileageString()
-                    </td>
-                    <td>
-                        @Model.Car.VIN
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="lead">
-        @Model.Car.TitleStatus() Title
-    </div>
-    @if (Model.Car.Pictures.Count > 0)
+<div class="table-responsive">
+    <table class="table table-sm text-center table-borderless">
+        <thead>
+            <tr>
+                <th>
+                    Price
+                </th>
+                <th>
+                    Car
+                </th>
+                <th>
+                    Mileage
+                </th>
+                <th>
+                    VIN
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="h5">
+                <td>
+                    @Model.Car.ListPrice.ToString("C")
+                </td>
+                <td>
+                    @Model.Car.Name()
+                </td>
+                <td>
+                    @Model.Car.MileageString()
+                </td>
+                <td>
+                    @Model.Car.VIN
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="lead">
+    @Model.Car.TitleStatus() Title
+</div>
+@if (Model.Car.Pictures.Count > 0)
     {
-        <div id="carousel" class="carousel slide ml-auto mr-auto no-print" data-ride="carousel">
-            <ol class="carousel-indicators">
-                @for (int i = 0; i < Model.Car.Pictures.Count; i++)
+<div id="carousel" class="carousel slide ml-auto mr-auto no-print" data-ride="carousel">
+    <ol class="carousel-indicators">
+        @for (int i = 0; i < Model.Car.Pictures.Count; i++)
                 {
-                    <li data-target="#carousel" data-slide-to="@i" class="@(i == 0 ? "active" : string.Empty)"></li>
+        <li data-target="#carousel" data-slide-to="@i" class="@(i == 0 ? "active" : string.Empty)"></li>
                 }
-            </ol>
-            <div class="carousel-inner">
-                @foreach (Picture p in Model.Car.Pictures.OrderByDescending(x => x.IsThumbnail))
+    </ol>
+    <div class="carousel-inner">
+        @foreach (Picture p in Model.Car.Pictures.OrderByDescending(x => x.IsThumbnail))
                 {
-                    <div class="carousel-item @(p.IsThumbnail ? "active": string.Empty)">
-                        <img src="@p.URL" class="d-block w-100">
-                    </div>
-                }
-            </div>
-            @if (Model.Car.Pictures.Count > 1)
-            {
-                <a class="carousel-control-prev" href="#carousel" role="button" data-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Previous</span>
-                </a>
-                <a class="carousel-control-next" href="#carousel" role="button" data-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Next</span>
-                </a>
-            }
+        <div class="carousel-item @(p.IsThumbnail ? "active": string.Empty)">
+            <img data-src="/@p.URL" class="lazy d-block w-100">
         </div>
-    }
-    <div class="lead">Data provided by the NHTSA:</div>
-    <div class="text-center">
-        @foreach (CarProperty property in Model.Car.Data.Results.OrderBy(x => x.Variable))
-        {
-            @if (!string.IsNullOrEmpty(property.Value) && property.Value != "Not Applicable")
+                }
+    </div>
+    @if (Model.Car.Pictures.Count > 1)
             {
-                <div class="card d-inline-block m-1">
-                    <div class="card-body">
-                        <h5 class="card-title">@property.Variable</h5>
-                        <div class="card-text">
-                            @property.Value
-                        </div>
-                    </div>
-                </div>
+    <a class="carousel-control-prev" href="#carousel" role="button" data-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+    </a>
+    <a class="carousel-control-next" href="#carousel" role="button" data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+    </a>
+            }
+</div>
+    }
+<div class="lead">Data provided by the NHTSA:</div>
+<div class="text-center">
+    @foreach (CarProperty property in Model.Car.Data.Results.OrderBy(x => x.Variable))
+        {
+    @if (!string.IsNullOrEmpty(property.Value) && property.Value != "Not Applicable")
+            {
+    <div class="card d-inline-block m-1">
+        <div class="card-body">
+            <h5 class="card-title">@property.Variable</h5>
+            <div class="card-text">
+                @property.Value
+            </div>
+        </div>
+    </div>
             }
         }
-    </div>
+</div>
+}
+
+@section Scripts{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
+
+            if ("IntersectionObserver" in window) {
+                let lazyImageObserver = new IntersectionObserver(function (entries, observer) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            let lazyImage = entry.target;
+                            lazyImage.src = lazyImage.dataset.src;
+                            lazyImage.classList.remove("lazy");
+                            lazyImageObserver.unobserve(lazyImage);
+                        }
+                    });
+                });
+
+                lazyImages.forEach(function (lazyImage) {
+                    lazyImageObserver.observe(lazyImage);
+                });
+            } else {
+                // Possibly fall back to a more compatible method here
+            }
+        });
+    </script>
 }

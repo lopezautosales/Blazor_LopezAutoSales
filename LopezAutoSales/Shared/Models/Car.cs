@@ -12,15 +12,19 @@ namespace LopezAutoSales.Shared.Models
 
         public DateTime Date { get; set; }
         [Required]
-        public string VIN { get; set; }
+        public string VIN { get { return vin; } set { vin = value.ToUpper(); } }
+        private string vin;
         [Required]
         public int Year { get; set; }
         [Required]
-        public string Make { get; set; }
+        public string Make { get { return make; } set { make = value.ToTitleCase(); } }
+        private string make;
         [Required]
-        public string Model { get; set; }
+        public string Model { get { return model; } set { model = value.ToTitleCase(); } }
+        private string model;
         [Required]
-        public string Color { get; set; }
+        public string Color { get { return color; } set { color = value.ToTitleCase(); } }
+        private string color;
         public int? Mileage { get; set; }
         public bool IsSalvage { get; set; }
         public bool IsListed { get; set; }
@@ -33,12 +37,9 @@ namespace LopezAutoSales.Shared.Models
         [NotMapped]
         public CarData Data { get; set; }
 
-        public string Name
+        public string Name()
         {
-            get
-            {
-                return $"{Year} {Make} {Model}";
-            }
+            return $"{Year} {Make} {Model}";
         }
 
         public void DeserializeJson()

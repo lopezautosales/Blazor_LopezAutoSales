@@ -51,7 +51,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
-            _logger.LogInformation($"{User.GetDisplayName()} ADDED {car.Name} FOR {car.ListPrice}");
+            _logger.LogInformation($"{User.GetDisplayName()} ADDED {car.Name()} FOR {car.ListPrice}");
             car.IsListed = true;
             car.Date = DateTime.Now;
             _context.Cars.Add(car);
@@ -66,7 +66,7 @@ namespace LopezAutoSales.Server.Controllers
             Car car = await _context.Cars.FirstOrDefaultAsync(x => x.Id == id);
             if (car == null)
                 return BadRequest();
-            _logger.LogInformation($"{User.GetDisplayName()} EDITED {car.Name} FOR {car.ListPrice}");
+            _logger.LogInformation($"{User.GetDisplayName()} EDITED {car.Name()} FOR {car.ListPrice}");
             car.Update(data);
             car.IsSalvage = data.IsSalvage;
             car.JsonData = data.JsonData;
