@@ -25,14 +25,14 @@ namespace LopezAutoSales.Server.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetSales()
+        [HttpGet("{year}")]
+        public async Task<IActionResult> GetSales(int year)
         {
-            List<Sale> sales = await _context.Sales.Include(x => x.Car).ToListAsync();
+            List<Sale> sales = await _context.Sales.AsNoTracking().Where(x => x.Date.Year == year).OrderByDescending(x => x.Date).Include(x => x.Car).ToListAsync();
             return Ok(sales);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("view/{id}")]
         public async Task<IActionResult> GetSale(int id)
         {
             Sale sale = await _context.Sales.Where(x => x.Id == id).Include(x => x.Account).Include(x => x.Car).Include(x => x.TradeIn).Include(x => x.Address).Include(x => x.Lienholder).ThenInclude(x => x.Address).FirstOrDefaultAsync();
@@ -42,12 +42,12 @@ namespace LopezAutoSales.Server.Controllers
         }
 
         [HttpPut]
-        public IActionResult EditSale([FromBody] Sale data)
+        public async Task<IActionResult> EditSale([FromBody] Sale data)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
             _logger.LogInformation($"{User.GetDisplayName()} EDITED SALE {data.Id} {data.Buyers()} {data.Car.Name()}");
-            SetLien(data);
+            await SetLien(data);
             _context.Update(data);
             _context.SaveChanges();
             return Ok();
@@ -62,19 +62,29 @@ namespace LopezAutoSales.Server.Controllers
             if (car != null)
             {
                 sale.CarId = car.Id;
+                car.Update(sale.Car);
                 car.IsListed = false;
+                sale.Car = null;
             }
-            SetLien(sale);
+            await SetLien(sale);
             _context.Sales.Add(sale);
             _context.SaveChanges();
             _logger.LogInformation($"{User.GetDisplayName()} SALE {sale.Id} {sale.Buyers()} {sale.Car.Name()}");
             return Ok(sale.Id);
         }
 
-        private void SetLien(Sale sale)
+        private async Task SetLien(Sale sale)
         {
             if (sale.HasLien)
+            {
                 sale.LienholderNormalizedName = sale.Lienholder.Name.ToUpper();
+                Lienholder lienholder = await _context.Lienholders.Where(x => x.NormalizedName == sale.LienholderNormalizedName).Include(x => x.Address).FirstOrDefaultAsync();
+                if(lienholder != null)
+                {
+                    lienholder.Update(sale.Lienholder);
+                    sale.Lienholder = null;
+                }
+            }
         }
     }
 }

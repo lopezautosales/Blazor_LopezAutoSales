@@ -21,7 +21,7 @@ else
         @foreach (Car car in Model.Cars)
         {
             <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mt-2">
-                <div class="card card-picture">
+                <div class="card card-picture mx-auto">
                     @if (car.Pictures.Any(x => x.IsThumbnail))
                     {
                         <img data-src="/@car.Pictures.First(x => x.IsThumbnail).ThumbnailURL()" class="lazy card-img-top" />

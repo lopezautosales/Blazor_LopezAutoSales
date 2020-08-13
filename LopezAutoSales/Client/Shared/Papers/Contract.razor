@@ -343,7 +343,7 @@
                     @Sale.MonthsToPay()
                 </td>
                 <td>
-                    @Sale.Account.MonthlyPayment.ToString("C")
+                    @Sale.Account?.MonthlyPayment.ToString("C")
                 </td>
                 <td>
                     Monthly

@@ -1,4 +1,4 @@
-﻿@page "/app/papers/{id:int}"
+﻿@page "/app/papers/view/{id:int}"
 @inject AuthHttp auth
 @attribute [Authorize(Roles = "Admin")]
 @using LopezAutoSales.Client.Shared.Papers
@@ -28,7 +28,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Sale = await auth.Client.GetFromJsonAsync<Sale>($"/api/sale/{Id}");
+        Sale = await auth.Client.GetFromJsonAsync<Sale>($"/api/sale/view/{Id}");
         await base.OnInitializedAsync();
     }
 }

@@ -55,6 +55,8 @@ namespace LopezAutoSales.Shared.Models
             Model = car.Model;
             Mileage = car.Mileage;
             Color = car.Color;
+            BoughtPrice = car.BoughtPrice;
+            VIN = car.VIN;
         }
 
         public string MileageString()

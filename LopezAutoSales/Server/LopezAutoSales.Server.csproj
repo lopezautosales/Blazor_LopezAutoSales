@@ -52,6 +52,8 @@
 		<Compile Remove="Migrations\20200731195732_FK.Designer.cs" />
 		<Compile Remove="Migrations\20200803220137_Test.cs" />
 		<Compile Remove="Migrations\20200803220137_Test.Designer.cs" />
+		<Compile Remove="Migrations\20200813220803_Update.cs" />
+		<Compile Remove="Migrations\20200813220803_Update.Designer.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -66,8 +68,7 @@
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="3.2.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.7" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.4" />
-		<PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
-		<PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
+		<PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="1.0.0" />
 	</ItemGroup>
 

@@ -1,4 +1,5 @@
 ﻿@page "/app/papers"
+@page "/app/papers/{year:int}"
 @attribute [Authorize(Roles = "Admin")]
 @inject AuthHttp auth
 
@@ -14,6 +15,17 @@ else if (Sales.Count == 0)
 }
 else
 {
+    <div class="row mb-2">
+        <div class="col-6">
+            <a class="btn btn-secondary" href="/app/papers/@(Year-1)">@(Year-1) Sales</a>
+        </div>
+        <div class="col-6 text-right">
+            @if (Year != DateTime.Today.Year)
+            {
+                <a class="btn btn-secondary" href="/app/papers/@(Year+1)">@(Year+1) Sales</a>
+            }
+        </div>
+    </div>
     <div class="table-responsive">
         <table class="table text-center">
             <thead>
@@ -47,7 +59,7 @@ else
                         </td>
                         <td>
                             <div class="btn-group">
-                                <a class="btn btn-secondary" href="/app/papers/@sale.Id">View</a>
+                                <a class="btn btn-secondary" href="/app/papers/view/@sale.Id">View</a>
                                 <a class="btn btn-secondary" href="/app/papers/edit/@sale.Id">Edit</a>
                             </div>
                         </td>
@@ -59,11 +71,15 @@ else
 }
 
 @code {
+    [Parameter]
+    public int? Year { get; set; }
     public List<Sale> Sales { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        Sales = await auth.Client.GetFromJsonAsync<List<Sale>>("/api/sale");
-        await base.OnInitializedAsync();
+        if (!Year.HasValue)
+            Year = DateTime.Today.Year;
+        Sales = await auth.Client.GetFromJsonAsync<List<Sale>>($"/api/sale/{Year}");
+        await base.OnParametersSetAsync();
     }
 }

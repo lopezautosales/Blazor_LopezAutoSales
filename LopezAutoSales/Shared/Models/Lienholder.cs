@@ -14,6 +14,8 @@ namespace LopezAutoSales.Shared.Models
 
         public void Update(Lienholder lienholder)
         {
+            Name = lienholder.Name;
+            NormalizedName = Name.ToUpper();
             Address.Update(lienholder.Address);
         }
     }

@@ -341,7 +341,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Sale = await auth.Client.GetFromJsonAsync<Sale>($"/api/sale/{Id}");
+        Sale = await auth.Client.GetFromJsonAsync<Sale>($"/api/sale/view/{Id}");
         if (Sale != null)
         {
             HasTrade = Sale.TradeInId.HasValue;
@@ -405,7 +405,7 @@ else
         var response = await auth.Client.PutAsJsonAsync<Sale>($"/api/sale", Sale);
         if (response.IsSuccessStatusCode)
         {
-            navManager.NavigateTo($"/app/papers/{Id}");
+            navManager.NavigateTo($"/app/papers/view/{Id}");
         }
         else
         {

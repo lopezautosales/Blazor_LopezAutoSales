@@ -22,8 +22,7 @@ namespace LopezAutoSales.Server.Pages
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var s = User;
-            Cars = await _context.Cars.AsNoTracking().Where(x => x.IsListed).Include(x => x.Pictures).ToListAsync();
+            Cars = await _context.Cars.AsNoTracking().Where(x => x.IsListed).OrderByDescending(x => x.ListPrice).Include(x => x.Pictures).ToListAsync();
             return Page();
         }
     }
