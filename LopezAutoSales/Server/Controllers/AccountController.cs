@@ -81,7 +81,7 @@ namespace LopezAutoSales.Server.Controllers
 
             if (data.Date.Date == DateTime.Today)
                 data.Date = DateTime.Now;
-            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: ORIGINAL {payment.Date} {payment.Amount} EDIT {data.Date} {data.Amount}");
+            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: ORIGINAL {payment.Date} {payment.Amount} EDIT {data.Date} {data.Amount} REASON {data.Reason}");
             payment.Amount = data.Amount;
             payment.Date = data.Date;
             account.IsPaid = account.Balance() <= 0;
@@ -94,13 +94,13 @@ namespace LopezAutoSales.Server.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemovePayment([FromBody] Payment data)
         {
-            Account account = await _context.Accounts.Where(x => x.Id == data.AccountId).Include(x => x.Payments).FirstOrDefaultAsync();
+            Account account = await _context.Accounts.Where(x => x.Id == data.AccountId).Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefaultAsync();
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
             Payment payment = account.Payments.First(x => x.Id == data.Id);
             account.Payments.Remove(payment);
             account.IsPaid = account.Balance() <= 0;
-            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: PAYMENT REMOVED {payment.Date} {payment.Amount}");
+            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: PAYMENT REMOVED {payment.Date} {payment.Amount} REASON {data.Reason}");
             _context.Accounts.Update(account);
             _context.SaveChanges();
             return Ok();
