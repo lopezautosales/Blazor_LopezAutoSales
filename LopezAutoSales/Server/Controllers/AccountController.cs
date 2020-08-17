@@ -62,7 +62,7 @@ namespace LopezAutoSales.Server.Controllers
                 return BadRequest(new string[] { "Could not find the account." });
             if (data.Date.Date == DateTime.Today)
                 data.Date = DateTime.Now;
-            account.IsPaid = account.Balance() <= 0;
+            account.IsPaid = account.Balance() <= data.Amount;
 
             _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: PAYMENT {data.Date} {data.Amount}");
             _context.Payments.Add(data);

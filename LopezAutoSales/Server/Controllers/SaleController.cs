@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -58,6 +59,9 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
+            if (sale.Date.Date == DateTime.Today)
+                sale.Date = DateTime.Now;
+
             Car car = await _context.Cars.Where(x => x.IsListed).Where(x => x.VIN == sale.Car.VIN).FirstOrDefaultAsync();
             if (car != null)
             {

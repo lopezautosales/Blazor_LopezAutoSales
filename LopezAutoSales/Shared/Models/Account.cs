@@ -44,7 +44,7 @@ namespace LopezAutoSales.Shared.Models
         {
             DateTime date = Sale.Date.AddMonths(1);
             decimal expected = 0;
-            while (date < DateTime.Now)
+            while (date < DateTime.Now && expected < InitialDue)
             {
                 expected += MonthlyPayment;
                 date = date.AddMonths(1);
