@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using System;
+using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -30,7 +31,8 @@ namespace LopezAutoSales.Client
             builder.Services.AddBlazoredSessionStorage();
             builder.Services.AddTransient(x => new CarManager(x.GetService<ISyncSessionStorageService>()));
             builder.Services.AddTransient(x => new VINDecoder(x.GetService<HttpClient>(), x.GetService<IJSRuntime>()));
-
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CreateSpecificCulture("en-US");
             await builder.Build().RunAsync();
         }
     }

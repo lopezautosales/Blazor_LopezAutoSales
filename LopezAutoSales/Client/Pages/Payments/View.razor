@@ -180,6 +180,7 @@ else
         {
             Payment.Id = int.Parse(await response.Content.ReadAsStringAsync());
             Account.Payments.Add(Payment);
+            Payment = new Payment { Amount = Account.MonthlyPayment };
         }
     }
 

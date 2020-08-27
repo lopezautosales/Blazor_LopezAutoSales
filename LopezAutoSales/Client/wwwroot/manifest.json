@@ -1,7 +1,7 @@
 {
   "name": "Lopez Auto Sales",
   "short_name": "Lopez Auto Sales",
-  "start_url": "./",
+  "start_url": "./app/payments",
   "display": "standalone",
   "background_color": "#FFF",
   "theme_color": "#02bbee",

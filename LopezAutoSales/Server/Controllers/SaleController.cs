@@ -83,7 +83,7 @@ namespace LopezAutoSales.Server.Controllers
             {
                 sale.LienholderNormalizedName = sale.Lienholder.Name.ToUpper();
                 Lienholder lienholder = await _context.Lienholders.Where(x => x.NormalizedName == sale.LienholderNormalizedName).Include(x => x.Address).FirstOrDefaultAsync();
-                if(lienholder != null)
+                if (lienholder != null)
                 {
                     lienholder.Update(sale.Lienholder);
                     sale.Lienholder = null;
