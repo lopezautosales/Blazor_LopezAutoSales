@@ -364,10 +364,6 @@
     private async Task CompleteSale(EditContext e)
     {
         Errors.Clear();
-        if (!Sale.HasLien)
-            Sale.Lienholder = null;
-        if (!HasTrade)
-            Sale.TradeIn = null;
         decimal due = Sale.TotalDue();
         if (due < 0)
         {
@@ -388,6 +384,11 @@
 
         if (!e.Validate())
             return;
+
+        if (!Sale.HasLien)
+            Sale.Lienholder = null;
+        if (!HasTrade)
+            Sale.TradeIn = null;
         var response = await auth.Client.PostAsJsonAsync<Sale>("/api/sale", Sale);
         if (response.IsSuccessStatusCode)
         {

@@ -25,7 +25,8 @@ namespace LopezAutoSales.Client
             if (DecodedVIN != car.VIN)
                 JsonData = await _client.GetStringAsync(string.Format(Path, car.VIN));
             else
-                await _js.InvokeVoidAsync("alert", $"{car.VIN} has already been decoded.");
+                return;
+
             car.JsonData = JsonData;
             if (!TrySetVariables(car))
                 await _js.InvokeVoidAsync("alert", $"{car.VIN} could not be decoded.");

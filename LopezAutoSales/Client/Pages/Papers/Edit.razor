@@ -370,16 +370,6 @@ else
     private async Task EditSale(EditContext e)
     {
         Errors.Clear();
-        if (!Sale.HasLien)
-        {
-            Sale.LienholderNormalizedName = null;
-            Sale.Lienholder = null;
-        }
-        if (!HasTrade)
-        {
-            Sale.TradeInId = null;
-            Sale.TradeIn = null;
-        }
         decimal due = Sale.TotalDue();
         if (due < 0)
         {
@@ -402,6 +392,17 @@ else
 
         if (!e.Validate())
             return;
+
+        if (!Sale.HasLien)
+        {
+            Sale.LienholderNormalizedName = null;
+            Sale.Lienholder = null;
+        }
+        if (!HasTrade)
+        {
+            Sale.TradeInId = null;
+            Sale.TradeIn = null;
+        }
         var response = await auth.Client.PutAsJsonAsync<Sale>($"/api/sale", Sale);
         if (response.IsSuccessStatusCode)
         {

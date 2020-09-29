@@ -20,7 +20,7 @@ namespace LopezAutoSales.Server
                 .MinimumLevel.Override("IdentityServer4", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
-                .WriteTo.RollingFile("logs/log-{Date}.txt")
+                .WriteTo.File("logs/log.txt")
             ).ConfigureWebHostDefaults(webBuilder =>
             {
                 webBuilder.UseStartup<Startup>();
