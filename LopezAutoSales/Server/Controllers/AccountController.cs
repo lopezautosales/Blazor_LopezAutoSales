@@ -28,9 +28,9 @@ namespace LopezAutoSales.Server.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAccounts([FromQuery] bool showPaid = false)
+        public async Task<IActionResult> GetAccounts()
         {
-            List<Account> accounts = await _context.Accounts.AsNoTracking().Where(x => showPaid || !x.IsPaid).Include(x => x.Sale).ThenInclude(x => x.Car).ToListAsync();
+            List<Account> accounts = await _context.Accounts.AsNoTracking().Include(x => x.Sale).ThenInclude(x => x.Car).ToListAsync();
             return Ok(accounts);
         }
 

@@ -13,7 +13,7 @@ else if (Results.Count() == 0)
 }
 else
 {
-    <div class="row">
+    <div class="form-row">
         <div class="form-group col">
             <label for="Buyer">Search Buyers:</label>
             <input type="text" class="form-control" id="Buyer" @bind-value="Buyer" />
@@ -21,6 +21,12 @@ else
         <div class="form-group col">
             <label for="Vehicle">Search Vehicles:</label>
             <input type="text" class="form-control" id="Vehicle" @bind-value="Vehicle" />
+        </div>
+    </div>
+    <div class="d-flex">
+        <div class="form-group form-check ml-auto">
+            <input type="checkbox" class="form-check-input" id="showPaid" @bind-value="ShowPaid">
+            <label class="form-check-label" for="showPaid">Show Paid</label>
         </div>
     </div>
     <div class="table-responsive">
@@ -56,6 +62,8 @@ else
 @code {
     public IEnumerable<Account> Accounts { get; set; }
     private IEnumerable<Account> Results { get; set; }
+    private bool showPaid = false;
+    public bool ShowPaid { get { return showPaid; } set { showPaid = value; Search(); } }
     private string buyer;
     private string Buyer { get { return buyer; } set { buyer = value; Search(); } }
     private string vehicle;
@@ -63,7 +71,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Accounts = Results = await auth.Client.GetFromJsonAsync<IEnumerable<Account>>("/api/account");
+        Results = await auth.Client.GetFromJsonAsync<IEnumerable<Account>>("/api/account");
+        Accounts = Results.Where(x => x.IsPaid == false);
         await base.OnInitializedAsync();
     }
 
@@ -71,6 +80,8 @@ else
     {
         IEnumerable<Account> search = Results;
         string query;
+        if (!ShowPaid)
+            search = search.Where(x => x.IsPaid == false);
         if (!string.IsNullOrEmpty(Buyer))
         {
             query = Buyer.ToUpper();

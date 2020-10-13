@@ -113,6 +113,11 @@ else
     protected override async Task OnInitializedAsync()
     {
         Car = await carManager.GetCarAsync(auth.Client, Id);
+        if (!string.IsNullOrEmpty(Car.JsonData))
+        {
+            decoder.DecodedVIN = Car.VIN;
+            decoder.JsonData = Car.JsonData;
+        }
         await base.OnInitializedAsync();
     }
 
@@ -122,6 +127,7 @@ else
         var response = await auth.Client.PutAsJsonAsync<Car>($"/api/inventory/edit/{Id}", Car);
         if (response.IsSuccessStatusCode)
         {
+            carManager.SetCar(Car);
             nav.NavigateTo($"/app/inventory");
         }
         else

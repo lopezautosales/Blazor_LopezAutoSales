@@ -11,8 +11,8 @@ namespace LopezAutoSales.Client
         private readonly HttpClient _client;
         private readonly IJSRuntime _js;
 
-        private string DecodedVIN { get; set; }
-        private string JsonData { get; set; }
+        public string DecodedVIN { get; set; }
+        public string JsonData { get; set; }
 
         public VINDecoder(HttpClient client, IJSRuntime js)
         {
@@ -24,7 +24,7 @@ namespace LopezAutoSales.Client
         {
             if (DecodedVIN != car.VIN)
                 JsonData = await _client.GetStringAsync(string.Format(Path, car.VIN));
-            else
+            else if (car.JsonData == JsonData)
                 return;
 
             car.JsonData = JsonData;
