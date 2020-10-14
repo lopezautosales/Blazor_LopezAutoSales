@@ -44,7 +44,7 @@ else
             <tbody>
                 @foreach (Account account in Accounts)
                 {
-                    <tr class="@(account.HasContractExpired() ? "table-danger" : string.Empty)">
+                    <tr class="@RowColor(account)">
                         <td>
                             @account.Sale.Buyers()
                         </td>
@@ -93,5 +93,14 @@ else
             search = search.Where(x => x.Sale.Car.Name().ToUpper().Contains(query));
         }
         Accounts = search;
+    }
+
+    private string RowColor(Account account)
+    {
+        if (account.IsPaid)
+            return "table-success";
+        if (account.HasContractExpired())
+            return "table-danger";
+        return string.Empty;
     }
 }

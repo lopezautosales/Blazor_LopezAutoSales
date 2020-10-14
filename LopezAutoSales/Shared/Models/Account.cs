@@ -49,6 +49,8 @@ namespace LopezAutoSales.Shared.Models
                 expected += MonthlyPayment;
                 date = date.AddMonths(1);
             }
+            if (expected > InitialDue)
+                expected = InitialDue;
             return expected - Payments.Sum(x => x.Amount);
         }
 
