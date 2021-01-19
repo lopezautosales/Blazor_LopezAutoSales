@@ -4,7 +4,7 @@
   "libraries": [
     {
       "provider": "unpkg",
-      "library": "bootstrap@4.5.0",
+      "library": "bootstrap@4.6.0",
       "files": [ "dist/js/bootstrap.bundle.min.js", "dist/js/bootstrap.bundle.min.js.map" ],
       "destination": "wwwroot/lib"
     },
@@ -14,7 +14,7 @@
       "destination": "wwwroot/lib/dist/js"
     },
     {
-      "library": "MaterialDesign-Webfont@5.3.45",
+      "library": "MaterialDesign-Webfont@5.9.55",
       "destination": "wwwroot/lib/"
     }
   ]

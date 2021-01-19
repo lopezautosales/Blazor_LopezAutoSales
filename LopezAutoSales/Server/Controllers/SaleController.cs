@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace LopezAutoSales.Server.Controllers
 {
@@ -27,42 +26,42 @@ namespace LopezAutoSales.Server.Controllers
         }
 
         [HttpGet("{year}")]
-        public async Task<IActionResult> GetSales(int year)
+        public IActionResult GetSales(int year)
         {
-            List<Sale> sales = await _context.Sales.AsNoTracking().Where(x => x.Date.Year == year).OrderByDescending(x => x.Date).Include(x => x.Car).ToListAsync();
+            List<Sale> sales = _context.Sales.AsNoTracking().Where(x => x.Date.Year == year).OrderByDescending(x => x.Date).Include(x => x.Car).ToList();
             return Ok(sales);
         }
 
         [HttpGet("view/{id}")]
-        public async Task<IActionResult> GetSale(int id)
+        public IActionResult GetSale(int id)
         {
-            Sale sale = await _context.Sales.Where(x => x.Id == id).Include(x => x.Account).Include(x => x.Car).Include(x => x.TradeIn).Include(x => x.Address).Include(x => x.Lienholder).ThenInclude(x => x.Address).FirstOrDefaultAsync();
+            Sale sale = _context.Sales.AsNoTracking().Include(x => x.Account).Include(x => x.Car).Include(x => x.TradeIn).Include(x => x.Address).Include(x => x.Lienholder).ThenInclude(x => x.Address).FirstOrDefault(x => x.Id == id);
             if (sale == null)
                 return BadRequest(new string[] { "Account was not found." });
             return Ok(sale);
         }
 
         [HttpPut]
-        public async Task<IActionResult> EditSale([FromBody] Sale data)
+        public IActionResult EditSale([FromBody] Sale data)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
             _logger.LogInformation($"{User.GetDisplayName()} EDITED SALE {data.Id} {data.Buyers()} {data.Car.Name()}");
-            await SetLien(data);
+            SetLien(data);
             _context.Update(data);
             _context.SaveChanges();
             return Ok();
         }
 
         [HttpPost]
-        public async Task<IActionResult> SellVehicle(Sale sale)
+        public IActionResult SellVehicle(Sale sale)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
             if (sale.Date.Date == DateTime.Today)
                 sale.Date = DateTime.Now;
 
-            Car car = await _context.Cars.Where(x => x.IsListed).Where(x => x.VIN == sale.Car.VIN).FirstOrDefaultAsync();
+            Car car = _context.Cars.Where(x => x.IsListed).FirstOrDefault(x => x.VIN == sale.Car.VIN);
             if (car != null)
             {
                 sale.CarId = car.Id;
@@ -70,19 +69,25 @@ namespace LopezAutoSales.Server.Controllers
                 car.IsListed = false;
                 sale.Car = null;
             }
-            await SetLien(sale);
+            SetLien(sale);
             _context.Sales.Add(sale);
             _context.SaveChanges();
             _logger.LogInformation($"{User.GetDisplayName()} SALE {sale.Id} {sale.Buyers()} {sale.Car.Name()}");
             return Ok(sale.Id);
         }
 
-        private async Task SetLien(Sale sale)
+        [HttpGet("report/{year}")]
+        public IActionResult GetYearlyReport(int year)
+        {
+            return Ok(_context.Sales.Where(x => x.Date.Year == year).Include(x => x.Account).Include(x => x.Car).OrderBy(x => x.Date).AsNoTracking().ToList());
+        }
+
+        private void SetLien(Sale sale)
         {
             if (sale.HasLien)
             {
                 sale.LienholderNormalizedName = sale.Lienholder.Name.ToUpper();
-                Lienholder lienholder = await _context.Lienholders.Where(x => x.NormalizedName == sale.LienholderNormalizedName).Include(x => x.Address).FirstOrDefaultAsync();
+                Lienholder lienholder = _context.Lienholders.Include(x => x.Address).FirstOrDefault(x => x.NormalizedName == sale.LienholderNormalizedName);
                 if (lienholder != null)
                 {
                     lienholder.Update(sale.Lienholder);

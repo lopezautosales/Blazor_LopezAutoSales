@@ -37,6 +37,10 @@ namespace LopezAutoSales.Server
                 .AddDefaultTokenProviders()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+
+            services.AddAuthentication()
+                .AddIdentityServerJwt();
+
             services.AddIdentityServer()
                 .AddApiAuthorization<ApplicationUser, ApplicationDbContext>(options =>
                 {
@@ -47,9 +51,6 @@ namespace LopezAutoSales.Server
                 });
 
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("role");
-
-            services.AddAuthentication()
-                .AddIdentityServerJwt();
 
             services.AddControllersWithViews().AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddRazorPages();
@@ -64,7 +65,6 @@ namespace LopezAutoSales.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
                 app.UseWebAssemblyDebugging();
             }
             else

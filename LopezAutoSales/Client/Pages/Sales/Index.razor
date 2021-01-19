@@ -1,0 +1,70 @@
+﻿@page "/app/report/{year:int}"
+@page "/app/report"
+@inject AuthHttp http
+
+<h1 class="text-center">@Year.Value Sales Report</h1>
+<div class="no-print row mb-2">
+    <div class="col-6">
+        <a class="btn btn-secondary" href="/app/report/@(Year-1)">@(Year-1) Report</a>
+    </div>
+    <div class="col-6 text-right">
+        @if (Year != DateTime.Today.Year)
+        {
+            <a class="btn btn-secondary" href="/app/report/@(Year+1)">@(Year+1) Report</a>
+        }
+    </div>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Buyers</th>
+            <th>Car</th>
+            <th>Bought Price</th>
+            <th>Sales Price</th>
+            <th>Tax</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Sales != null)
+        {
+            decimal boughtTotal = 0, sellingTotal = 0, taxTotal = 0;
+            @foreach (Sale sale in Sales)
+            {
+                <tr>
+                    <td>@sale.Date.ToShortDateString()</td>
+                    <td>@sale.Buyers()</td>
+                    <td>@sale.Car.Name()</td>
+                    <td class="@(sale.Car.BoughtPrice.HasValue ? string.Empty : "bg-danger")">@sale.Car.BoughtPrice?.ToString("C")</td>
+                    <td>@sale.SellingPrice.ToString("C")</td>
+                    <td>@sale.TaxAmount()</td>
+                </tr>
+                boughtTotal += sale.Car.BoughtPrice ?? 0;
+                sellingTotal += sale.SellingPrice;
+                taxTotal += sale.TaxAmount();
+            }
+            <tr>
+                <td>Profit:</td>
+                <td>@((sellingTotal - boughtTotal).ToString("C"))</td>
+                <td>Totals:</td>
+                <td>@boughtTotal.ToString("C")</td>
+                <td>@sellingTotal.ToString("C")</td>
+                <td>@taxTotal.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public int? Year { get; set; }
+    public List<Sale> Sales { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Year.HasValue)
+            Year = DateTime.Today.Year;
+        Sales = await http.Client.GetFromJsonAsync<List<Sale>>($"/api/sale/report/{Year.Value}");
+        await base.OnParametersSetAsync();
+    }
+}

@@ -354,3 +354,4 @@ MigrationBackup/
 
 LopezAutoSales/Server/wwwroot/Images
 LopezAutoSales/Server/appsettings.Production.json
+LopezAutoSales/Server/appsettings.Development.json

@@ -5,51 +5,54 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-public class CustomUserFactory
-    : AccountClaimsPrincipalFactory<RemoteUserAccount>
+namespace LopezAutoSales.Client
 {
-    public CustomUserFactory(IAccessTokenProviderAccessor accessor)
-        : base(accessor)
+    public class CustomUserFactory
+        : AccountClaimsPrincipalFactory<RemoteUserAccount>
     {
-    }
-
-    public async override ValueTask<ClaimsPrincipal> CreateUserAsync(
-        RemoteUserAccount account,
-        RemoteAuthenticationUserOptions options)
-    {
-        var user = await base.CreateUserAsync(account, options);
-
-        if (user.Identity.IsAuthenticated)
+        public CustomUserFactory(IAccessTokenProviderAccessor accessor)
+            : base(accessor)
         {
-            var identity = (ClaimsIdentity)user.Identity;
-            var roleClaims = identity.FindAll(identity.RoleClaimType);
+        }
 
-            if (roleClaims != null && roleClaims.Any())
+        public async override ValueTask<ClaimsPrincipal> CreateUserAsync(
+            RemoteUserAccount account,
+            RemoteAuthenticationUserOptions options)
+        {
+            var user = await base.CreateUserAsync(account, options);
+
+            if (user.Identity.IsAuthenticated)
             {
-                foreach (var existingClaim in roleClaims)
-                {
-                    identity.RemoveClaim(existingClaim);
-                }
+                var identity = (ClaimsIdentity)user.Identity;
+                var roleClaims = identity.FindAll(identity.RoleClaimType).ToArray();
 
-                var rolesElem = account.AdditionalProperties[identity.RoleClaimType];
-
-                if (rolesElem is JsonElement roles)
+                if (roleClaims != null && roleClaims.Any())
                 {
-                    if (roles.ValueKind == JsonValueKind.Array)
+                    foreach (var existingClaim in roleClaims)
                     {
-                        foreach (var role in roles.EnumerateArray())
-                        {
-                            identity.AddClaim(new Claim(options.RoleClaim, role.GetString()));
-                        }
+                        identity.RemoveClaim(existingClaim);
                     }
-                    else
+
+                    var rolesElem = account.AdditionalProperties[identity.RoleClaimType];
+
+                    if (rolesElem is JsonElement roles)
                     {
-                        identity.AddClaim(new Claim(options.RoleClaim, roles.GetString()));
+                        if (roles.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var role in roles.EnumerateArray())
+                            {
+                                identity.AddClaim(new Claim(options.RoleClaim, role.GetString()));
+                            }
+                        }
+                        else
+                        {
+                            identity.AddClaim(new Claim(options.RoleClaim, roles.GetString()));
+                        }
                     }
                 }
             }
-        }
 
-        return user;
+            return user;
+        }
     }
 }

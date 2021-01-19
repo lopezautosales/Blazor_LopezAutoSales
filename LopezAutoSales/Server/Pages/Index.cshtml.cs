@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace LopezAutoSales.Server.Pages
 {
@@ -20,9 +19,9 @@ namespace LopezAutoSales.Server.Pages
             _context = context;
         }
 
-        public async Task<IActionResult> OnGetAsync()
+        public IActionResult OnGet()
         {
-            Cars = await _context.Cars.AsNoTracking().Where(x => x.IsListed).OrderByDescending(x => x.ListPrice).Include(x => x.Pictures).ToListAsync();
+            Cars = _context.Cars.AsNoTracking().Where(x => x.IsListed).OrderByDescending(x => x.ListPrice).Include(x => x.Pictures).ToList();
             return Page();
         }
     }

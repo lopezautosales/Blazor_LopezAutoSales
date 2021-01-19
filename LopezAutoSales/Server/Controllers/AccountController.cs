@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace LopezAutoSales.Server.Controllers
 {
@@ -28,26 +27,26 @@ namespace LopezAutoSales.Server.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAccounts()
+        public IActionResult GetAccounts()
         {
-            List<Account> accounts = await _context.Accounts.AsNoTracking().Include(x => x.Sale).ThenInclude(x => x.Car).ToListAsync();
+            List<Account> accounts = _context.Accounts.AsNoTracking().Include(x => x.Sale).ThenInclude(x => x.Car).OrderBy(x => x.Sale.Buyer).ToList();
             return Ok(accounts);
         }
 
         [HttpGet("{id}")]
         [Authorize]
-        public async Task<IActionResult> GetAccount(int id)
+        public IActionResult GetAccount(int id)
         {
             if (!User.IsInRole("Admin"))
             {
                 string userId = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
                 if (userId == null)
                     return BadRequest(new string[] { "Could not find user id." });
-                UserAccount userAccount = await _context.UserAccounts.AsNoTracking().Where(x => x.UserId == userId).Where(x => x.AccountId == id).FirstOrDefaultAsync();
+                UserAccount userAccount = _context.UserAccounts.AsNoTracking().Where(x => x.AccountId == id).FirstOrDefault(x => x.UserId == userId);
                 if (userAccount == null)
                     return BadRequest(new string[] { "User is not authorized for viewing this account." });
             }
-            Account account = await _context.Accounts.AsNoTracking().Where(x => x.Id == id).Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefaultAsync();
+            Account account = _context.Accounts.AsNoTracking().Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefault(x => x.Id == id);
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
             return Ok(account);
@@ -55,9 +54,9 @@ namespace LopezAutoSales.Server.Controllers
 
         [HttpPost("payment")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AddPayment([FromBody] Payment data)
+        public IActionResult AddPayment([FromBody] Payment data)
         {
-            Account account = await _context.Accounts.Where(x => x.Id == data.AccountId).Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefaultAsync();
+            Account account = _context.Accounts.Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefault(x => x.Id == data.AccountId);
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
             if (data.Date.Date == DateTime.Today)
@@ -72,9 +71,9 @@ namespace LopezAutoSales.Server.Controllers
 
         [HttpPut("payment")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> EditPayment(Payment data)
+        public IActionResult EditPayment(Payment data)
         {
-            Account account = await _context.Accounts.Where(x => x.Id == data.AccountId).Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefaultAsync();
+            Account account = _context.Accounts.Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefault(x => x.Id == data.AccountId);
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
             Payment payment = account.Payments.First(x => x.Id == data.Id);
@@ -92,9 +91,9 @@ namespace LopezAutoSales.Server.Controllers
 
         [HttpPost("payment/delete")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> RemovePayment([FromBody] Payment data)
+        public IActionResult RemovePayment([FromBody] Payment data)
         {
-            Account account = await _context.Accounts.Where(x => x.Id == data.AccountId).Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefaultAsync();
+            Account account = _context.Accounts.Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefault(x => x.Id == data.AccountId);
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
             Payment payment = account.Payments.First(x => x.Id == data.Id);

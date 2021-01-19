@@ -1,5 +1,4 @@
 ﻿@page "/app/inventory/edit/{id:int}"
-@using BlazorInputFile
 @inject AuthHttp auth
 @inject HttpClient http
 @inject IJSRuntime js
@@ -134,19 +133,20 @@ else
             await js.InvokeVoidAsync("alert", response.ReasonPhrase);
     }
 
-    private async Task HandleSelection(IFileListEntry[] files)
+    private async Task HandleSelection(InputFileChangeEventArgs e)
     {
         IsLoading = true;
         var content = new MultipartFormDataContent();
         int i = 0;
-        foreach (var file in files)
+        foreach (var file in e.GetMultipleFiles())
         {
-            var ms = new System.IO.MemoryStream();
-            await file.Data.CopyToAsync(ms);
+            using System.IO.Stream s = file.OpenReadStream(10000000);
+            using System.IO.MemoryStream ms = new System.IO.MemoryStream();
+            await s.CopyToAsync(ms);
             content.Add(new ByteArrayContent(ms.GetBuffer()), $"\"upload{i}\"", file.Name);
             i++;
         }
-        var response = await auth.Client.PostAsync($"/api/upload/car/{Id}", content);
+        var response = await auth.Client.PostAsync($"/api/inventory/upload/{Id}", content);
         if (response.IsSuccessStatusCode)
         {
             List<Picture> pictures = await response.Content.ReadFromJsonAsync<List<Picture>>();
@@ -159,7 +159,7 @@ else
     {
         if (!picture.IsThumbnail)
         {
-            var response = await auth.Client.PutAsJsonAsync($"/api/upload/thumbnail/{picture.CarId}", picture.Id);
+            var response = await auth.Client.PutAsJsonAsync($"/api/inventory/thumbnail/{Id}", picture.Id);
             if (response.IsSuccessStatusCode)
             {
                 List<Picture> thumbnails = Car.Pictures.Where(x => x.IsThumbnail).ToList();
@@ -172,7 +172,7 @@ else
 
     private async Task DeletePicture(Picture picture)
     {
-        var response = await auth.Client.DeleteAsync($"/api/upload/{picture.Id}");
+        var response = await auth.Client.DeleteAsync($"/api/inventory/picture/{picture.Id}");
         if (response.IsSuccessStatusCode)
         {
             Car.Pictures.Remove(picture);
