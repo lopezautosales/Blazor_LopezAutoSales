@@ -23,4 +23,13 @@
     #page-break {
         page-break-before: always;
     }
+
+    html{
+        font-size: .75rem;
+        line-height: 1.25rem;
+    }
+
+    .form-check-input:checked{
+        appearance: auto;
+    }
 }

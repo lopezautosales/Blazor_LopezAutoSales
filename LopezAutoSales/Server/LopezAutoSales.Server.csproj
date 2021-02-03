@@ -8,12 +8,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Remove="dist\**" />
 		<Compile Remove="Services\**" />
 		<Compile Remove="wwwroot\Images\**" />
+		<Content Remove="dist\**" />
 		<Content Remove="Services\**" />
 		<Content Remove="wwwroot\Images\**" />
+		<EmbeddedResource Remove="dist\**" />
 		<EmbeddedResource Remove="Services\**" />
 		<EmbeddedResource Remove="wwwroot\Images\**" />
+		<None Remove="dist\**" />
 		<None Remove="Services\**" />
 		<None Remove="wwwroot\Images\**" />
 	</ItemGroup>
@@ -58,14 +62,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Remove="compilerconfig.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="compilerconfig.json" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.2" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.1" />
@@ -92,7 +88,7 @@
 
 	<ItemGroup>
 		<Folder Include="Logs\stdout\" />
-		<Folder Include="wwwroot\" />
+		<Folder Include="wwwroot\dist\js\" />
 		<Folder Include="wwwroot\Images\" />
 	</ItemGroup>
 

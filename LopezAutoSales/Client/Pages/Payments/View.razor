@@ -22,7 +22,7 @@ else
     <h5>Initial Due: @Account.InitialDue.ToString("C")</h5>
     <h4>Payments</h4>
     <div class="table-responsive">
-        <table class="table table-sm table-hover table-striped text-center">
+        <table class="table table-sm table-hover table-bordered table-striped text-center">
             <thead>
                 <tr>
                     <th scope="col">
@@ -46,36 +46,36 @@ else
                         </td>
                         <td class="no-print">
                             @{ string id = $"editPaymentModal{payment.Id}"; }
-                            <button class="btn btn-secondary" data-toggle="modal" data-target="#@id">Edit</button>
+                            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#@id">Edit</button>
                             <div class="modal fade" id="@id" tabindex="-1" role="dialog" aria-hidden="true">
                                 <div class="modal-dialog" role="document">
                                     <div class="modal-content">
                                         <div class="modal-header">
                                             <h5 class="modal-title">Edit Payment</h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                                                 <i class="mdi mdi-close"></i>
                                             </button>
                                         </div>
                                         <div class="modal-body">
-                                            <div class="form-group">
+                                            <div class="mb-3">
                                                 <label>Original Payment Date:</label>
                                                 <input type="datetime" value="@payment.Date" readonly class="form-control" />
                                             </div>
-                                            <div class="form-group">
+                                            <div class="mb-3">
                                                 <label>Original Payment Amount:</label>
                                                 <input type="number" value="@payment.Amount" readonly class="form-control" />
                                             </div>
                                         </div>
                                         <div class="modal-body">
-                                            <div class="form-group">
+                                            <div class="mb-3">
                                                 <label>New Payment Date:</label>
                                                 <input type="date" @bind-value="EditPayment.Date" class="form-control" />
                                             </div>
-                                            <div class="form-group">
+                                            <div class="mb-3">
                                                 <label>New Payment Amount:</label>
                                                 <input type="number" @bind-value="EditPayment.Amount" class="form-control" />
                                             </div>
-                                            <div class="form-group">
+                                            <div class="mb-3">
                                                 <label>Reason:</label>
                                                 <input type="text" @bind-value="EditPayment.Reason" class="form-control" />
                                             </div>
@@ -94,25 +94,25 @@ else
         </table>
     </div>
     <EditForm Model="Payment" OnValidSubmit="SubmitPayment">
-        <div class="no-print form-row pt-5">
-            <div class="form-group col-3">
+        <div class="no-print row pt-5">
+            <div class="col-3">
                 <label for="PaymentDate">Date:</label>
                 <InputDate class="form-control text-center" placeholder="Payment date..." id="PaymentDate" @bind-Value="Payment.Date" />
             </div>
-            <div class="form-group col-3">
+            <div class="col-3">
                 <label for="PaymentAmount">Amount</label>
                 <InputNumber class="form-control text-center" placeholder="Payment amount..." id="PaymentAmount" @bind-Value="Payment.Amount" />
             </div>
-            <div class="form-group text-right mt-auto col">
+            <div class="text-end mt-auto col">
                 <button class="btn btn-secondary" type="submit">Submit</button>
             </div>
         </div>
     </EditForm>
-    <div class="text-right font-weight-bold">
+    <div class="text-end fw-bold">
         Balance: @Account.Balance().ToString("C")
     </div>
     <div class="table-responsive mt-5 no-print">
-        <table class="table text-center">
+        <table class="table table-striped text-center">
             <thead>
                 <tr>
                     <th>
@@ -191,7 +191,7 @@ else
         if (response.IsSuccessStatusCode)
         {
             Account.Payments.Remove(payment);
-            await js.InvokeVoidAsync("modal", id, "hide");
+            await js.InvokeVoidAsync("toggleModal", id);
         }
     }
 
@@ -204,7 +204,7 @@ else
             payment.Date = EditPayment.Date;
             payment.Amount = EditPayment.Amount;
             EditPayment = new Payment { Amount = Account.MonthlyPayment };
-            await js.InvokeVoidAsync("modal", id, "hide");
+            await js.InvokeVoidAsync("toggleModal", id);
         }
     }
 

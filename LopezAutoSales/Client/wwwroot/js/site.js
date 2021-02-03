@@ -1,3 +1,4 @@
-﻿window.modal = (id, action) => {
-    $('#' + id).modal(action);
+﻿window.toggleModal = (id) => {
+	var myModalEl = document.getElementById(id);
+	bootstrap.Modal.getInstance(myModalEl).toggle();
 };

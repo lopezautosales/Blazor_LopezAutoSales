@@ -70,7 +70,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             Car car = _context.Cars.FirstOrDefault(x => x.Id == id);
             if (car == null)
-                return BadRequest();
+                return BadRequest("Car was not found.");
             _logger.LogInformation($"{User.GetDisplayName()} EDITED {car.Name()} FOR {car.ListPrice}");
             car.Update(data);
             car.IsSalvage = data.IsSalvage;
@@ -86,15 +86,28 @@ namespace LopezAutoSales.Server.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult RemovePicture(int id)
         {
+            int newThumbnailId = 0;
             Picture picture = _context.Pictures.Find(id);
             if (picture == null)
-                return BadRequest();
-            System.IO.File.Delete(FullPath(picture.URL));
+                return BadRequest("Picture was not found.");
+            if (System.IO.File.Exists(FullPath(picture.URL)))
+                System.IO.File.Delete(FullPath(picture.URL));
             if (picture.IsThumbnail)
-                System.IO.File.Delete(FullPath(picture.ThumbnailURL()));
+            {
+                if (System.IO.File.Exists(FullPath(picture.ThumbnailURL())))
+                    System.IO.File.Delete(FullPath(picture.ThumbnailURL()));
+
+                Picture otherPicture = _context.Pictures.FirstOrDefault(x => x.Id != id && x.CarId == picture.CarId);
+                if (otherPicture != null)
+                {
+                    CreateThumbnail(otherPicture);
+                    otherPicture.IsThumbnail = true;
+                    newThumbnailId = otherPicture.Id;
+                }
+            }
             _context.Remove(picture);
             _context.SaveChanges();
-            return Ok();
+            return Ok(newThumbnailId);
         }
 
         [HttpPut("thumbnail/{carId}")]
@@ -106,15 +119,16 @@ namespace LopezAutoSales.Server.Controllers
                 return BadRequest();
 
             Picture picture = car.Pictures.FirstOrDefault(x => x.Id == pictureId);
-            if (picture == null || picture.IsThumbnail)
+            if (picture == null)
                 return BadRequest();
-            CreateThumbnail(picture);
             List<Picture> thumbnails = car.Pictures.Where(x => x.IsThumbnail).ToList();
             foreach (Picture removable in thumbnails)
             {
                 removable.IsThumbnail = false;
-                System.IO.File.Delete(FullPath(removable.ThumbnailURL()));
+                if (System.IO.File.Exists(FullPath(removable.ThumbnailURL())))
+                    System.IO.File.Delete(FullPath(removable.ThumbnailURL()));
             }
+            CreateThumbnail(picture);
             picture.IsThumbnail = true;
             _context.SaveChanges();
             return Ok();
@@ -146,6 +160,8 @@ namespace LopezAutoSales.Server.Controllers
                     IsThumbnail = false,
                     URL = Path.Combine("Images", file.FileName)
                 };
+                if (System.IO.File.Exists(FullPath(picture.URL)))
+                    System.IO.File.Delete(FullPath(picture.URL));
                 pictures.Add(picture);
                 using Image image = Image.Load(file.OpenReadStream());
                 image.Mutate(x => x.AutoOrient());
@@ -162,10 +178,17 @@ namespace LopezAutoSales.Server.Controllers
 
         private void CreateThumbnail(Picture picture)
         {
-            using Image image = Image.Load(FullPath(picture.URL));
-            double ratio = Constants.ThumbnailSize / (double)image.Width;
-            image.Mutate(x => x.AutoOrient().Resize((int)(image.Width * ratio), (int)(image.Height * ratio)));
-            image.Save(FullPath(picture.ThumbnailURL()));
+            try
+            {
+                using Image image = Image.Load(FullPath(picture.URL));
+                double ratio = Constants.ThumbnailSize / (double)image.Width;
+                image.Mutate(x => x.AutoOrient().Resize((int)(image.Width * ratio), (int)(image.Height * ratio)));
+                image.Save(FullPath(picture.ThumbnailURL()));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
         }
 
         private string FullPath(string path)

@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html class="h-100">
+<html lang="en">
 
 <head>
     <meta charset="utf-8" />
@@ -7,7 +7,7 @@
     <title>@ViewBag.Title - Lopez Auto Sales</title>
     <meta name="theme-color" content="#02bbee" />
     <link href="~/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="~/lib/css/materialdesignicons.min.css" rel="stylesheet" />
+    <link href="~/dist/css/materialdesignicons.min.css" rel="stylesheet" />
     <link href="~/css/app.css" rel="stylesheet" />
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-179267166-1"></script>
@@ -20,15 +20,15 @@
     </script>
 </head>
 
-<body class="d-flex flex-column h-100">
-    <nav class="navbar navbar-expand-lg navbar-light bg-gradient-primary">
+<body class="d-flex flex-column">
+    <nav class="sticky-top navbar navbar-expand-lg navbar-light bg-primary bg-gradient">
         <div class="container">
-            <a class="navbar-brand font-weight-bold" href="/">Lopez Auto Sales</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
+            <a class="navbar-brand fw-bold" href="/">Lopez Auto Sales</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="mdi mdi-menu"></i>
             </button>
             <div class="collapse navbar-collapse" id="navbarTop">
-                <ul class="navbar-nav ml-auto">
+                <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="/"><i class="mdi mdi-car"></i> Inventory</a>
                     </li>
@@ -49,9 +49,8 @@
     <div role="main" class="container">
         @RenderBody()
     </div>
-    <component type="typeof(Client.Shared.Footer)" render-mode="Static"/>
-    <script src="~/lib/dist/js/jquery.slim.min.js"></script>
-    <script src="~/lib/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/dist/js/jquery.slim.min.js"></script>
+    <script src="~/dist/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", false)
 </body>
 </html>

@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LopezAutoSales.Client", "Lo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LopezAutoSales.Shared", "LopezAutoSales\Shared\LopezAutoSales.Shared.csproj", "{3150DD95-71FD-4CAE-9570-324DCBE47D21}"
 EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "LopezAutoSales.Packages", "LopezAutoSales\Packages\LopezAutoSales.Packages.njsproj", "{F91D5D7E-4A0A-46F9-9EA8-C35014215B4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{3150DD95-71FD-4CAE-9570-324DCBE47D21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3150DD95-71FD-4CAE-9570-324DCBE47D21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3150DD95-71FD-4CAE-9570-324DCBE47D21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F91D5D7E-4A0A-46F9-9EA8-C35014215B4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F91D5D7E-4A0A-46F9-9EA8-C35014215B4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F91D5D7E-4A0A-46F9-9EA8-C35014215B4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F91D5D7E-4A0A-46F9-9EA8-C35014215B4D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

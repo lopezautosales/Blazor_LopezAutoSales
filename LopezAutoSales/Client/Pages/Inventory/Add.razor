@@ -10,7 +10,7 @@
 <EditForm Model="Car" OnValidSubmit="SubmitVehicle">
     <DataAnnotationsValidator />
     <ErrorDisplay Errors="Errors" />
-    <div class="form-group">
+    <div class="mb-3">
         <label>VIN</label>
         <div class="input-group">
             <InputText class="form-control" @bind-Value="Car.VIN"></InputText>
@@ -19,45 +19,45 @@
             </div>
         </div>
     </div>
-    <div class="form-row">
-        <div class="form-group col-md-3">
+    <div class="row">
+        <div class="col-md-3">
             <label>Year</label>
             <InputNumber class="form-control" @bind-Value="Car.Year"></InputNumber>
         </div>
-        <div class="form-group col-md-3">
+        <div class="col-md-3">
             <label>Make</label>
             <InputText class="form-control" @bind-Value="Car.Make"></InputText>
         </div>
-        <div class="form-group col-md-3">
+        <div class="col-md-3">
             <label>Model</label>
             <InputText class="form-control" @bind-Value="Car.Model"></InputText>
         </div>
-        <div class="form-group col-md-3">
+        <div class="col-md-3">
             <label>Color</label>
             <InputText class="form-control" @bind-Value="Car.Color"></InputText>
         </div>
     </div>
-    <div class="form-row">
-        <div class="form-group col-md-3">
+    <div class="row">
+        <div class="col-md-3">
             <label>Mileage</label>
             <InputNumber class="form-control" placeholder="Exempt" @bind-Value="Car.Mileage"></InputNumber>
         </div>
-        <div class="form-group col-md-3">
+        <div class="col-md-3">
             <label>Bought Price</label>
             <InputNumber class="form-control" @bind-Value="Car.BoughtPrice"></InputNumber>
         </div>
-        <div class="form-group col-md-3">
+        <div class="col-md-3">
             <label>List Price</label>
             <InputNumber class="form-control" @bind-Value="Car.ListPrice"></InputNumber>
         </div>
-        <div class="form-group col-md-3 my-auto text-center">
+        <div class="col-md-3 my-auto">
             <div class="form-check">
                 <InputCheckbox class="form-check-input" id="salvageCheck" @bind-Value="Car.IsSalvage"></InputCheckbox>
                 <label class="form-check-label" for="salvageCheck">Is Salvage</label>
             </div>
         </div>
     </div>
-    <div class="text-right">
+    <div class="text-end">
         <button type="submit" class="btn btn-secondary">Submit</button>
     </div>
 </EditForm>
