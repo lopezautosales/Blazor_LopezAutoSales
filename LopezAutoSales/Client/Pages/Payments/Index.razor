@@ -3,29 +3,29 @@
 @inject AuthHttp auth
 
 <h1 class="text-center">Payments</h1>
-@if (Accounts == null)
+@if (results is null)
 {
     <p class="lead">Loading...</p>
 }
-else if (Results.Count() == 0)
+else if (accounts.Count() == 0)
 {
-    <p class="lead">There's currently no active accounts.</p>
+    <p class="lead">There's currently no relevant accounts.</p>
 }
 else
 {
     <div class="form-row">
         <div class="form-group col">
             <label for="Buyer">Search Buyers:</label>
-            <input type="text" class="form-control" id="Buyer" @bind-value="Buyer" />
+            <input type="text" class="form-control" id="Buyer" @bind-value="buyer" />
         </div>
         <div class="form-group col">
             <label for="Vehicle">Search Vehicles:</label>
-            <input type="text" class="form-control" id="Vehicle" @bind-value="Vehicle" />
+            <input type="text" class="form-control" id="Vehicle" @bind-value="vehicle" />
         </div>
     </div>
     <div class="d-flex">
         <div class="form-group form-check ml-auto">
-            <input type="checkbox" class="form-check-input" id="showPaid" @bind-value="ShowPaid">
+            <input type="checkbox" class="form-check-input" id="showPaid" @bind-value="showPaid">
             <label class="form-check-label" for="showPaid">Show Paid</label>
         </div>
     </div>
@@ -42,7 +42,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (Account account in Accounts)
+                @foreach (Account account in accounts)
                 {
                     <tr class="@RowColor(account)">
                         <td>
@@ -60,39 +60,39 @@ else
     </div>
 }
 @code {
-    public IEnumerable<Account> Accounts { get; set; }
-    private IEnumerable<Account> Results { get; set; }
-    private bool showPaid = false;
-    public bool ShowPaid { get { return showPaid; } set { showPaid = value; Search(); } }
-    private string buyer;
-    private string Buyer { get { return buyer; } set { buyer = value; Search(); } }
-    private string vehicle;
-    private string Vehicle { get { return vehicle; } set { vehicle = value; Search(); } }
+    private IEnumerable<Account> accounts;
+    private IEnumerable<Account> results;
+    private bool _showPaid = false;
+    private bool showPaid { get { return _showPaid; } set { _showPaid = value; Search(); } }
+    private string _buyer;
+    private string buyer { get { return _buyer; } set { _buyer = value; Search(); } }
+    private string _vehicle;
+    private string vehicle { get { return _vehicle; } set { _vehicle = value; Search(); } }
 
     protected override async Task OnInitializedAsync()
     {
-        Results = await auth.Client.GetFromJsonAsync<IEnumerable<Account>>("/api/account");
-        Accounts = Results.Where(x => x.IsPaid == false);
+        results = await auth.Client.GetFromJsonAsync<IEnumerable<Account>>("/api/account");
+        accounts = results.Where(x => x.IsPaid == false);
         await base.OnInitializedAsync();
     }
 
     private void Search()
     {
-        IEnumerable<Account> search = Results;
+        IEnumerable<Account> search = results;
         string query;
-        if (!ShowPaid)
+        if (!showPaid)
             search = search.Where(x => x.IsPaid == false);
-        if (!string.IsNullOrEmpty(Buyer))
+        if (!string.IsNullOrEmpty(buyer))
         {
-            query = Buyer.ToUpper();
+            query = buyer.ToUpper();
             search = search.Where(x => x.Sale.Buyer.ToUpper().Contains(query) || (!string.IsNullOrEmpty(x.Sale.CoBuyer) && x.Sale.CoBuyer.ToUpper().Contains(query)));
         }
-        if (!string.IsNullOrEmpty(Vehicle))
+        if (!string.IsNullOrEmpty(vehicle))
         {
-            query = Vehicle.ToUpper();
+            query = vehicle.ToUpper();
             search = search.Where(x => x.Sale.Car.Name().ToUpper().Contains(query));
         }
-        Accounts = search;
+        accounts = search;
     }
 
     private string RowColor(Account account)

@@ -3,32 +3,32 @@
 @attribute [Authorize(Roles = "Admin")]
 @using LopezAutoSales.Client.Shared.Papers
 
-@if (Sale == null)
+@if (sale is null)
 {
     <p class="lead">Loading...</p>
 }
 else
 {
-    <Contract Sale="Sale" />
+    <Contract Sale="sale" />
     <div id="page-break" />
-    <TransferAgreement Sale="Sale" />
+    <TransferAgreement Sale="sale" />
     <div id="page-break" />
-    <Warranty Car="Sale.Car" Amount="Sale.Warranty" />
-    @if (Sale.TotalDue() > 0)
+    <Warranty Car="sale.Car" Amount="sale.Warranty" />
+    @if (sale.TotalDue() > 0)
     {
         <div id="page-break" />
-        <PromissoryNote Sale="Sale" />
+        <PromissoryNote Sale="sale" />
     }
 }
 
 @code {
     [Parameter]
     public int Id { get; set; }
-    public Sale Sale { get; set; }
+    private Sale sale;
 
     protected override async Task OnInitializedAsync()
     {
-        Sale = await auth.Client.GetFromJsonAsync<Sale>($"/api/sale/view/{Id}");
+        sale = await auth.Client.GetFromJsonAsync<Sale>($"/api/sale/view/{Id}");
         await base.OnInitializedAsync();
     }
 }

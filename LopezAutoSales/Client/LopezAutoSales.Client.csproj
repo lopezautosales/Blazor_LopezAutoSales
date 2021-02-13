@@ -6,7 +6,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Blazored.SessionStorage" Version="1.0.12" />
+		<PackageReference Include="Blazored.SessionStorage" Version="1.0.13" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.2" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="5.0.2" />

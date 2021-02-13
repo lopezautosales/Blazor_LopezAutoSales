@@ -3,23 +3,23 @@
 @inject AuthHttp auth
 @inject IJSRuntime js
 
-@if (Account == null)
+@if (account is null)
 {
     <p class="lead">Loading...</p>
 }
 else
 {
-    <h1 class="text-center">Payments for @Account.Sale.Car.Name()</h1>
-    <h3>@Account.Sale.Buyers()</h3>
+    <h1 class="text-center">Payments for @account.Sale.Car.Name()</h1>
+    <h3>@account.Sale.Buyers()</h3>
     <div class="row">
         <div class="col">
-            <h6>Down Payment: @Account.Sale.DownPayment.ToString("C")</h6>
+            <h6>Down Payment: @account.Sale.DownPayment.ToString("C")</h6>
         </div>
         <div class="col">
-            <h6>Purchase Date: @Account.Sale.Date.ToShortDateString()</h6>
+            <h6>Purchase Date: @account.Sale.Date.ToShortDateString()</h6>
         </div>
     </div>
-    <h5>Initial Due: @Account.InitialDue.ToString("C")</h5>
+    <h5>Initial Due: @account.InitialDue.ToString("C")</h5>
     <h4>Payments</h4>
     <div class="table-responsive">
         <table class="table table-sm table-hover table-striped text-center">
@@ -35,7 +35,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (Payment payment in Account.Payments.OrderBy(x => x.Date))
+                @foreach (Payment payment in account.Payments.OrderBy(x => x.Date))
                 {
                     <tr>
                         <td>
@@ -69,15 +69,15 @@ else
                                         <div class="modal-body">
                                             <div class="form-group">
                                                 <label>New Payment Date:</label>
-                                                <input type="date" @bind-value="EditPayment.Date" class="form-control" />
+                                                <input type="date" @bind-value="editPayment.Date" class="form-control" />
                                             </div>
                                             <div class="form-group">
                                                 <label>New Payment Amount:</label>
-                                                <input type="number" @bind-value="EditPayment.Amount" class="form-control" />
+                                                <input type="number" @bind-value="editPayment.Amount" class="form-control" />
                                             </div>
                                             <div class="form-group">
                                                 <label>Reason:</label>
-                                                <input type="text" @bind-value="EditPayment.Reason" class="form-control" />
+                                                <input type="text" @bind-value="editPayment.Reason" class="form-control" />
                                             </div>
                                         </div>
                                         <div class="modal-footer">
@@ -93,15 +93,15 @@ else
             </tbody>
         </table>
     </div>
-    <EditForm Model="Payment" OnValidSubmit="SubmitPayment">
+    <EditForm Model="payment" OnValidSubmit="SubmitPayment">
         <div class="no-print form-row pt-5">
             <div class="form-group col-3">
                 <label for="PaymentDate">Date:</label>
-                <InputDate class="form-control text-center" placeholder="Payment date..." id="PaymentDate" @bind-Value="Payment.Date" />
+                <InputDate class="form-control text-center" placeholder="Payment date..." id="PaymentDate" @bind-Value="payment.Date" />
             </div>
             <div class="form-group col-3">
                 <label for="PaymentAmount">Amount</label>
-                <InputNumber class="form-control text-center" placeholder="Payment amount..." id="PaymentAmount" @bind-Value="Payment.Amount" />
+                <InputNumber class="form-control text-center" placeholder="Payment amount..." id="PaymentAmount" @bind-Value="payment.Amount" />
             </div>
             <div class="form-group text-right mt-auto col">
                 <button class="btn btn-secondary" type="submit">Submit</button>
@@ -109,7 +109,7 @@ else
         </div>
     </EditForm>
     <div class="text-right font-weight-bold">
-        Balance: @Account.Balance().ToString("C")
+        Balance: @account.Balance().ToString("C")
     </div>
     <div class="table-responsive mt-5 no-print">
         <table class="table text-center">
@@ -132,19 +132,19 @@ else
             <tbody>
                 <tr>
                     <td>
-                        @Account.ExpirationDate().ToShortDateString()
+                        @account.ExpirationDate().ToShortDateString()
                     </td>
                     <td>
-                        @Account.LateDue().ToString("C")
+                        @account.LateDue().ToString("C")
                     </td>
                     <td>
-                        @Account.MonthlyPayment.ToString("C")
+                        @account.MonthlyPayment.ToString("C")
                     </td>
                     <td>
                         <div class="btn-group no-print" role="group">
                             <button class="btn btn-secondary" type="button" @onclick="Print"><i class="mdi mdi-printer"></i> Print</button>
-                            <a class="btn btn-secondary" href="/app/papers/view/@Account.SaleId" target="_blank">View Papers</a>
-                            <a class="btn btn-secondary" href="/app/papers/edit/@Account.SaleId" target="_blank">Edit Papers</a>
+                            <a class="btn btn-secondary" href="/app/papers/view/@account.SaleId" target="_blank">View Papers</a>
+                            <a class="btn btn-secondary" href="/app/papers/edit/@account.SaleId" target="_blank">Edit Papers</a>
                         </div>
                     </td>
                 </tr>
@@ -155,55 +155,57 @@ else
 
 
 @code {
-    [Parameter]
-    public int Id { get; set; }
-    private Account Account { get; set; }
-    private Payment Payment { get; set; } = new Payment();
-    private Payment EditPayment { get; set; } = new Payment();
+        [Parameter]
+        public int Id { get; set; }
+    private Account account;
+    private Payment payment = new Payment();
+    private Payment editPayment = new Payment();
 
     protected override async Task OnInitializedAsync()
     {
-        Account = await auth.Client.GetFromJsonAsync<Account>($"/api/account/{Id}");
-        if (Account != null)
+        account = await auth.Client.GetFromJsonAsync<Account>($"/api/account/{Id}");
+        if (account != null)
         {
-            Payment.AccountId = Id;
-            EditPayment.AccountId = Id;
-            Payment.Amount = EditPayment.Amount = Account.MonthlyPayment;
+            payment.AccountId = Id;
+            editPayment.AccountId = Id;
+            payment.Amount = editPayment.Amount = account.MonthlyPayment;
         }
         await base.OnInitializedAsync();
     }
 
     private async Task SubmitPayment()
     {
-        var response = await auth.Client.PostAsJsonAsync("/api/account/payment", Payment);
+        if (account.Balance() - payment.Amount < 0 && !(await js.InvokeAsync<bool>("confirm", "Balance will be negative. Are you sure?")))
+            return;
+        var response = await auth.Client.PostAsJsonAsync("/api/account/payment", payment);
         if (response.IsSuccessStatusCode)
         {
-            Payment.Id = int.Parse(await response.Content.ReadAsStringAsync());
-            Account.Payments.Add(Payment);
-            Payment = new Payment { Amount = Account.MonthlyPayment };
+            payment.Id = int.Parse(await response.Content.ReadAsStringAsync());
+            account.Payments.Add(payment);
+            payment = new Payment { Amount = account.MonthlyPayment };
         }
     }
 
     private async Task Delete(Payment payment, string id)
     {
-        EditPayment.Id = payment.Id;
-        var response = await auth.Client.PostAsJsonAsync($"/api/account/payment/delete", EditPayment);
+        editPayment.Id = payment.Id;
+        var response = await auth.Client.PostAsJsonAsync($"/api/account/payment/delete", editPayment);
         if (response.IsSuccessStatusCode)
         {
-            Account.Payments.Remove(payment);
+            account.Payments.Remove(payment);
             await js.InvokeVoidAsync("modal", id, "hide");
         }
     }
 
     private async Task Save(Payment payment, string id)
     {
-        EditPayment.Id = payment.Id;
-        var response = await auth.Client.PutAsJsonAsync($"/api/account/payment", EditPayment);
+        editPayment.Id = payment.Id;
+        var response = await auth.Client.PutAsJsonAsync($"/api/account/payment", editPayment);
         if (response.IsSuccessStatusCode)
         {
-            payment.Date = EditPayment.Date;
-            payment.Amount = EditPayment.Amount;
-            EditPayment = new Payment { Amount = Account.MonthlyPayment };
+            payment.Date = editPayment.Date;
+            payment.Amount = editPayment.Amount;
+            editPayment = new Payment { Amount = account.MonthlyPayment };
             await js.InvokeVoidAsync("modal", id, "hide");
         }
     }

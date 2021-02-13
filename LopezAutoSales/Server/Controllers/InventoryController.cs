@@ -76,8 +76,6 @@ namespace LopezAutoSales.Server.Controllers
             car.IsSalvage = data.IsSalvage;
             car.JsonData = data.JsonData;
             car.ListPrice = data.ListPrice;
-            if (HttpContext.Request.Form.Files.Any())
-                HandleImages(car);
             _context.SaveChanges();
             return Ok();
         }

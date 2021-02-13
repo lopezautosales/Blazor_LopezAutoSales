@@ -4,22 +4,22 @@
 @inject HttpClient http
 @inject IJSRuntime js
 
-@if (Car != null)
+@if (car != null)
 {
     <div class="text-right my-2 no-print">
         <button class="btn btn-secondary" @onclick="Print"><i class="mdi mdi-printer"></i> Print</button>
     </div>
-    <Warranty Car="Car" Amount="Dealership.Warranty" />
+    <Warranty Car="car" Amount="Dealership.Warranty" />
 }
 
 @code {
     [Parameter]
     public int Id { get; set; }
-    private Car Car { get; set; }
+    private Car car;
 
     protected override async Task OnInitializedAsync()
     {
-        Car = await carManager.GetCarAsync(http, Id);
+        car = await carManager.GetCarAsync(http, Id);
         await base.OnInitializedAsync();
     }
 

@@ -26,10 +26,10 @@
         </tr>
     </thead>
     <tbody>
-        @if (Sales != null)
+        @if (sales != null)
         {
             decimal boughtTotal = 0, sellingTotal = 0, taxTotal = 0;
-            @foreach (Sale sale in Sales)
+            @foreach (Sale sale in sales)
             {
                 <tr>
                     <td>@sale.Date.ToShortDateString()</td>
@@ -58,13 +58,13 @@
 @code {
     [Parameter]
     public int? Year { get; set; }
-    public List<Sale> Sales { get; set; }
+    public List<Sale> sales;
 
     protected override async Task OnParametersSetAsync()
     {
         if (!Year.HasValue)
             Year = DateTime.Today.Year;
-        Sales = await http.Client.GetFromJsonAsync<List<Sale>>($"/api/sale/report/{Year.Value}");
+        sales = await http.Client.GetFromJsonAsync<List<Sale>>($"/api/sale/report/{Year.Value}");
         await base.OnParametersSetAsync();
     }
 }

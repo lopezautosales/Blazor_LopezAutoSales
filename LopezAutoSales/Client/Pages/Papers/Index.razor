@@ -4,12 +4,12 @@
 @inject AuthHttp auth
 
 <h1 class="text-center">Papers</h1>
-@if (Sales == null)
+@if (sales == null)
 {
     <p class="lead">Loading...</p>
 
 }
-else if (Sales.Count == 0)
+else if (sales.Count == 0)
 {
     <p class="lead">No papers could be found.</p>
 }
@@ -45,7 +45,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (Sale sale in Sales)
+                @foreach (Sale sale in sales)
                 {
                     <tr>
                         <td>
@@ -73,13 +73,13 @@ else
 @code {
     [Parameter]
     public int? Year { get; set; }
-    public List<Sale> Sales { get; set; }
+    private List<Sale> sales;
 
     protected override async Task OnParametersSetAsync()
     {
         if (!Year.HasValue)
             Year = DateTime.Today.Year;
-        Sales = await auth.Client.GetFromJsonAsync<List<Sale>>($"/api/sale/{Year}");
+        sales = await auth.Client.GetFromJsonAsync<List<Sale>>($"/api/sale/{Year}");
         await base.OnParametersSetAsync();
     }
 }
