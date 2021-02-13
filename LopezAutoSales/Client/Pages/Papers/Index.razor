@@ -19,7 +19,7 @@ else
         <div class="col-6">
             <a class="btn btn-secondary" href="/app/papers/@(Year-1)">@(Year-1) Sales</a>
         </div>
-        <div class="col-6 text-right">
+        <div class="col-6 text-end">
             @if (Year != DateTime.Today.Year)
             {
                 <a class="btn btn-secondary" href="/app/papers/@(Year+1)">@(Year+1) Sales</a>
@@ -27,7 +27,7 @@ else
         </div>
     </div>
     <div class="table-responsive">
-        <table class="table text-center">
+        <table class="table table-striped text-center">
             <thead>
                 <tr>
                     <th scope="col">

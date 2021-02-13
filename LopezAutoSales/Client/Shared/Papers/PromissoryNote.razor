@@ -3,7 +3,7 @@
     <div class="col-6">
         @Sale.TotalDue().ToString("C")
     </div>
-    <div class="col-6 text-right">
+    <div class="col-6 text-end">
         Date: @Sale.Date.ToShortDateString()
     </div>
 </div>
@@ -24,10 +24,10 @@
 <p>
     &emsp; This note is secured by the following described personal property. Enforcement of this note shall be governed by Kansas law. The undersigned also grants to Lender a security interest under the Unfirom Commercial Code in the following described property:
 </p>
-<div class="container border border-dark">
-    <p class="font-weight-bold">
+<p class="container border border-dark">
+    <div class="fw-bold">
         Description of Property:
-    </p>
+    </div>
     <div>
         @Sale.Car.Name()
     </div>
@@ -37,7 +37,7 @@
     <div class="mb-2">
         Mileage: @Sale.Car.MileageString()
     </div>
-</div>
+</p>
 <p>
     together with all parts and equipment used in connection therewith, additions, replacements, accessions, proceeds, products, and similar after-acquired property; provided, this security interest shall not attach to after-acquired consumer goods, except accessions, unless the undersigned acqure rights in such after-acquired consumer goods within 10 days after the Lender gives value.
     The undersigned grant to Lender a security interest by an assignment in any returned or unearned insurance premiums. This security interest is given to secure payment of all the Borrower's present and future indebtedness of any type to Lender, including without limitation; future advances, overdrafts, all expenditures by Lender for taxes, insurance, repairs to and maintenance of collateral, and all expenses of the Lender in realizing on its security interest.
@@ -61,16 +61,16 @@
 <div class="row pt-4 text-center">
     <div class="col-6">
         <p>
-            Signature: <input class="signature ml-1" type="text" />
+            Signature: <input class="signature ms-1" type="text" />
         </p>
-        <p>Print: <input class="signature ml-1" type="text" /></p>
-        <p>Social Security: <input class="signature ml-1" type="text" /></p>
+        <p>Print: <input class="signature ms-1" type="text" /></p>
+        <p>Social Security: <input class="signature ms-1" type="text" /></p>
     </div>
     <div class="col-6">
         <p>
-            Signature: <input class="signature ml-1" type="text" />
+            Signature: <input class="signature ms-1" type="text" />
         </p>
-        <p>Print: <input class="signature ml-1" type="text" /></p>
+        <p>Print: <input class="signature ms-1" type="text" /></p>
     </div>
 </div>
 

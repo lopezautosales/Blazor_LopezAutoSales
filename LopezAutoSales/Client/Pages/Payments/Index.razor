@@ -13,24 +13,24 @@ else if (accounts.Count() == 0)
 }
 else
 {
-    <div class="form-row">
-        <div class="form-group col">
+    <div class="row">
+        <div class="col">
             <label for="Buyer">Search Buyers:</label>
             <input type="text" class="form-control" id="Buyer" @bind-value="buyer" />
         </div>
-        <div class="form-group col">
+        <div class="col">
             <label for="Vehicle">Search Vehicles:</label>
             <input type="text" class="form-control" id="Vehicle" @bind-value="vehicle" />
         </div>
     </div>
     <div class="d-flex">
-        <div class="form-group form-check ml-auto">
+        <div class="form-check ms-auto">
             <input type="checkbox" class="form-check-input" id="showPaid" @bind-value="showPaid">
             <label class="form-check-label" for="showPaid">Show Paid</label>
         </div>
     </div>
     <div class="table-responsive">
-        <table class="table text-center">
+        <table class="table table-striped text-center">
             <thead>
                 <tr>
                     <th>

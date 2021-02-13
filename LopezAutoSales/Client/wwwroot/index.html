@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en-us" class="h-100">
+<html lang="en-us">
 
 <head>
     <meta charset="utf-8" />
@@ -7,22 +7,21 @@
     <title>Lopez Auto Sales</title>
     <base href="/" />
     <link href="/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="/lib/css/materialdesignicons.min.css" rel="stylesheet" />
+    <link href="/dist/css/materialdesignicons.min.css" rel="stylesheet" />
     <link href="/css/app.css" rel="stylesheet" />
     <link href="manifest.json" rel="manifest" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
 </head>
 
-<body class="h-100">
-    <div id="app" class="d-flex flex-column h-100">
+<body>
+    <div id="app" class="d-flex flex-column">
         <div class="text-center my-auto">
             Loading...
         </div>
     </div>
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
-    <script src="/lib/dist/js/jquery.slim.min.js"></script>
-    <script src="/lib/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/site.js"></script>
     <script>
         navigator.serviceWorker.register('service-worker.js');

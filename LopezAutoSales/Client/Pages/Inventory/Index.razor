@@ -8,7 +8,7 @@
     <div class="col-6">
         <a class="btn btn-secondary" href="/app/inventory/sell">Sell Vehicle</a>
     </div>
-    <div class="col-6 text-right">
+    <div class="col-6 text-end">
         <a href="/app/inventory/add" class="btn btn-secondary"><i class="mdi mdi-plus"></i> Add Vehicle</a>
     </div>
 </div>
@@ -23,7 +23,7 @@ else if (inventory.Cars.Count() == 0)
 else
 {
     <div class="table-responsive">
-        <table class="table table-hover">
+        <table class="table table-striped table-hover">
             <thead class="text-center">
                 <tr>
                     <th class="pointer" scope="col" @onclick="() => inventory.Sort(Inventory.SortMethod.Year)">

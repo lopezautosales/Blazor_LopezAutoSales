@@ -1,26 +1,30 @@
 ﻿<h1 class="text-center">Buyer's Guide</h1>
 <hr />
-<p><div class="font-weight-bold">Important:</div> Spoken promises are dificult to enforce. Ask the dealer to put all promises in writing. Keep this form.</p>
+<p><div class="fw-bold">Important:</div> Spoken promises are dificult to enforce. Ask the dealer to put all promises in writing. Keep this form.</p>
 <div class="table-responsive">
     <table class="table table-bordered table-sm text-center">
-        <tr>
-            <td>@Car.Make</td>
-            <td>@Car.Model</td>
-            <td>@Car.Year</td>
-            <td>@Car.VIN</td>
-        </tr>
-        <tr class="small">
-            <td>(Vehicle Make)</td>
-            <td>(Model)</td>
-            <td>(Year)</td>
-            <td>(VIN)</td>
-        </tr>
+        <thead>
+            <tr>
+                <td>@Car.Make</td>
+                <td>@Car.Model</td>
+                <td>@Car.Year</td>
+                <td>@Car.VIN</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="small">
+                <td>(Vehicle Make)</td>
+                <td>(Model)</td>
+                <td>(Year)</td>
+                <td>(VIN)</td>
+            </tr>
+        </tbody>
     </table>
 </div>
-<h5 style="border-bottom: 2px solid black;">WARRANTIES FOR THIS VEHICLE:</h5>
+<h5 class="border-bottom border-dark border-3">WARRANTIES FOR THIS VEHICLE:</h5>
 <div class="container">
     <div class="row">
-        <div class="col-1 text-right">
+        <div class="col-1 text-end">
             <div class="form-check">
                 <input class="form-check-input position-static" type="checkbox" style="width: 30px; height: 30px;" checked="@(!Amount.HasValue)">
             </div>
@@ -31,7 +35,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-1 text-right">
+        <div class="col-1 text-end">
             <div class="form-check">
                 <input class="form-check-input position-static" type="checkbox" style="width: 30px; height: 30px;" checked="@Amount.HasValue">
             </div>
@@ -41,7 +45,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-1 text-right">
+        <div class="col-1 text-end">
             <div class="form-check">
                 <input class="form-check-input position-static" type="checkbox">
             </div>
@@ -51,7 +55,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-1 text-right">
+        <div class="col-1 text-end">
             <div class="form-check">
                 <input class="form-check-input position-static" checked="@Amount.HasValue" type="checkbox">
             </div>
@@ -86,10 +90,10 @@
         </div>
     </div>
 </div>
-<h5 style="border-bottom: 2px solid black;">NON-DEALER WARRANTIES FOR THIS VEHICLE:</h5>
-<div class="container">
+<h5 class="border-bottom border-3 border-dark">NON-DEALER WARRANTIES FOR THIS VEHICLE:</h5>
+<div class="container border-bottom border-3 border-dark">
     <div class="row">
-        <div class="col-1 text-right">
+        <div class="col-1 text-end">
             <div class="form-check">
                 <input class="form-check-input position-static" type="checkbox">
             </div>
@@ -100,7 +104,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-1 text-right">
+        <div class="col-1 text-end">
             <div class="form-check">
                 <input class="form-check-input position-static" type="checkbox">
             </div>
@@ -110,7 +114,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-1 text-right">
+        <div class="col-1 text-end">
             <div class="form-check">
                 <input class="form-check-input position-static" type="checkbox">
             </div>
@@ -119,11 +123,12 @@
             OTHER USED VEHICLE WARRANTY APPLIES.
         </div>
     </div>
-    Ask the dealer for a copy of the warranty document and an explanation of warranty coverage, exclusions, and repair
-    obligations.
-    <hr />
+    <div class="border-bottom border-1 border-dark">
+        Ask the dealer for a copy of the warranty document and an explanation of warranty coverage, exclusions, and repair
+        obligations.
+    </div>
     <div class="row">
-        <div class="col-1 text-right">
+        <div class="col-1 text-end">
             <div class="form-check">
                 <input class="form-check-input position-static" type="checkbox">
             </div>
@@ -135,10 +140,9 @@
         </div>
     </div>
 </div>
-<div style="border-bottom: 2px solid black;"></div>
-<p class="font-weight-bold">ASK THE DEALER IF YOUR MECHANIC CAN INSPECT THE VEHICLE ON OR OFF THE LOT.</p>
+<p class="fw-bold">ASK THE DEALER IF YOUR MECHANIC CAN INSPECT THE VEHICLE ON OR OFF THE LOT.</p>
 <p>
-    <div class="font-weight-bold">OBTAIN A VEHICLE HISTORY REPORT AND CHECK FOR OPEN SAFETY RECALLS.</div> For information on
+    <div class="fw-bold">OBTAIN A VEHICLE HISTORY REPORT AND CHECK FOR OPEN SAFETY RECALLS.</div> For information on
     how to obtain a vehicle history report, visit ftc.gov/usedcars. To check for open safety recalls, visit safercar.gov.
     You will need the vehicle identification number (VIN) shown above to make the best use of the resources on
     these sites.

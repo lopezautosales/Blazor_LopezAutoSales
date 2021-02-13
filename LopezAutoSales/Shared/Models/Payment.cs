@@ -11,7 +11,7 @@ namespace LopezAutoSales.Shared.Models
         public Account Account { get; set; }
 
         [Required]
-        public DateTime Date { get; set; } = DateTime.Today;
+        public DateTime Date { get; set; } = DateTime.Now;
         [Column(TypeName = "decimal(9,2)")]
         [Required]
         public decimal Amount { get; set; }

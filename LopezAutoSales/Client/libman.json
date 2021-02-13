@@ -4,18 +4,13 @@
   "libraries": [
     {
       "provider": "unpkg",
-      "library": "bootstrap@4.6.0",
-      "files": [ "dist/js/bootstrap.bundle.min.js", "dist/js/bootstrap.bundle.min.js.map" ],
-      "destination": "wwwroot/lib"
-    },
-    {
-      "library": "jquery@3.5.1",
-      "files": [ "jquery.slim.min.js", "jquery.slim.min.map" ],
-      "destination": "wwwroot/lib/dist/js"
+      "library": "bootstrap@5.0.0-beta1",
+      "files": [ "dist/js/bootstrap.bundle.min.js", "dist/js/bootstrap.bundle.min.js.map", "dist/js/bootstrap.bundle.js", "dist/js/bootstrap.bundle.js.map" ],
+      "destination": "wwwroot/"
     },
     {
       "library": "MaterialDesign-Webfont@5.9.55",
-      "destination": "wwwroot/lib/"
+      "destination": "wwwroot/dist/"
     }
   ]
 }
