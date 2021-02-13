@@ -53,6 +53,37 @@ namespace LopezAutoSales.Server.Controllers
             return Ok();
         }
 
+        [HttpPut("boughtPrice/{id}")]
+        public IActionResult SetBoughtPrice(int id, [FromBody] decimal amount)
+        {
+            if (amount < 0)
+                return BadRequest("Bought price cannot be negative.");
+
+            Sale sale = _context.Sales.Include(x => x.Car).FirstOrDefault(x => x.Id == id);
+
+            if (sale is null || sale.Car is null)
+                return BadRequest("Could not load the given sale/car.");
+
+            _logger.LogInformation($"{User.GetDisplayName()} SET BOUGHT PRICE {id} - {amount}");
+            sale.Car.BoughtPrice = amount;
+            _context.SaveChanges();
+            return Ok();
+        }
+
+        [HttpDelete("boughtPrice/{id}")]
+        public IActionResult RemoveBoughtPrice(int id)
+        {
+            Sale sale = _context.Sales.Include(x => x.Car).FirstOrDefault(x => x.Id == id);
+
+            if (sale is null || sale.Car is null)
+                return BadRequest("Could not load the given sale/car.");
+
+            _logger.LogInformation($"{User.GetDisplayName()} REMOVED BOUGHT PRICE {id}");
+            sale.Car.BoughtPrice = null;
+            _context.SaveChanges();
+            return Ok();
+        }
+
         [HttpPost]
         public IActionResult SellVehicle(Sale sale)
         {

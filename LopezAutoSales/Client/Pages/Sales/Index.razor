@@ -1,6 +1,7 @@
 ﻿@page "/app/report/{year:int}"
 @page "/app/report"
 @inject AuthHttp http
+@inject IJSRuntime js
 
 <h1 class="text-center">@Year.Value Sales Report</h1>
 <div class="no-print row mb-2">
@@ -23,6 +24,7 @@
             <th>Bought Price</th>
             <th>Sales Price</th>
             <th>Tax</th>
+            <th class="no-print">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -35,9 +37,31 @@
                     <td>@sale.Date.ToShortDateString()</td>
                     <td>@sale.Buyers()</td>
                     <td>@sale.Car.Name()</td>
-                    <td class="@(sale.Car.BoughtPrice.HasValue ? string.Empty : "bg-danger")">@sale.Car.BoughtPrice?.ToString("C")</td>
+                    <td class="@(sale.Car.BoughtPrice.HasValue ? string.Empty : "bg-danger")">
+                        @if (isEditing && editId == sale.Id)
+                        {
+                            <input type="number" class="form-control form-control-sm" @bind-value="@editAmount" />
+                        }
+                        else
+                        {
+                            @sale.Car.BoughtPrice?.ToString("C")
+                        }
+                    </td>
                     <td>@sale.SellingPrice.ToString("C")</td>
                     <td>@sale.TaxAmount()</td>
+                    <td class="no-print">
+                        <div class="btn-group" role="group" aria-label="Action buttons">
+                            @if (isEditing && editId == sale.Id)
+                            {
+                                <button type="button" class="btn btn-sm btn-success" @onclick="() => SaveEdit(sale.Id, editAmount)">Save</button>
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="CancelEdit">Cancel</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-sm btn-secondary" @onclick="() => StartEditing(sale.Id, sale.Car.BoughtPrice)">Edit</button>
+                            }
+                        </div>
+                    </td>
                 </tr>
                 boughtTotal += sale.Car.BoughtPrice ?? 0;
                 sellingTotal += sale.SellingPrice;
@@ -50,6 +74,7 @@
                 <td>@boughtTotal.ToString("C")</td>
                 <td>@sellingTotal.ToString("C")</td>
                 <td>@taxTotal.ToString("C")</td>
+                <td class="no-print"></td>
             </tr>
         }
     </tbody>
@@ -58,7 +83,10 @@
 @code {
     [Parameter]
     public int? Year { get; set; }
-    public List<Sale> sales;
+    private List<Sale> sales;
+    private decimal? editAmount = null;
+    private bool isEditing = false;
+    private int? editId = null;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -66,5 +94,47 @@
             Year = DateTime.Today.Year;
         sales = await http.Client.GetFromJsonAsync<List<Sale>>($"/api/sale/report/{Year.Value}");
         await base.OnParametersSetAsync();
+    }
+
+    private void StartEditing(int id, decimal? amount)
+    {
+        CancelEdit();
+
+        editAmount = amount;
+        isEditing = true;
+        editId = id;
+    }
+
+    private void CancelEdit()
+    {
+        isEditing = false;
+        editId = null;
+        editAmount = null;
+    }
+
+    private async Task SaveEdit(int id, decimal? boughtPrice)
+    {
+        if (boughtPrice.HasValue)
+        {
+            var response = await http.Client.PutAsJsonAsync<decimal?>($"/api/sale/boughtPrice/{id}", boughtPrice);
+            if (!response.IsSuccessStatusCode)
+            {
+                await js.InvokeVoidAsync("alert", "This change could not be saved: " + response.Content.ReadAsStringAsync());
+                return;
+            }
+        }
+        else
+        {
+            var response = await http.Client.DeleteAsync($"/api/sale/boughtPrice/{id}");
+            if (!response.IsSuccessStatusCode)
+            {
+                await js.InvokeVoidAsync("alert", "This change could not be saved: " + response.Content.ReadAsStringAsync());
+                return;
+            }
+        }
+        Sale sale = sales.FirstOrDefault(x => x.Id == id);
+        if (sale != null)
+            sale.Car.BoughtPrice = boughtPrice;
+        CancelEdit();
     }
 }
