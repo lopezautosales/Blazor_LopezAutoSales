@@ -35,6 +35,16 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/about"><i class="mdi mdi-information"></i> About</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-message"></i> Contact Us
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="https://goo.gl/maps/YZoFvQTUptU8cASW8" target="_blank"><i class="mdi mdi-map"></i> Directions</a></li>
+                            <li><a class="dropdown-item" href="tel:16202086250"><i class="mdi mdi-phone"></i> Phone</a></li>
+                            <li><a class="dropdown-item" href="mailto:lopezauto@outlook.com"><i class="mdi mdi-email"></i> Email</a></li>
+                        </ul>
+                    </li>
                     @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
                     {
                         <li class="nav-item">
