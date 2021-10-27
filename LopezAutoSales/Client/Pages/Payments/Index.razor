@@ -7,10 +7,6 @@
 {
     <p class="lead">Loading...</p>
 }
-else if (accounts.Count() == 0)
-{
-    <p class="lead">There's currently no relevant accounts.</p>
-}
 else
 {
     <div class="row">
@@ -71,7 +67,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        results = await auth.Client.GetFromJsonAsync<IEnumerable<Account>>("/api/account");
+        results = await auth.Client.GetFromJsonAsync<List<Account>>("/api/account");
         accounts = results.Where(x => x.IsPaid == false);
         await base.OnInitializedAsync();
     }
