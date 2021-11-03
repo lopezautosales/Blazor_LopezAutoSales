@@ -67,6 +67,7 @@ else
             </div>
         </div>
         <div class="text-end">
+            <button type="button" class="btn btn-danger text-white" @onclick="DeleteVehicle">Delete</button>
             <button type="submit" class="btn btn-secondary">Submit</button>
         </div>
     </EditForm>
@@ -119,7 +120,23 @@ else
             nav.NavigateTo($"/app/inventory");
         }
         else
-            await js.InvokeVoidAsync("alert", response.ReasonPhrase);
+            await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
+    }
+
+    private async Task DeleteVehicle()
+    {
+        bool isConfirmed = await js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this?");
+        if (!isConfirmed)
+            return;
+
+        var response = await auth.Client.DeleteAsync($"/api/inventory/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            carManager.DeleteCar(car);
+            nav.NavigateTo($"/app/inventory");
+        }
+        else
+            await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
     }
 
     private async Task HandleSelection(InputFileChangeEventArgs e)

@@ -146,6 +146,25 @@ namespace LopezAutoSales.Server.Controllers
             return Ok(car.Pictures);
         }
 
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult DeleteVehicle(int id)
+        {
+            Car car = _context.Cars.FirstOrDefault(x => x.Id == id);
+
+            if (car == null)
+                return BadRequest("Car was not found.");
+            if (!car.IsListed)
+                return BadRequest("Cannot remove cars that are not listed.");
+
+            _logger.LogInformation($"{User.GetDisplayName()} DELETED {car.Name()}");
+            _context.Remove(car);
+            _context.SaveChanges();
+            return Ok();
+        }
+
+        #region Helpers
+
         public void HandleImages(Car car)
         {
             List<Picture> pictures = new List<Picture>();
@@ -193,5 +212,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             return Path.Combine(_env.WebRootPath, path);
         }
+
+        #endregion Helpers
     }
 }

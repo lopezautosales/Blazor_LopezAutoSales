@@ -18,7 +18,7 @@ namespace LopezAutoSales.Client.Services
         public async Task<Car> GetCarAsync(HttpClient http, int id)
         {
             Car car = _sessionStorage.GetItem<Car>(id.ToString());
-            if (car == null)
+            if (car is null)
             {
                 car = await http.GetFromJsonAsync<Car>($"/api/inventory/{id}");
                 SetCar(car);
@@ -28,7 +28,14 @@ namespace LopezAutoSales.Client.Services
 
         public void SetCar(Car car)
         {
+            if (car is null) return;
             _sessionStorage.SetItem(car.Id.ToString(), car);
+        }
+
+        public void DeleteCar(Car car)
+        {
+            if (car is null) return;
+            _sessionStorage.RemoveItem(car.Id.ToString());
         }
     }
 }

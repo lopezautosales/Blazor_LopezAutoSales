@@ -76,6 +76,6 @@
             nav.NavigateTo($"/app/inventory/edit/{id}");
         }
         else
-            await js.InvokeVoidAsync("alert", response.ReasonPhrase);
+            await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
     }
 }
