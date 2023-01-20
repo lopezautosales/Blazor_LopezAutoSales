@@ -13,6 +13,6 @@
   },
   "devDependencies": {
     "bootstrap": "^5.0.0-beta2",
-    "node-sass": "^5.0.0"
+    "node-sass": "^8.0.0"
   }
 }
