@@ -1,5 +1,5 @@
-﻿using IdentityServer4.EntityFramework.Extensions;
-using IdentityServer4.EntityFramework.Options;
+﻿using Duende.IdentityServer.EntityFramework.Extensions;
+using Duende.IdentityServer.EntityFramework.Options;
 using LopezAutoSales.Server.Models;
 using LopezAutoSales.Shared;
 using LopezAutoSales.Shared.Models;
@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace LopezAutoSales.Server.Data
+namespace LopezAutoSales.Server
 {
     public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>
     {

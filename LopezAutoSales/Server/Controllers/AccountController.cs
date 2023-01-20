@@ -1,5 +1,4 @@
-﻿using LopezAutoSales.Server.Data;
-using LopezAutoSales.Server.Models;
+﻿using LopezAutoSales.Server.Models;
 using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

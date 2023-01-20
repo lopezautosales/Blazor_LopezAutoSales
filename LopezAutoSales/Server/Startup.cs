@@ -1,4 +1,3 @@
-using LopezAutoSales.Server.Data;
 using LopezAutoSales.Server.Models;
 using LopezAutoSales.Shared;
 using Microsoft.AspNetCore.Authentication;
@@ -35,6 +34,7 @@ namespace LopezAutoSales.Server
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders()
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 

@@ -1,4 +1,3 @@
-using LopezAutoSales.Server.Data;
 using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

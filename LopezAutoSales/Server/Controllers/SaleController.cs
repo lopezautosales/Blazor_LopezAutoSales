@@ -1,5 +1,4 @@
-﻿using IdentityServer4.Extensions;
-using LopezAutoSales.Server.Data;
+﻿using Duende.IdentityServer.Extensions;
 using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

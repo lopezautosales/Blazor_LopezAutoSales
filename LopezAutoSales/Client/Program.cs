@@ -2,10 +2,12 @@ using Blazored.SessionStorage;
 using LopezAutoSales.Client.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using System;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace LopezAutoSales.Client
@@ -30,6 +32,8 @@ namespace LopezAutoSales.Client
             builder.Services.AddBlazoredSessionStorage();
             builder.Services.AddTransient(x => new CarManager(x.GetService<ISyncSessionStorageService>()));
             builder.Services.AddTransient(x => new VINDecoder(x.GetService<HttpClient>(), x.GetService<IJSRuntime>()));
+            builder.Services.Configure<IdentityOptions>(options =>
+    options.ClaimsIdentity.UserIdClaimType = ClaimTypes.NameIdentifier);
             await builder.Build().RunAsync();
         }
     }
