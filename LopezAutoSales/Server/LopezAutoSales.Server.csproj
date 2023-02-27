@@ -8,16 +8,12 @@
 	<ItemGroup>
 		<Compile Remove="dist\**" />
 		<Compile Remove="Services\**" />
-		<Compile Remove="wwwroot\Images\**" />
 		<Content Remove="dist\**" />
 		<Content Remove="Services\**" />
-		<Content Remove="wwwroot\Images\**" />
 		<EmbeddedResource Remove="dist\**" />
 		<EmbeddedResource Remove="Services\**" />
-		<EmbeddedResource Remove="wwwroot\Images\**" />
 		<None Remove="dist\**" />
 		<None Remove="Services\**" />
-		<None Remove="wwwroot\Images\**" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -91,6 +87,7 @@
 	<ItemGroup>
 		<Folder Include="Logs\stdout\" />
 		<Folder Include="wwwroot\dist\js\" />
+		<Folder Include="wwwroot\Images\" />
 		<Folder Include="wwwroot\Images\" />
 	</ItemGroup>
 
