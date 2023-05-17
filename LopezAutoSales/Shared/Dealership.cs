@@ -16,7 +16,7 @@ namespace LopezAutoSales.Shared
         public const string Phone = "(620)208-6250";
         public const int Warranty = 20;
         public const decimal TaxRate = 8.5m;
-        public const int MonthlyPayment = 300;
+        public const decimal MonthlyPayment = 300m;
         public const decimal TagAmount = 10;
         public const decimal LienAmount = 20;
         public const decimal APR = 0;
@@ -24,5 +24,6 @@ namespace LopezAutoSales.Shared
         public const decimal LateFee = 15m;
         public const decimal LateRate = 5m;
         public const decimal LateAPR = 10;
+        public const decimal PaperworkFee = 125m;
     }
 }

@@ -230,6 +230,14 @@
                         </tr>
                         <tr>
                             <th scope="row">
+                                <label for="PaperworkFee">Paperwork Fee</label>
+                            </th>
+                            <td>
+                                <InputNumber class="form-control text-center" @bind-Value="sale.PaperworkFee" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
                                 <label for="Subtotal">Subtotal:</label>
                             </th>
                             <td>
@@ -331,13 +339,13 @@
     public int? Id { get; set; }
     private List<string> Errors { get; set; } = new List<string>();
     private Sale sale = new Sale
-    {
-        Car = new Car(),
-        TradeIn = new Car(),
-        Address = new Address(),
-        Account = new Account(),
-        Lienholder = new Lienholder { Address = Dealership.Address }
-    };
+        {
+            Car = new Car(),
+            TradeIn = new Car(),
+            Address = new Address(),
+            Account = new Account(),
+            Lienholder = new Lienholder { Address = Dealership.Address }
+        };
     private bool hasTrade;
 
     protected override async Task OnInitializedAsync()
@@ -345,7 +353,7 @@
         if (Id.HasValue)
         {
             Car car = await carManager.GetCarAsync(auth.Client, Id.Value);
-            if(car != null)
+            if (car != null)
             {
                 sale.SellingPrice = car.ListPrice;
                 sale.Car = car;

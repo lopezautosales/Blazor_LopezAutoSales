@@ -26,6 +26,8 @@ namespace LopezAutoSales.Shared.Models
         [Column(TypeName = "decimal(9,2)")]
         public decimal SellingPrice { get; set; }
         [Column(TypeName = "decimal(9,2)")]
+        public decimal PaperworkFee { get; set; } = Dealership.PaperworkFee;
+        [Column(TypeName = "decimal(9,2)")]
         public decimal DownPayment { get; set; }
         [Column(TypeName = "decimal(5,3)")]
         public decimal TaxRate { get; set; } = Dealership.TaxRate;
@@ -78,7 +80,7 @@ namespace LopezAutoSales.Shared.Models
 
         public decimal Subtotal()
         {
-            decimal subtotal = TradeDifference() + TaxAmount();
+            decimal subtotal = TradeDifference() + TaxAmount() + PaperworkFee;
             if (HasTag)
                 subtotal += TagAmount;
             if (HasLien)
