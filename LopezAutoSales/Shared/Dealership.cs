@@ -17,7 +17,7 @@ namespace LopezAutoSales.Shared
         public const int Warranty = 20;
         public const decimal TaxRate = 8.5m;
         public const decimal MonthlyPayment = 300m;
-        public const decimal TagAmount = 10;
+        public const decimal TagAmount = 20;
         public const decimal LienAmount = 20;
         public const decimal APR = 0;
         public const int LateDays = 15;
