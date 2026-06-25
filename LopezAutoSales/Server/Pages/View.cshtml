@@ -62,7 +62,7 @@ else
                 @foreach (Picture p in Model.Car.Pictures.OrderByDescending(x => x.IsThumbnail))
                 {
                     <div class="carousel-item @(p.IsThumbnail ? "active": string.Empty)">
-                        <img data-src="/@p.URL" class="lazy d-block w-100">
+                        <img data-src="@p.URL" class="lazy d-block w-100">
                     </div>
                 }
             </div>

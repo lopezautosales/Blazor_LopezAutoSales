@@ -1,4 +1,7 @@
+using Amazon.Runtime;
+using Amazon.S3;
 using LopezAutoSales.Server.Models;
+using LopezAutoSales.Server.Storage;
 using LopezAutoSales.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -9,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -69,6 +73,21 @@ namespace LopezAutoSales.Server
 
             services.Configure<IdentityOptions>(options =>
                 options.ClaimsIdentity.UserIdClaimType = ClaimTypes.NameIdentifier);
+
+            // Object storage (Cloudflare R2 / S3) for car images.
+            services.Configure<ObjectStorageOptions>(Configuration.GetSection("ObjectStorage"));
+            services.AddSingleton<IAmazonS3>(sp =>
+            {
+                ObjectStorageOptions o = sp.GetRequiredService<IOptions<ObjectStorageOptions>>().Value;
+                AmazonS3Config config = new AmazonS3Config
+                {
+                    ServiceURL = o.ServiceUrl,
+                    ForcePathStyle = true,
+                    AuthenticationRegion = "auto"
+                };
+                return new AmazonS3Client(new BasicAWSCredentials(o.AccessKey, o.SecretKey), config);
+            });
+            services.AddSingleton<IImageStorage, R2ImageStorage>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

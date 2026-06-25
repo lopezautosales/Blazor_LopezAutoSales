@@ -1,15 +1,17 @@
-﻿using LopezAutoSales.Shared.Models;
+﻿using LopezAutoSales.Server.Storage;
+using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace LopezAutoSales.Server.Controllers
 {
@@ -19,13 +21,13 @@ namespace LopezAutoSales.Server.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<InventoryController> _logger;
-        private readonly IWebHostEnvironment _env;
+        private readonly IImageStorage _storage;
 
-        public InventoryController(ApplicationDbContext context, ILogger<InventoryController> logger, IWebHostEnvironment env)
+        public InventoryController(ApplicationDbContext context, ILogger<InventoryController> logger, IImageStorage storage)
         {
             _context = context;
             _logger = logger;
-            _env = env;
+            _storage = storage;
         }
 
         [HttpGet]
@@ -34,6 +36,7 @@ namespace LopezAutoSales.Server.Controllers
             List<Car> cars = _context.Cars.AsNoTracking().Where(x => x.IsListed).Include(x => x.Pictures).ToList();
             if (!User.IsInRole("Admin"))
                 cars.ForEach(x => x.BoughtPrice = null);
+            cars.ForEach(x => ResolveUrls(x.Pictures));
             return Ok(cars);
         }
 
@@ -45,6 +48,7 @@ namespace LopezAutoSales.Server.Controllers
                 return BadRequest();
             if (!User.IsInRole("Admin"))
                 car.BoughtPrice = null;
+            ResolveUrls(car.Pictures);
             return Ok(car);
         }
 
@@ -80,23 +84,21 @@ namespace LopezAutoSales.Server.Controllers
 
         [HttpDelete("picture/{id}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult RemovePicture(int id)
+        public async Task<IActionResult> RemovePicture(int id)
         {
             int newThumbnailId = 0;
             Picture picture = _context.Pictures.Find(id);
             if (picture == null)
                 return BadRequest("Picture was not found.");
-            if (System.IO.File.Exists(FullPath(picture.URL)))
-                System.IO.File.Delete(FullPath(picture.URL));
+            await _storage.DeleteAsync(picture.URL);
             if (picture.IsThumbnail)
             {
-                if (System.IO.File.Exists(FullPath(picture.ThumbnailURL())))
-                    System.IO.File.Delete(FullPath(picture.ThumbnailURL()));
+                await _storage.DeleteAsync(picture.ThumbnailURL());
 
                 Picture otherPicture = _context.Pictures.FirstOrDefault(x => x.Id != id && x.CarId == picture.CarId);
                 if (otherPicture != null)
                 {
-                    CreateThumbnail(otherPicture);
+                    await CreateThumbnailAsync(otherPicture);
                     otherPicture.IsThumbnail = true;
                     newThumbnailId = otherPicture.Id;
                 }
@@ -108,7 +110,7 @@ namespace LopezAutoSales.Server.Controllers
 
         [HttpPut("thumbnail/{carId}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult SetThumbnail([FromRoute] int carId, [FromBody] int pictureId)
+        public async Task<IActionResult> SetThumbnail([FromRoute] int carId, [FromBody] int pictureId)
         {
             Car car = _context.Cars.Include(x => x.Pictures).FirstOrDefault(x => x.Id == carId);
             if (car == null)
@@ -121,10 +123,9 @@ namespace LopezAutoSales.Server.Controllers
             foreach (Picture removable in thumbnails)
             {
                 removable.IsThumbnail = false;
-                if (System.IO.File.Exists(FullPath(removable.ThumbnailURL())))
-                    System.IO.File.Delete(FullPath(removable.ThumbnailURL()));
+                await _storage.DeleteAsync(removable.ThumbnailURL());
             }
-            CreateThumbnail(picture);
+            await CreateThumbnailAsync(picture);
             picture.IsThumbnail = true;
             _context.SaveChanges();
             return Ok();
@@ -132,15 +133,16 @@ namespace LopezAutoSales.Server.Controllers
 
         [HttpPost("upload/{id}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult AddPictures(int id)
+        public async Task<IActionResult> AddPictures(int id)
         {
             if (!HttpContext.Request.Form.Files.Any())
                 return BadRequest("No images uploaded.");
             Car car = _context.Cars.Include(x => x.Pictures).FirstOrDefault(x => x.Id == id);
             if (car == null)
                 return BadRequest("Car not found.");
-            HandleImages(car);
+            await HandleImagesAsync(car);
             _context.SaveChanges();
+            ResolveUrls(car.Pictures);
             return Ok(car.Pictures);
         }
 
@@ -163,7 +165,15 @@ namespace LopezAutoSales.Server.Controllers
 
         #region Helpers
 
-        public void HandleImages(Car car)
+        // Rewrites stored object keys to absolute public URLs for display. Safe to call
+        // on materialized entities once they are no longer going to be saved.
+        private void ResolveUrls(IEnumerable<Picture> pictures)
+        {
+            foreach (Picture picture in pictures)
+                picture.URL = _storage.PublicUrl(picture.URL);
+        }
+
+        private async Task HandleImagesAsync(Car car)
         {
             List<Picture> pictures = new List<Picture>();
             bool hasThumbnail = car.Pictures.Any(x => x.IsThumbnail);
@@ -173,17 +183,19 @@ namespace LopezAutoSales.Server.Controllers
                 {
                     CarId = car.Id,
                     IsThumbnail = false,
-                    URL = Path.Combine("Images", file.FileName)
+                    URL = $"Images/{Path.GetFileName(file.FileName)}"
                 };
-                if (System.IO.File.Exists(FullPath(picture.URL)))
-                    System.IO.File.Delete(FullPath(picture.URL));
                 pictures.Add(picture);
-                using Image image = Image.Load(file.OpenReadStream());
-                image.Mutate(x => x.AutoOrient());
-                image.Save(FullPath(picture.URL));
+
+                using (Stream upload = file.OpenReadStream())
+                using (Image image = Image.Load(upload, out IImageFormat format))
+                {
+                    image.Mutate(x => x.AutoOrient());
+                    await SaveImageAsync(image, format, picture.URL);
+                }
                 if (!hasThumbnail)
                 {
-                    CreateThumbnail(picture);
+                    await CreateThumbnailAsync(picture);
                     picture.IsThumbnail = true;
                     hasThumbnail = true;
                 }
@@ -191,14 +203,15 @@ namespace LopezAutoSales.Server.Controllers
             _context.Pictures.AddRange(pictures);
         }
 
-        private void CreateThumbnail(Picture picture)
+        private async Task CreateThumbnailAsync(Picture picture)
         {
             try
             {
-                using Image image = Image.Load(FullPath(picture.URL));
+                using Stream original = await _storage.OpenReadAsync(picture.URL);
+                using Image image = Image.Load(original, out IImageFormat format);
                 double ratio = Constants.ThumbnailSize / (double)image.Width;
                 image.Mutate(x => x.AutoOrient().Resize((int)(image.Width * ratio), (int)(image.Height * ratio)));
-                image.Save(FullPath(picture.ThumbnailURL()));
+                await SaveImageAsync(image, format, picture.ThumbnailURL());
             }
             catch (Exception ex)
             {
@@ -206,9 +219,13 @@ namespace LopezAutoSales.Server.Controllers
             }
         }
 
-        private string FullPath(string path)
+        private async Task SaveImageAsync(Image image, IImageFormat format, string key)
         {
-            return Path.Combine(_env.WebRootPath, path);
+            IImageEncoder encoder = Configuration.Default.ImageFormatsManager.FindEncoder(format);
+            using MemoryStream ms = new MemoryStream();
+            image.Save(ms, encoder);
+            ms.Position = 0;
+            await _storage.SaveAsync(key, ms, format.DefaultMimeType);
         }
 
         #endregion Helpers
