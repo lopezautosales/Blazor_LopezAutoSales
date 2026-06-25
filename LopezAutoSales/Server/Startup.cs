@@ -3,14 +3,14 @@ using LopezAutoSales.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace LopezAutoSales.Server
 {
@@ -37,20 +37,32 @@ namespace LopezAutoSales.Server
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-
-            services.AddAuthentication()
-                .AddIdentityServerJwt();
-
-            services.AddIdentityServer()
-                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>(options =>
+            // Cookie auth: the Blazor client and the API share the Identity application
+            // cookie. For API calls, return 401/403 status codes instead of redirecting
+            // to the login HTML page (which a SPA can't follow).
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Events.OnRedirectToLogin = context =>
                 {
-                    options.IdentityResources["openid"].UserClaims.Add("name");
-                    options.ApiResources.Single().UserClaims.Add("name");
-                    options.IdentityResources["openid"].UserClaims.Add("role");
-                    options.ApiResources.Single().UserClaims.Add("role");
-                });
-
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("role");
+                    if (context.Request.Path.StartsWithSegments("/api"))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    }
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                };
+                options.Events.OnRedirectToAccessDenied = context =>
+                {
+                    if (context.Request.Path.StartsWithSegments("/api"))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    }
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                };
+            });
 
             services.AddControllersWithViews().AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddRazorPages();
@@ -80,7 +92,6 @@ namespace LopezAutoSales.Server
 
             app.UseRouting();
 
-            app.UseIdentityServer();
             app.UseAuthentication();
             app.UseAuthorization();
             SeedUsers(userManager);

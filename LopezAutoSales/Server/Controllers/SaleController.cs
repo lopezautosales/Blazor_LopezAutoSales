@@ -1,5 +1,4 @@
-﻿using Duende.IdentityServer.Extensions;
-using LopezAutoSales.Shared.Models;
+﻿using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -45,7 +44,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
-            _logger.LogInformation($"{User.GetDisplayName()} EDITED SALE {data.Id} {data.Buyers()} {data.Car.Name()}");
+            _logger.LogInformation($"{User.Identity?.Name} EDITED SALE {data.Id} {data.Buyers()} {data.Car.Name()}");
             SetLien(data);
             _context.Update(data);
             _context.SaveChanges();
@@ -63,7 +62,7 @@ namespace LopezAutoSales.Server.Controllers
             if (sale is null || sale.Car is null)
                 return BadRequest("Could not load the given sale/car.");
 
-            _logger.LogInformation($"{User.GetDisplayName()} SET BOUGHT PRICE {id} - {amount}");
+            _logger.LogInformation($"{User.Identity?.Name} SET BOUGHT PRICE {id} - {amount}");
             sale.Car.BoughtPrice = amount;
             _context.SaveChanges();
             return Ok();
@@ -77,7 +76,7 @@ namespace LopezAutoSales.Server.Controllers
             if (sale is null || sale.Car is null)
                 return BadRequest("Could not load the given sale/car.");
 
-            _logger.LogInformation($"{User.GetDisplayName()} REMOVED BOUGHT PRICE {id}");
+            _logger.LogInformation($"{User.Identity?.Name} REMOVED BOUGHT PRICE {id}");
             sale.Car.BoughtPrice = null;
             _context.SaveChanges();
             return Ok();
@@ -102,7 +101,7 @@ namespace LopezAutoSales.Server.Controllers
             SetLien(sale);
             _context.Sales.Add(sale);
             _context.SaveChanges();
-            _logger.LogInformation($"{User.GetDisplayName()} SALE {sale.Id} {sale.Buyers()} {sale.Car.Name()}");
+            _logger.LogInformation($"{User.Identity?.Name} SALE {sale.Id} {sale.Buyers()} {sale.Car.Name()}");
             return Ok(sale.Id);
         }
 

@@ -1,16 +1,13 @@
-﻿using Duende.IdentityServer.EntityFramework.Extensions;
-using Duende.IdentityServer.EntityFramework.Options;
-using LopezAutoSales.Server.Models;
+﻿using LopezAutoSales.Server.Models;
 using LopezAutoSales.Shared;
 using LopezAutoSales.Shared.Models;
-using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace LopezAutoSales.Server
 {
-    public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public DbSet<Sale> Sales { get; set; }
         public DbSet<Account> Accounts { get; set; }
@@ -19,13 +16,9 @@ namespace LopezAutoSales.Server
         public DbSet<UserAccount> UserAccounts { get; set; }
         public DbSet<Picture> Pictures { get; set; }
         public DbSet<Lienholder> Lienholders { get; set; }
-        private OperationalStoreOptions OperationalStoreOptions { get; }
 
-        public ApplicationDbContext(
-            DbContextOptions options,
-            IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
+        public ApplicationDbContext(DbContextOptions options) : base(options)
         {
-            OperationalStoreOptions = operationalStoreOptions.Value;
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -48,7 +41,6 @@ namespace LopezAutoSales.Server
             builder.Entity<UserAccount>().HasKey(x => new { x.UserId, x.AccountId });
             builder.Entity<Address>().HasData(Dealership.Address);
             builder.Entity<Lienholder>().HasData(dealership);
-            builder.ConfigurePersistedGrantContext(OperationalStoreOptions);
             base.OnModelCreating(builder);
         }
     }

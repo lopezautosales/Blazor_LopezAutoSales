@@ -1,5 +1,4 @@
-﻿using Duende.IdentityServer.Extensions;
-using LopezAutoSales.Shared.Models;
+﻿using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -55,7 +54,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
-            _logger.LogInformation($"{User.GetDisplayName()} ADDED {car.Name()} FOR {car.ListPrice}");
+            _logger.LogInformation($"{User.Identity?.Name} ADDED {car.Name()} FOR {car.ListPrice}");
             car.IsListed = true;
             car.Date = DateTime.Now;
             _context.Cars.Add(car);
@@ -70,7 +69,7 @@ namespace LopezAutoSales.Server.Controllers
             Car car = _context.Cars.FirstOrDefault(x => x.Id == id);
             if (car == null)
                 return BadRequest("Car was not found.");
-            _logger.LogInformation($"{User.GetDisplayName()} EDITED {car.Name()} FOR {car.ListPrice}");
+            _logger.LogInformation($"{User.Identity?.Name} EDITED {car.Name()} FOR {car.ListPrice}");
             car.Update(data);
             car.IsSalvage = data.IsSalvage;
             car.JsonData = data.JsonData;
@@ -156,7 +155,7 @@ namespace LopezAutoSales.Server.Controllers
             if (!car.IsListed)
                 return BadRequest("Cannot remove cars that are not listed.");
 
-            _logger.LogInformation($"{User.GetDisplayName()} DELETED {car.Name()}");
+            _logger.LogInformation($"{User.Identity?.Name} DELETED {car.Name()}");
             _context.Remove(car);
             _context.SaveChanges();
             return Ok();
