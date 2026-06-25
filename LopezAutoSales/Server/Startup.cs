@@ -14,7 +14,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -182,26 +181,7 @@ namespace LopezAutoSales.Server
             string url = System.Environment.GetEnvironmentVariable("DATABASE_URL");
             return string.IsNullOrWhiteSpace(url)
                 ? Configuration.GetConnectionString("DefaultConnection")
-                : ConnectionStringFromUrl(url);
-        }
-
-        private static string ConnectionStringFromUrl(string url)
-        {
-            System.Uri uri = new System.Uri(url);
-            string[] userInfo = uri.UserInfo.Split(':');
-            NpgsqlConnectionStringBuilder builder = new NpgsqlConnectionStringBuilder
-            {
-                Host = uri.Host,
-                Port = uri.Port > 0 ? uri.Port : 5432,
-                Username = System.Uri.UnescapeDataString(userInfo[0]),
-                Password = userInfo.Length > 1 ? System.Uri.UnescapeDataString(userInfo[1]) : string.Empty,
-                Database = uri.AbsolutePath.TrimStart('/'),
-                // Railway's internal DATABASE_URL connects over an isolated private
-                // network that doesn't offer TLS; Prefer encrypts when available and
-                // doesn't break the internal connection (Require would).
-                SslMode = SslMode.Prefer
-            };
-            return builder.ConnectionString;
+                : Data.NpgsqlUrl.ToConnectionString(url);
         }
 
         public void SeedUsers(UserManager<ApplicationUser> userManager)

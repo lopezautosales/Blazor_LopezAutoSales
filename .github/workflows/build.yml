@@ -1,0 +1,21 @@
+name: build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Restore
+        run: dotnet restore LopezAutoSales.sln
+      - name: Build
+        run: dotnet build LopezAutoSales.sln -c Release --no-restore
+      - name: Test
+        run: dotnet test LopezAutoSales.sln -c Release --no-build --verbosity normal
