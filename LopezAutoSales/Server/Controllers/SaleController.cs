@@ -26,7 +26,9 @@ namespace LopezAutoSales.Server.Controllers
         [HttpGet("{year}")]
         public IActionResult GetSales(int year)
         {
-            List<Sale> sales = _context.Sales.AsNoTracking().Where(x => x.Date.Year == year).OrderByDescending(x => x.Date).Include(x => x.Car).ToList();
+            DateTime start = new DateTime(year, 1, 1);
+            DateTime end = start.AddYears(1);
+            List<Sale> sales = _context.Sales.AsNoTracking().Where(x => x.Date >= start && x.Date < end).OrderByDescending(x => x.Date).Include(x => x.Car).ToList();
             return Ok(sales);
         }
 
@@ -35,7 +37,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             Sale sale = _context.Sales.AsNoTracking().Include(x => x.Account).Include(x => x.Car).Include(x => x.TradeIn).Include(x => x.Address).Include(x => x.Lienholder).ThenInclude(x => x.Address).FirstOrDefault(x => x.Id == id);
             if (sale == null)
-                return BadRequest(new string[] { "Account was not found." });
+                return NotFound(new string[] { "Sale was not found." });
             return Ok(sale);
         }
 
@@ -114,7 +116,9 @@ namespace LopezAutoSales.Server.Controllers
         [HttpGet("report/{year}")]
         public IActionResult GetYearlyReport(int year)
         {
-            return Ok(_context.Sales.Where(x => x.Date.Year == year).Include(x => x.Account).Include(x => x.Car).OrderBy(x => x.Date).AsNoTracking().ToList());
+            DateTime start = new DateTime(year, 1, 1);
+            DateTime end = start.AddYears(1);
+            return Ok(_context.Sales.Where(x => x.Date >= start && x.Date < end).Include(x => x.Account).Include(x => x.Car).OrderBy(x => x.Date).AsNoTracking().ToList());
         }
 
         private void SetLien(Sale sale)

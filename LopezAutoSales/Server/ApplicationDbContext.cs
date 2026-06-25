@@ -33,7 +33,15 @@ namespace LopezAutoSales.Server
                 ConcurrencyStamp = "2301d884-221a-4e7d-b509-0113dcc043e1"
             });
 
-            Dealership.Address.Id = 1;
+            // Seed from a fresh instance instead of mutating the shared static Dealership.Address.
+            Address dealershipAddress = new Address
+            {
+                Id = 1,
+                Street = Dealership.Address.Street,
+                City = Dealership.Address.City,
+                State = Dealership.Address.State,
+                ZIP = Dealership.Address.ZIP
+            };
             Lienholder dealership = new Lienholder
             {
                 Name = Dealership.Name,
@@ -41,8 +49,10 @@ namespace LopezAutoSales.Server
                 NormalizedName = Dealership.Name.ToUpper()
             };
             builder.Entity<Car>().HasIndex(x => x.IsListed);
+            builder.Entity<Sale>().HasIndex(x => x.Date);
             builder.Entity<UserAccount>().HasKey(x => new { x.UserId, x.AccountId });
-            builder.Entity<Address>().HasData(Dealership.Address);
+
+            builder.Entity<Address>().HasData(dealershipAddress);
             builder.Entity<Lienholder>().HasData(dealership);
             base.OnModelCreating(builder);
         }

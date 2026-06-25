@@ -73,7 +73,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             Car car = _context.Cars.FirstOrDefault(x => x.Id == id);
             if (car == null)
-                return BadRequest("Car was not found.");
+                return NotFound("Car was not found.");
             _logger.LogInformation($"{User.Identity?.Name} EDITED {car.Name()} FOR {car.ListPrice}");
             car.Update(data);
             car.IsSalvage = data.IsSalvage;
@@ -90,7 +90,7 @@ namespace LopezAutoSales.Server.Controllers
             int newThumbnailId = 0;
             Picture picture = _context.Pictures.Find(id);
             if (picture == null)
-                return BadRequest("Picture was not found.");
+                return NotFound("Picture was not found.");
             await _storage.DeleteAsync(picture.URL);
             if (picture.IsThumbnail)
             {

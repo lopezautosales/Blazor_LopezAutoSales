@@ -47,7 +47,7 @@ namespace LopezAutoSales.Server.Controllers
             }
             Account account = _context.Accounts.AsNoTracking().Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefault(x => x.Id == id);
             if (account == null)
-                return BadRequest(new string[] { "Could not find the account." });
+                return NotFound(new string[] { "Could not find the account." });
             return Ok(account);
         }
 
@@ -57,7 +57,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             Account account = _context.Accounts.Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefault(x => x.Id == data.AccountId);
             if (account == null)
-                return BadRequest(new string[] { "Could not find the account." });
+                return NotFound(new string[] { "Could not find the account." });
             if (data.Date.Date == DateTime.Today)
                 data.Date = DateTime.Now;
             account.IsPaid = account.Balance() <= data.Amount;
@@ -74,7 +74,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             Account account = _context.Accounts.Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefault(x => x.Id == data.AccountId);
             if (account == null)
-                return BadRequest(new string[] { "Could not find the account." });
+                return NotFound(new string[] { "Could not find the account." });
             Payment payment = account.Payments.FirstOrDefault(x => x.Id == data.Id);
             if (payment == null)
                 return NotFound(new string[] { "Payment was not found on this account." });
@@ -97,7 +97,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             Account account = _context.Accounts.Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefault(x => x.Id == data.AccountId);
             if (account == null)
-                return BadRequest(new string[] { "Could not find the account." });
+                return NotFound(new string[] { "Could not find the account." });
             Payment payment = account.Payments.FirstOrDefault(x => x.Id == data.Id);
             if (payment == null)
                 return NotFound(new string[] { "Payment was not found on this account." });
