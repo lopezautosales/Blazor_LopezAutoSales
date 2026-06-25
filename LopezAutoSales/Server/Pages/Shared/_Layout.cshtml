@@ -20,8 +20,8 @@
     </script>
 </head>
 
-<body class="d-flex flex-column">
-    <nav class="sticky-top navbar navbar-expand-lg navbar-light bg-primary bg-gradient">
+<body class="d-flex flex-column min-vh-100">
+    <nav class="sticky-top navbar navbar-expand-lg navbar-dark app-navbar">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">Lopez Auto Sales</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,6 +64,28 @@
     <div role="main" class="container">
         @RenderBody()
     </div>
+    <footer class="site-footer">
+        <div class="container">
+            <div class="row gy-4">
+                <div class="col-md-5">
+                    <h5>Lopez Auto Sales, Inc.</h5>
+                    <p class="mb-0">Quality used vehicles with in-house financing in Emporia, Kansas.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Visit Us</h5>
+                    <p class="mb-1"><i class="mdi mdi-map-marker"></i> 515 Albert St, Emporia, KS 66801</p>
+                    <p class="mb-0"><a href="https://goo.gl/maps/YZoFvQTUptU8cASW8" target="_blank">Get directions</a></p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Contact</h5>
+                    <p class="mb-1"><i class="mdi mdi-phone"></i> <a href="tel:16202086250">(620) 208-6250</a></p>
+                    <p class="mb-0"><i class="mdi mdi-email"></i> <a href="mailto:lopezauto@outlook.com">lopezauto@outlook.com</a></p>
+                </div>
+            </div>
+            <hr class="my-4" style="border-color: rgba(255,255,255,.12)" />
+            <small class="text-secondary">&copy; @DateTime.Now.Year Lopez Auto Sales, Inc. All rights reserved.</small>
+        </div>
+    </footer>
     <script src="~/dist/js/jquery.slim.min.js"></script>
     <script src="~/dist/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", false)

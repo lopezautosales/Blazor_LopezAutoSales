@@ -1,4 +1,203 @@
-﻿.card-picture {
+/* ============================================================================
+   Lopez Auto Sales — modern neutral theme (layered over Bootstrap)
+   Slate palette + a single sky accent. Shared by the public site and the
+   admin app (both load this after bootstrap.min.css).
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --ink: #0f172a;       /* slate-900 — headings, dark chrome */
+    --ink-2: #1e293b;     /* slate-800 */
+    --body: #334155;      /* slate-700 — body text */
+    --muted: #64748b;     /* slate-500 */
+    --line: #e2e8f0;      /* slate-200 — borders */
+    --surface: #ffffff;
+    --surface-2: #f1f5f9; /* slate-100 — page background */
+    --accent: #0ea5e9;    /* sky-500 */
+    --accent-d: #0284c7;  /* sky-600 */
+    --shadow-sm: 0 1px 2px rgba(2, 6, 23, .06);
+    --shadow-md: 0 10px 30px rgba(2, 6, 23, .10);
+    --radius: 1rem;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--body);
+    background-color: var(--surface-2);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, .navbar-brand {
+    color: var(--ink);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+h1 { font-weight: 800; }
+
+.lead { color: var(--muted); }
+
+a { color: var(--accent-d); text-decoration: none; }
+a:hover { color: var(--ink); }
+
+main, [role="main"] { padding-bottom: 2.5rem; }
+
+/* ---- Navbar (dark slate chrome) ------------------------------------------ */
+.app-navbar {
+    background: var(--ink);
+    padding: .85rem 0;
+    box-shadow: 0 8px 24px rgba(2, 6, 23, .18);
+}
+.app-navbar .navbar-brand {
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+.app-navbar .nav-link {
+    color: rgba(226, 232, 240, .82) !important;
+    font-weight: 500;
+    padding: .4rem .8rem !important;
+    border-radius: .6rem;
+    transition: background .15s ease, color .15s ease;
+}
+.app-navbar .nav-link:hover,
+.app-navbar .nav-link:focus,
+.app-navbar .nav-link.active {
+    color: #fff !important;
+    background: rgba(255, 255, 255, .09);
+}
+.app-navbar .dropdown-menu {
+    border: 1px solid var(--line);
+    border-radius: .75rem;
+    box-shadow: var(--shadow-md);
+    padding: .4rem;
+}
+.app-navbar .dropdown-item { border-radius: .5rem; font-weight: 500; }
+.app-navbar .navbar-toggler { border-color: rgba(255,255,255,.2); color: #fff; }
+
+/* ---- Hero ---------------------------------------------------------------- */
+.page-hero {
+    background: linear-gradient(135deg, var(--ink) 0%, #1e293b 100%);
+    color: #fff;
+    border-radius: 1.25rem;
+    padding: 2.75rem 2.5rem;
+    margin: 1.75rem 0 2rem;
+    box-shadow: var(--shadow-md);
+}
+.page-hero h1 { color: #fff; margin: 0; font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.page-hero p { color: rgba(226, 232, 240, .8); margin: .5rem 0 0; font-size: 1.05rem; }
+
+/* ---- Cards --------------------------------------------------------------- */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Public vehicle cards */
+.vehicle-card {
+    overflow: hidden;
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+.vehicle-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+.vehicle-card .card-img-top,
+.vehicle-card .img-placeholder {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    width: 100%;
+    background: var(--surface-2);
+}
+.vehicle-card .img-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #cbd5e1;
+    font-size: 2.5rem;
+}
+.vehicle-card .card-title { font-size: 1.05rem; margin-bottom: .4rem; }
+.vehicle-card .price { color: var(--accent-d); font-weight: 800; font-size: 1.25rem; }
+.vehicle-card .miles { color: var(--muted); font-size: .9rem; }
+
+/* ---- Buttons ------------------------------------------------------------- */
+.btn { border-radius: .65rem; font-weight: 600; padding: .5rem 1.05rem; }
+.btn-primary { background: var(--accent); border-color: var(--accent); }
+.btn-primary:hover, .btn-primary:focus { background: var(--accent-d); border-color: var(--accent-d); }
+.btn-secondary { background: var(--ink); border-color: var(--ink); }
+.btn-secondary:hover, .btn-secondary:focus { background: var(--ink-2); border-color: var(--ink-2); }
+.btn-outline-accent { color: var(--accent-d); border: 1px solid var(--accent); background: transparent; }
+.btn-outline-accent:hover { color: #fff; background: var(--accent); }
+
+/* ---- Forms --------------------------------------------------------------- */
+.form-control, .form-select {
+    border-radius: .65rem;
+    border-color: var(--line);
+    padding: .5rem .8rem;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 .2rem rgba(14, 165, 233, .15);
+}
+label, .form-label { color: var(--ink); font-weight: 500; }
+
+/* ---- Tables (admin) ------------------------------------------------------ */
+.table { --bs-table-bg: var(--surface); }
+.table > thead th {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-size: .78rem;
+    border-bottom: 2px solid var(--line);
+}
+.table td { vertical-align: middle; }
+
+/* ---- Auth / centered forms ---------------------------------------------- */
+.auth-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 2rem;
+}
+
+/* ---- Info cards (About page) -------------------------------------------- */
+.info-card .info-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: .85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(14, 165, 233, .12);
+    color: var(--accent-d);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Map embed — fixed, reasonable height (doesn't depend on Bootstrap's .ratio) */
+.map-embed { position: relative; width: 100%; height: 360px; }
+.map-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* ---- Footer -------------------------------------------------------------- */
+.site-footer {
+    background: var(--ink);
+    color: rgba(226, 232, 240, .72);
+    margin-top: auto;
+    padding: 2.5rem 0 2rem;
+}
+.site-footer h5 { color: #fff; font-size: 1rem; margin-bottom: .75rem; }
+.site-footer a { color: rgba(226, 232, 240, .72); }
+.site-footer a:hover { color: #fff; }
+.site-footer .mdi { color: var(--accent); }
+
+/* ============================================================================
+   Existing app utilities + print rules (unchanged)
+   ========================================================================== */
+.card-picture {
     max-width: 12.5rem;
 }
 
@@ -24,12 +223,12 @@
         page-break-before: always;
     }
 
-    html{
+    html {
         font-size: .75rem;
         line-height: 1.25rem;
     }
 
-    .form-check-input:checked{
+    .form-check-input:checked {
         appearance: auto;
     }
 }
