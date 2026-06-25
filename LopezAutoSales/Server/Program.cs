@@ -12,18 +12,28 @@ namespace LopezAutoSales.Server
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            // The app stores local-time DateTimes (e.g. DateTime.Now) as it did on SQL
+            // Server; this keeps Npgsql from rejecting non-UTC values and maps DateTime to
+            // "timestamp without time zone". Set here (not in Main) so EF's design-time
+            // tooling, which calls CreateHostBuilder but not Main, builds the same model.
+            System.AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            return Host.CreateDefaultBuilder(args)
             .UseSerilog((hostingContext, services, loggerConfiguration) =>
             loggerConfiguration.MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("IdentityServer4", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
-                .WriteTo.File("logs/log.txt")
+                .WriteTo.Console()
             ).ConfigureWebHostDefaults(webBuilder =>
             {
+                // Railway (and most container hosts) inject the port to listen on.
+                string port = System.Environment.GetEnvironmentVariable("PORT") ?? "8080";
+                webBuilder.UseUrls($"http://0.0.0.0:{port}");
                 webBuilder.UseStartup<Startup>();
             });
+        }
     }
 }

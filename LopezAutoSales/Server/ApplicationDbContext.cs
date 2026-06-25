@@ -27,7 +27,10 @@ namespace LopezAutoSales.Server
             {
                 Id = "2301D884-221A-4E7D-B509-0113DCC043E1",
                 Name = "Admin",
-                NormalizedName = "ADMIN"
+                NormalizedName = "ADMIN",
+                // Pinned so the seed is deterministic; IdentityRole otherwise generates a
+                // random ConcurrencyStamp each model build, which breaks migrations.
+                ConcurrencyStamp = "2301d884-221a-4e7d-b509-0113dcc043e1"
             });
 
             Dealership.Address.Id = 1;

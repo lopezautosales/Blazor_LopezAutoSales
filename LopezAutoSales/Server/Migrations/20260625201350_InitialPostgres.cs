@@ -1,22 +1,27 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+
+#nullable disable
 
 namespace LopezAutoSales.Server.Migrations
 {
-    public partial class Initial : Migration
+    /// <inheritdoc />
+    public partial class InitialPostgres : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
                 name: "Address",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Street = table.Column<string>(maxLength: 50, nullable: false),
-                    City = table.Column<string>(maxLength: 20, nullable: false),
-                    State = table.Column<string>(maxLength: 20, nullable: false),
-                    ZIP = table.Column<string>(maxLength: 10, nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Street = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    City = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    State = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    ZIP = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -27,10 +32,10 @@ namespace LopezAutoSales.Server.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(nullable: false),
-                    Name = table.Column<string>(maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(nullable: true)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -41,21 +46,21 @@ namespace LopezAutoSales.Server.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(nullable: false),
-                    UserName = table.Column<string>(maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(maxLength: 256, nullable: true),
-                    Email = table.Column<string>(maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(nullable: false),
-                    PasswordHash = table.Column<string>(nullable: true),
-                    SecurityStamp = table.Column<string>(nullable: true),
-                    ConcurrencyStamp = table.Column<string>(nullable: true),
-                    PhoneNumber = table.Column<string>(nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
-                    LockoutEnabled = table.Column<bool>(nullable: false),
-                    AccessFailedCount = table.Column<int>(nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -66,20 +71,20 @@ namespace LopezAutoSales.Server.Migrations
                 name: "Cars",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Date = table.Column<DateTime>(nullable: false),
-                    VIN = table.Column<string>(nullable: false),
-                    Year = table.Column<int>(nullable: false),
-                    Make = table.Column<string>(nullable: false),
-                    Model = table.Column<string>(nullable: false),
-                    Color = table.Column<string>(nullable: false),
-                    Mileage = table.Column<int>(nullable: true),
-                    IsSalvage = table.Column<bool>(nullable: false),
-                    IsListed = table.Column<bool>(nullable: false),
-                    BoughtPrice = table.Column<decimal>(type: "decimal(9,2)", nullable: true),
-                    ListPrice = table.Column<decimal>(type: "decimal(9,2)", nullable: false),
-                    JsonData = table.Column<string>(nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    VIN = table.Column<string>(type: "text", nullable: false),
+                    Year = table.Column<int>(type: "integer", nullable: false),
+                    Make = table.Column<string>(type: "text", nullable: false),
+                    Model = table.Column<string>(type: "text", nullable: false),
+                    Color = table.Column<string>(type: "text", nullable: false),
+                    Mileage = table.Column<int>(type: "integer", nullable: true),
+                    IsSalvage = table.Column<bool>(type: "boolean", nullable: false),
+                    IsListed = table.Column<bool>(type: "boolean", nullable: false),
+                    BoughtPrice = table.Column<decimal>(type: "numeric(9,2)", nullable: true),
+                    ListPrice = table.Column<decimal>(type: "numeric(9,2)", nullable: false),
+                    JsonData = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -87,46 +92,12 @@ namespace LopezAutoSales.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DeviceCodes",
-                columns: table => new
-                {
-                    UserCode = table.Column<string>(maxLength: 200, nullable: false),
-                    DeviceCode = table.Column<string>(maxLength: 200, nullable: false),
-                    SubjectId = table.Column<string>(maxLength: 200, nullable: true),
-                    ClientId = table.Column<string>(maxLength: 200, nullable: false),
-                    CreationTime = table.Column<DateTime>(nullable: false),
-                    Expiration = table.Column<DateTime>(nullable: false),
-                    Data = table.Column<string>(maxLength: 50000, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DeviceCodes", x => x.UserCode);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PersistedGrants",
-                columns: table => new
-                {
-                    Key = table.Column<string>(maxLength: 200, nullable: false),
-                    Type = table.Column<string>(maxLength: 50, nullable: false),
-                    SubjectId = table.Column<string>(maxLength: 200, nullable: true),
-                    ClientId = table.Column<string>(maxLength: 200, nullable: false),
-                    CreationTime = table.Column<DateTime>(nullable: false),
-                    Expiration = table.Column<DateTime>(nullable: true),
-                    Data = table.Column<string>(maxLength: 50000, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PersistedGrants", x => x.Key);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Lienholders",
                 columns: table => new
                 {
-                    NormalizedName = table.Column<string>(nullable: false),
-                    Name = table.Column<string>(nullable: false),
-                    AddressId = table.Column<int>(nullable: false)
+                    NormalizedName = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    AddressId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -143,11 +114,11 @@ namespace LopezAutoSales.Server.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<string>(nullable: false),
-                    ClaimType = table.Column<string>(nullable: true),
-                    ClaimValue = table.Column<string>(nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -164,11 +135,11 @@ namespace LopezAutoSales.Server.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(nullable: false),
-                    ClaimType = table.Column<string>(nullable: true),
-                    ClaimValue = table.Column<string>(nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -185,10 +156,10 @@ namespace LopezAutoSales.Server.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(maxLength: 128, nullable: false),
-                    ProviderKey = table.Column<string>(maxLength: 128, nullable: false),
-                    ProviderDisplayName = table.Column<string>(nullable: true),
-                    UserId = table.Column<string>(nullable: false)
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -205,8 +176,8 @@ namespace LopezAutoSales.Server.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(nullable: false),
-                    RoleId = table.Column<string>(nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    RoleId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -229,10 +200,10 @@ namespace LopezAutoSales.Server.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(nullable: false),
-                    LoginProvider = table.Column<string>(maxLength: 128, nullable: false),
-                    Name = table.Column<string>(maxLength: 128, nullable: false),
-                    Value = table.Column<string>(nullable: true)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -249,11 +220,11 @@ namespace LopezAutoSales.Server.Migrations
                 name: "Pictures",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CarId = table.Column<int>(nullable: false),
-                    URL = table.Column<string>(nullable: true),
-                    IsThumbnail = table.Column<bool>(nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CarId = table.Column<int>(type: "integer", nullable: false),
+                    URL = table.Column<string>(type: "text", nullable: true),
+                    IsThumbnail = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -270,26 +241,27 @@ namespace LopezAutoSales.Server.Migrations
                 name: "Sales",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    LienholderNormalizedName = table.Column<string>(nullable: true),
-                    AddressId = table.Column<int>(nullable: false),
-                    CarId = table.Column<int>(nullable: false),
-                    TradeInId = table.Column<int>(nullable: true),
-                    Date = table.Column<DateTime>(nullable: false),
-                    Phone = table.Column<string>(nullable: false),
-                    Buyer = table.Column<string>(nullable: false),
-                    CoBuyer = table.Column<string>(nullable: true),
-                    SellingPrice = table.Column<decimal>(type: "decimal(9,2)", nullable: false),
-                    DownPayment = table.Column<decimal>(type: "decimal(9,2)", nullable: false),
-                    TaxRate = table.Column<decimal>(type: "decimal(5,3)", nullable: false),
-                    Warranty = table.Column<int>(nullable: true),
-                    FinanceCharge = table.Column<decimal>(type: "decimal(9,2)", nullable: false),
-                    HasTag = table.Column<bool>(nullable: false),
-                    TagAmount = table.Column<decimal>(type: "decimal(9,2)", nullable: false),
-                    HasLien = table.Column<bool>(nullable: false),
-                    LienAmount = table.Column<decimal>(type: "decimal(9,2)", nullable: false),
-                    IsOutOfState = table.Column<bool>(nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    LienholderNormalizedName = table.Column<string>(type: "text", nullable: true),
+                    AddressId = table.Column<int>(type: "integer", nullable: false),
+                    CarId = table.Column<int>(type: "integer", nullable: false),
+                    TradeInId = table.Column<int>(type: "integer", nullable: true),
+                    Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Phone = table.Column<string>(type: "text", nullable: false),
+                    Buyer = table.Column<string>(type: "text", nullable: false),
+                    CoBuyer = table.Column<string>(type: "text", nullable: true),
+                    SellingPrice = table.Column<decimal>(type: "numeric(9,2)", nullable: false),
+                    PaperworkFee = table.Column<decimal>(type: "numeric(9,2)", nullable: false),
+                    DownPayment = table.Column<decimal>(type: "numeric(9,2)", nullable: false),
+                    TaxRate = table.Column<decimal>(type: "numeric(5,3)", nullable: false),
+                    Warranty = table.Column<int>(type: "integer", nullable: true),
+                    FinanceCharge = table.Column<decimal>(type: "numeric(9,2)", nullable: false),
+                    HasTag = table.Column<bool>(type: "boolean", nullable: false),
+                    TagAmount = table.Column<decimal>(type: "numeric(9,2)", nullable: false),
+                    HasLien = table.Column<bool>(type: "boolean", nullable: false),
+                    LienAmount = table.Column<decimal>(type: "numeric(9,2)", nullable: false),
+                    IsOutOfState = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -307,29 +279,27 @@ namespace LopezAutoSales.Server.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Sales_Lienholders_LienholderNormalizedName",
-                        column: x => x.LienholderNormalizedName,
-                        principalTable: "Lienholders",
-                        principalColumn: "NormalizedName",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
                         name: "FK_Sales_Cars_TradeInId",
                         column: x => x.TradeInId,
                         principalTable: "Cars",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Sales_Lienholders_LienholderNormalizedName",
+                        column: x => x.LienholderNormalizedName,
+                        principalTable: "Lienholders",
+                        principalColumn: "NormalizedName");
                 });
 
             migrationBuilder.CreateTable(
                 name: "Accounts",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    SaleId = table.Column<int>(nullable: false),
-                    IsPaid = table.Column<bool>(nullable: false),
-                    InitialDue = table.Column<decimal>(type: "decimal(9,2)", nullable: false),
-                    MonthlyPayment = table.Column<decimal>(type: "decimal(9,2)", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    SaleId = table.Column<int>(type: "integer", nullable: false),
+                    IsPaid = table.Column<bool>(type: "boolean", nullable: false),
+                    InitialDue = table.Column<decimal>(type: "numeric(9,2)", nullable: false),
+                    MonthlyPayment = table.Column<decimal>(type: "numeric(9,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -346,11 +316,11 @@ namespace LopezAutoSales.Server.Migrations
                 name: "Payments",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    AccountId = table.Column<int>(nullable: false),
-                    Date = table.Column<DateTime>(nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(9,2)", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AccountId = table.Column<int>(type: "integer", nullable: false),
+                    Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric(9,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -367,9 +337,9 @@ namespace LopezAutoSales.Server.Migrations
                 name: "UserAccounts",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(nullable: false),
-                    AccountId = table.Column<int>(nullable: false),
-                    DateSet = table.Column<DateTime>(nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    AccountId = table.Column<int>(type: "integer", nullable: false),
+                    DateSet = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -391,12 +361,12 @@ namespace LopezAutoSales.Server.Migrations
             migrationBuilder.InsertData(
                 table: "Address",
                 columns: new[] { "Id", "City", "State", "Street", "ZIP" },
-                values: new object[] { 1, "Emporia", "Kansas", "710 Lantern Lane", "66801" });
+                values: new object[] { 1, "Emporia", "Kansas", "515 Albert St", "66801" });
 
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[] { "2301D884-221A-4E7D-B509-0113DCC043E1", "f962c3f4-bd92-4a50-aaed-f87f73c199ac", "Admin", "ADMIN" });
+                values: new object[] { "2301D884-221A-4E7D-B509-0113DCC043E1", "2301d884-221a-4e7d-b509-0113dcc043e1", "Admin", "ADMIN" });
 
             migrationBuilder.InsertData(
                 table: "Lienholders",
@@ -418,8 +388,7 @@ namespace LopezAutoSales.Server.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true,
-                filter: "[NormalizedName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -445,24 +414,12 @@ namespace LopezAutoSales.Server.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true,
-                filter: "[NormalizedUserName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Cars_IsListed",
                 table: "Cars",
                 column: "IsListed");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DeviceCodes_DeviceCode",
-                table: "DeviceCodes",
-                column: "DeviceCode",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DeviceCodes_Expiration",
-                table: "DeviceCodes",
-                column: "Expiration");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Lienholders_AddressId",
@@ -473,16 +430,6 @@ namespace LopezAutoSales.Server.Migrations
                 name: "IX_Payments_AccountId",
                 table: "Payments",
                 column: "AccountId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PersistedGrants_Expiration",
-                table: "PersistedGrants",
-                column: "Expiration");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PersistedGrants_SubjectId_ClientId_Type",
-                table: "PersistedGrants",
-                columns: new[] { "SubjectId", "ClientId", "Type" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Pictures_CarId",
@@ -515,6 +462,7 @@ namespace LopezAutoSales.Server.Migrations
                 column: "AccountId");
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
@@ -533,13 +481,7 @@ namespace LopezAutoSales.Server.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "DeviceCodes");
-
-            migrationBuilder.DropTable(
                 name: "Payments");
-
-            migrationBuilder.DropTable(
-                name: "PersistedGrants");
 
             migrationBuilder.DropTable(
                 name: "Pictures");

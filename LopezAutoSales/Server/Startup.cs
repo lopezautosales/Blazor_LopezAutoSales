@@ -7,12 +7,14 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -32,8 +34,16 @@ namespace LopezAutoSales.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(GetConnectionString()));
+
+            // Behind Railway's edge proxy (TLS terminates there): honor X-Forwarded-*
+            // so the app sees the real scheme/host and issues Secure cookies correctly.
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.KnownIPNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddDefaultUI()
@@ -91,8 +101,17 @@ namespace LopezAutoSales.Server
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, UserManager<ApplicationUser> userManager)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseForwardedHeaders();
+
+            // Apply pending EF migrations and seed the admin user on startup.
+            using (IServiceScope scope = app.ApplicationServices.CreateScope())
+            {
+                scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
+                SeedUsers(scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>());
+            }
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -105,7 +124,6 @@ namespace LopezAutoSales.Server
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 
@@ -113,7 +131,6 @@ namespace LopezAutoSales.Server
 
             app.UseAuthentication();
             app.UseAuthorization();
-            SeedUsers(userManager);
 
             app.UseEndpoints(endpoints =>
             {
@@ -121,6 +138,32 @@ namespace LopezAutoSales.Server
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
             });
+        }
+
+        // Railway injects DATABASE_URL in URL form; Npgsql needs key/value form.
+        // Falls back to the configured DefaultConnection (local dev).
+        private string GetConnectionString()
+        {
+            string url = System.Environment.GetEnvironmentVariable("DATABASE_URL");
+            return string.IsNullOrWhiteSpace(url)
+                ? Configuration.GetConnectionString("DefaultConnection")
+                : ConnectionStringFromUrl(url);
+        }
+
+        private static string ConnectionStringFromUrl(string url)
+        {
+            System.Uri uri = new System.Uri(url);
+            string[] userInfo = uri.UserInfo.Split(':');
+            NpgsqlConnectionStringBuilder builder = new NpgsqlConnectionStringBuilder
+            {
+                Host = uri.Host,
+                Port = uri.Port > 0 ? uri.Port : 5432,
+                Username = System.Uri.UnescapeDataString(userInfo[0]),
+                Password = userInfo.Length > 1 ? System.Uri.UnescapeDataString(userInfo[1]) : string.Empty,
+                Database = uri.AbsolutePath.TrimStart('/'),
+                SslMode = SslMode.Prefer
+            };
+            return builder.ConnectionString;
         }
 
         public void SeedUsers(UserManager<ApplicationUser> userManager)
