@@ -353,3 +353,8 @@ MigrationBackup/
 LopezAutoSales/Server/wwwroot/Images
 LopezAutoSales/Server/appsettings.Production.json
 LopezAutoSales/Server/appsettings.Development.json
+
+# Claude Code: share CLAUDE.md, skills, agents, and project settings.json;
+# keep per-developer local files out of the repo.
+.claude/settings.local.json
+CLAUDE.local.md
