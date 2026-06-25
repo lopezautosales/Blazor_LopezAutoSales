@@ -1,5 +1,6 @@
 using LopezAutoSales.Server.Models;
 using LopezAutoSales.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
@@ -52,6 +53,24 @@ namespace LopezAutoSales.Server.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            ApplicationUser user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
+
+            IdentityResult result = await _userManager.ChangePasswordAsync(
+                user, request.CurrentPassword, request.NewPassword);
+            if (!result.Succeeded)
+                return BadRequest(string.Join(" ", result.Errors.Select(e => e.Description)));
+
+            // Keep the current session valid after the credential change.
+            await _signInManager.RefreshSignInAsync(user);
             return Ok();
         }
     }

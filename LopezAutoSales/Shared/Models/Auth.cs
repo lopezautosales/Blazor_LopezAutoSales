@@ -21,4 +21,18 @@ namespace LopezAutoSales.Shared.Models
         public string Name { get; set; }
         public List<string> Roles { get; set; } = new List<string>();
     }
+
+    public class ChangePasswordRequest
+    {
+        [Required]
+        public string CurrentPassword { get; set; }
+
+        [Required]
+        [MinLength(6, ErrorMessage = "The new password must be at least 6 characters.")]
+        public string NewPassword { get; set; }
+
+        [Required]
+        [Compare(nameof(NewPassword), ErrorMessage = "The passwords do not match.")]
+        public string ConfirmPassword { get; set; }
+    }
 }
