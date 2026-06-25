@@ -13,7 +13,11 @@ namespace LopezAutoSales.Client
     // cookie belongs to, instead of decoding a JWT on the client.
     public class CookieAuthenticationStateProvider : AuthenticationStateProvider
     {
+        private static readonly AuthenticationState Anonymous =
+            new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+
         private readonly HttpClient _http;
+        private AuthenticationState _lastKnown;
 
         public CookieAuthenticationStateProvider(AuthHttp authHttp)
         {
@@ -22,21 +26,29 @@ namespace LopezAutoSales.Client
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            ClaimsPrincipal anonymous = new ClaimsPrincipal(new ClaimsIdentity());
             try
             {
                 CurrentUser user = await _http.GetFromJsonAsync<CurrentUser>("api/auth/me");
+                AuthenticationState state;
                 if (user == null || !user.IsAuthenticated)
-                    return new AuthenticationState(anonymous);
-
-                List<Claim> claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Name) };
-                claims.AddRange(user.Roles.Select(r => new Claim(ClaimTypes.Role, r)));
-                ClaimsIdentity identity = new ClaimsIdentity(claims, "cookie", ClaimTypes.Name, ClaimTypes.Role);
-                return new AuthenticationState(new ClaimsPrincipal(identity));
+                {
+                    state = Anonymous;
+                }
+                else
+                {
+                    List<Claim> claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Name) };
+                    claims.AddRange(user.Roles.Select(r => new Claim(ClaimTypes.Role, r)));
+                    ClaimsIdentity identity = new ClaimsIdentity(claims, "cookie", ClaimTypes.Name, ClaimTypes.Role);
+                    state = new AuthenticationState(new ClaimsPrincipal(identity));
+                }
+                _lastKnown = state;
+                return state;
             }
             catch
             {
-                return new AuthenticationState(anonymous);
+                // Transient failure (network/5xx) — don't forcibly sign the user out;
+                // reuse the last known state if we have one.
+                return _lastKnown ?? Anonymous;
             }
         }
 
@@ -55,8 +67,10 @@ namespace LopezAutoSales.Client
 
         public async Task LogoutAsync()
         {
-            await _http.PostAsync("api/auth/logout", null);
-            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            try { await _http.PostAsync("api/auth/logout", null); } catch { }
+            // Reflect signed-out immediately, even if the server call hiccuped.
+            _lastKnown = Anonymous;
+            NotifyAuthenticationStateChanged(Task.FromResult(Anonymous));
         }
     }
 }
