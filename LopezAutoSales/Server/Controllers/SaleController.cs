@@ -47,6 +47,10 @@ namespace LopezAutoSales.Server.Controllers
             _logger.LogInformation($"{User.Identity?.Name} EDITED SALE {data.Id} {data.Buyers()} {data.Car.Name()}");
             SetLien(data);
             _context.Update(data);
+            // The sold car's cost basis is managed via inventory, never a sale edit:
+            // Update(graph) would otherwise overwrite it from the posted values.
+            if (data.Car != null)
+                _context.Entry(data.Car).Property(x => x.BoughtPrice).IsModified = false;
             _context.SaveChanges();
             return Ok();
         }
@@ -90,6 +94,8 @@ namespace LopezAutoSales.Server.Controllers
             if (sale.Date.Date == DateTime.Today)
                 sale.Date = DateTime.Now;
 
+            // Capture before the matched-car branch nulls sale.Car below.
+            string carName = sale.Car.Name();
             Car car = _context.Cars.Where(x => x.IsListed).FirstOrDefault(x => x.VIN == sale.Car.VIN);
             if (car != null)
             {
@@ -101,7 +107,7 @@ namespace LopezAutoSales.Server.Controllers
             SetLien(sale);
             _context.Sales.Add(sale);
             _context.SaveChanges();
-            _logger.LogInformation($"{User.Identity?.Name} SALE {sale.Id} {sale.Buyers()} {sale.Car.Name()}");
+            _logger.LogInformation($"{User.Identity?.Name} SALE {sale.Id} {sale.Buyers()} {carName}");
             return Ok(sale.Id);
         }
 

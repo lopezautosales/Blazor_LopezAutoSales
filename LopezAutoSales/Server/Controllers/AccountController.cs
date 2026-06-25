@@ -75,7 +75,9 @@ namespace LopezAutoSales.Server.Controllers
             Account account = _context.Accounts.Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefault(x => x.Id == data.AccountId);
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
-            Payment payment = account.Payments.First(x => x.Id == data.Id);
+            Payment payment = account.Payments.FirstOrDefault(x => x.Id == data.Id);
+            if (payment == null)
+                return NotFound(new string[] { "Payment was not found on this account." });
 
             if (data.Date.Date == DateTime.Today)
                 data.Date = DateTime.Now;
@@ -83,7 +85,8 @@ namespace LopezAutoSales.Server.Controllers
             payment.Amount = data.Amount;
             payment.Date = data.Date;
             account.IsPaid = account.Balance() <= 0;
-            _context.Accounts.Update(account);
+            // account + payment are tracked; mutating them is enough — no Update() needed
+            // (Update(account) would re-write the whole Sale/Car graph too).
             _context.SaveChanges();
             return Ok();
         }
@@ -95,11 +98,13 @@ namespace LopezAutoSales.Server.Controllers
             Account account = _context.Accounts.Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefault(x => x.Id == data.AccountId);
             if (account == null)
                 return BadRequest(new string[] { "Could not find the account." });
-            Payment payment = account.Payments.First(x => x.Id == data.Id);
+            Payment payment = account.Payments.FirstOrDefault(x => x.Id == data.Id);
+            if (payment == null)
+                return NotFound(new string[] { "Payment was not found on this account." });
             account.Payments.Remove(payment);
             account.IsPaid = account.Balance() <= 0;
             _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: PAYMENT REMOVED {payment.Date} {payment.Amount} REASON {data.Reason}");
-            _context.Accounts.Update(account);
+            // account + payments are tracked; removing the payment is enough.
             _context.SaveChanges();
             return Ok();
         }

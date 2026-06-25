@@ -20,7 +20,9 @@ namespace LopezAutoSales.Server.Pages
         }
         public IActionResult OnGet(int id)
         {
-            Car = _context.Cars.AsNoTracking().Include(x => x.Pictures).FirstOrDefault(x => x.Id == id);
+            Car = _context.Cars.AsNoTracking().Include(x => x.Pictures).FirstOrDefault(x => x.Id == id && x.IsListed);
+            if (Car == null)
+                return NotFound();
             Car.DeserializeJson();
             foreach (Picture picture in Car.Pictures)
                 picture.URL = _storage.PublicUrl(picture.URL);

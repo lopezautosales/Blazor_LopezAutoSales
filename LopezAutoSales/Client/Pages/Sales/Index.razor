@@ -119,7 +119,7 @@
             var response = await http.Client.PutAsJsonAsync<decimal?>($"/api/sale/boughtPrice/{id}", boughtPrice);
             if (!response.IsSuccessStatusCode)
             {
-                await js.InvokeVoidAsync("alert", "This change could not be saved: " + response.Content.ReadAsStringAsync());
+                await js.InvokeVoidAsync("alert", "This change could not be saved: " + await response.Content.ReadAsStringAsync());
                 return;
             }
         }
@@ -128,7 +128,7 @@
             var response = await http.Client.DeleteAsync($"/api/sale/boughtPrice/{id}");
             if (!response.IsSuccessStatusCode)
             {
-                await js.InvokeVoidAsync("alert", "This change could not be saved: " + response.Content.ReadAsStringAsync());
+                await js.InvokeVoidAsync("alert", "This change could not be saved: " + await response.Content.ReadAsStringAsync());
                 return;
             }
         }
