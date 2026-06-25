@@ -1,234 +1,195 @@
 /* ============================================================================
-   Lopez Auto Sales — modern neutral theme (layered over Bootstrap)
-   Slate palette + a single sky accent. Shared by the public site and the
-   admin app (both load this after bootstrap.min.css).
+   Lopez Auto Sales — "honest lot" identity
+   Navy chrome + warm paper + amber price/signage. Oswald (signage), Source Sans 3
+   (body), Roboto Mono (data plate). Shared by the public site and the admin app.
    ========================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Roboto+Mono:wght@500;600&display=swap');
 
 :root {
-    --ink: #0f172a;       /* slate-900 — headings, dark chrome */
-    --ink-2: #1e293b;     /* slate-800 */
-    --body: #334155;      /* slate-700 — body text */
-    --muted: #64748b;     /* slate-500 */
-    --line: #e2e8f0;      /* slate-200 — borders */
+    --navy: #16243e;      /* brand chrome — nav, footer, headings */
+    --navy-2: #233452;
+    --navy-line: #2c3c5a;
+    --ink: #1b2436;       /* body text */
+    --steel: #64748b;     /* muted */
+    --paper: #f6f3ec;     /* warm page background */
     --surface: #ffffff;
-    --surface-2: #f1f5f9; /* slate-100 — page background */
-    --accent: #0ea5e9;    /* sky-500 */
-    --accent-d: #0284c7;  /* sky-600 */
-    --shadow-sm: 0 1px 2px rgba(2, 6, 23, .06);
-    --shadow-md: 0 10px 30px rgba(2, 6, 23, .10);
-    --radius: 1rem;
+    --line: #e7e1d4;      /* warm hairline */
+    --amber: #f59e0b;     /* the signature: price + key actions */
+    --amber-d: #d97706;
+    --amber-soft: rgba(245, 158, 11, .14);
+    --shadow-sm: 0 1px 2px rgba(22, 36, 62, .06);
+    --shadow-md: 0 16px 40px rgba(22, 36, 62, .14);
+    --radius: .9rem;
 }
 
 body {
-    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    color: var(--body);
-    background-color: var(--surface-2);
+    font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+    background-color: var(--paper);
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
 }
 
 h1, h2, h3, h4, h5, .navbar-brand {
-    color: var(--ink);
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    color: var(--navy);
+    letter-spacing: .005em;
 }
 
-h1 { font-weight: 800; }
+.lead { color: var(--steel); font-weight: 400; }
+a { color: var(--amber-d); text-decoration: none; }
+a:hover { color: var(--navy); }
+main, [role="main"] { padding-bottom: 3rem; }
 
-.lead { color: var(--muted); }
-
-a { color: var(--accent-d); text-decoration: none; }
-a:hover { color: var(--ink); }
-
-main, [role="main"] { padding-bottom: 2.5rem; }
-
-/* ---- Navbar (dark slate chrome) ------------------------------------------ */
-.app-navbar {
-    background: var(--ink);
-    padding: .85rem 0;
-    box-shadow: 0 8px 24px rgba(2, 6, 23, .18);
+.eyebrow {
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .18em;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--amber);
+    margin: 0 0 .5rem;
 }
+
+/* ---- Navbar -------------------------------------------------------------- */
+.app-navbar { background: var(--navy); padding: .8rem 0; box-shadow: 0 10px 30px rgba(22, 36, 62, .2); }
 .app-navbar .navbar-brand {
     color: #fff;
-    font-weight: 800;
-    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-size: 1.25rem;
 }
 .app-navbar .nav-link {
     color: rgba(226, 232, 240, .82) !important;
-    font-weight: 500;
+    font-weight: 600;
     padding: .4rem .8rem !important;
-    border-radius: .6rem;
-    transition: background .15s ease, color .15s ease;
+    border-radius: .5rem;
+    transition: background .15s, color .15s;
 }
-.app-navbar .nav-link:hover,
-.app-navbar .nav-link:focus,
-.app-navbar .nav-link.active {
+.app-navbar .nav-link:hover, .app-navbar .nav-link:focus, .app-navbar .nav-link.active {
     color: #fff !important;
-    background: rgba(255, 255, 255, .09);
+    background: rgba(255, 255, 255, .08);
 }
-.app-navbar .dropdown-menu {
-    border: 1px solid var(--line);
-    border-radius: .75rem;
-    box-shadow: var(--shadow-md);
-    padding: .4rem;
-}
-.app-navbar .dropdown-item { border-radius: .5rem; font-weight: 500; }
-.app-navbar .navbar-toggler { border-color: rgba(255,255,255,.2); color: #fff; }
+.app-navbar .nav-link.active { box-shadow: inset 0 -2px 0 var(--amber); border-radius: 0; }
+.app-navbar .dropdown-menu { border: 1px solid var(--line); border-radius: .7rem; box-shadow: var(--shadow-md); padding: .4rem; }
+.app-navbar .dropdown-item { border-radius: .45rem; font-weight: 500; }
+.app-navbar .navbar-toggler { border-color: rgba(255, 255, 255, .2); }
 
-/* ---- Hero ---------------------------------------------------------------- */
-.page-hero {
-    background: linear-gradient(135deg, var(--ink) 0%, #1e293b 100%);
+/* ---- Lot hero ------------------------------------------------------------ */
+.lot-hero {
+    position: relative;
+    background: var(--navy);
     color: #fff;
-    border-radius: 1.25rem;
-    padding: 2.75rem 2.5rem;
-    margin: 1.75rem 0 2rem;
+    border-radius: 1.1rem;
+    padding: 3rem 2.75rem;
+    margin: 1.75rem 0 2.25rem;
+    overflow: hidden;
     box-shadow: var(--shadow-md);
 }
-.page-hero h1 { color: #fff; margin: 0; font-size: clamp(1.8rem, 4vw, 2.6rem); }
-.page-hero p { color: rgba(226, 232, 240, .8); margin: .5rem 0 0; font-size: 1.05rem; }
+.lot-hero::after { /* amber signage stripe */
+    content: "";
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 8px;
+    background: var(--amber);
+}
+.lot-hero h1 {
+    color: #fff;
+    text-transform: uppercase;
+    font-weight: 700;
+    line-height: .98;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    margin: 0;
+}
+.lot-hero .lead { color: rgba(226, 232, 240, .85); max-width: 40rem; margin: 1rem 0 0; font-size: 1.1rem; }
+
+/* page-hero kept as an alias for inner pages (About, etc.) */
+.page-hero { background: var(--navy); color: #fff; border-radius: 1.1rem; padding: 2.5rem 2.75rem; margin: 1.75rem 0 2rem; }
+.page-hero h1 { color: #fff; text-transform: uppercase; margin: 0; }
+.page-hero p { color: rgba(226, 232, 240, .82); margin: .5rem 0 0; }
+
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin: 0 0 1.25rem; }
+.section-head h2 { text-transform: uppercase; margin: 0; }
+.section-head .count { font-family: 'Roboto Mono', monospace; color: var(--steel); font-size: .9rem; }
 
 /* ---- Cards --------------------------------------------------------------- */
-.card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-sm);
-}
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
 
-/* Public vehicle cards */
-.vehicle-card {
-    overflow: hidden;
-    transition: transform .18s ease, box-shadow .18s ease;
+.vehicle-card { overflow: hidden; transition: transform .16s ease, box-shadow .16s ease; }
+.vehicle-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.vehicle-media { position: relative; }
+.vehicle-card .card-img-top, .vehicle-card .img-placeholder {
+    aspect-ratio: 4 / 3; object-fit: cover; width: 100%; background: #eceae3; display: block;
 }
-.vehicle-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-md);
+.vehicle-card .img-placeholder { display: flex; align-items: center; justify-content: center; color: #c7c0b0; font-size: 2.6rem; }
+.stock {
+    position: absolute; top: .6rem; left: .6rem;
+    font-family: 'Roboto Mono', monospace; font-size: .68rem; font-weight: 600; letter-spacing: .06em;
+    background: rgba(22, 36, 62, .82); color: #fff; padding: .2rem .5rem; border-radius: .4rem;
 }
-.vehicle-card .card-img-top,
-.vehicle-card .img-placeholder {
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    width: 100%;
-    background: var(--surface-2);
-}
-.vehicle-card .img-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #cbd5e1;
-    font-size: 2.5rem;
-}
-.vehicle-card .card-title { font-size: 1.05rem; margin-bottom: .4rem; }
-.vehicle-card .price { color: var(--accent-d); font-weight: 800; font-size: 1.25rem; }
-.vehicle-card .miles { color: var(--muted); font-size: .9rem; }
+.vehicle-name { font-size: 1.15rem; text-transform: uppercase; letter-spacing: .01em; margin: 0 0 .35rem; line-height: 1.05; }
+.odo { font-family: 'Roboto Mono', monospace; color: var(--steel); font-size: .85rem; }
+
+/* The signature — windshield-marker price */
+.price { font-family: 'Oswald', sans-serif; font-weight: 700; color: var(--amber-d); line-height: 1; }
+.vehicle-card .price { font-size: 1.8rem; }
+.price .cur { font-size: .65em; vertical-align: .12em; margin-right: .05em; }
 
 /* ---- Buttons ------------------------------------------------------------- */
-.btn { border-radius: .65rem; font-weight: 600; padding: .5rem 1.05rem; }
-.btn-primary { background: var(--accent); border-color: var(--accent); }
-.btn-primary:hover, .btn-primary:focus { background: var(--accent-d); border-color: var(--accent-d); }
-.btn-secondary { background: var(--ink); border-color: var(--ink); }
-.btn-secondary:hover, .btn-secondary:focus { background: var(--ink-2); border-color: var(--ink-2); }
-.btn-outline-accent { color: var(--accent-d); border: 1px solid var(--accent); background: transparent; }
-.btn-outline-accent:hover { color: #fff; background: var(--accent); }
+.btn { border-radius: .5rem; font-weight: 600; font-family: 'Oswald', sans-serif; letter-spacing: .03em; text-transform: uppercase; padding: .55rem 1.1rem; }
+.btn-primary { background: var(--navy); border-color: var(--navy); }
+.btn-primary:hover, .btn-primary:focus { background: var(--navy-2); border-color: var(--navy-2); }
+/* Quiet secondary so amber stays reserved for the price signature. */
+.btn-secondary { background: transparent; border-color: var(--navy); color: var(--navy); }
+.btn-secondary:hover, .btn-secondary:focus { background: var(--navy); border-color: var(--navy); color: #fff; }
 
 /* ---- Forms --------------------------------------------------------------- */
-.form-control, .form-select {
-    border-radius: .65rem;
-    border-color: var(--line);
-    padding: .5rem .8rem;
-}
-.form-control:focus, .form-select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 .2rem rgba(14, 165, 233, .15);
-}
-label, .form-label { color: var(--ink); font-weight: 500; }
+.form-control, .form-select { border-radius: .5rem; border-color: var(--line); padding: .5rem .8rem; }
+.form-control:focus, .form-select:focus { border-color: var(--amber); box-shadow: 0 0 0 .2rem var(--amber-soft); }
+label, .form-label { color: var(--navy); font-weight: 600; }
 
 /* ---- Tables (admin) ------------------------------------------------------ */
 .table { --bs-table-bg: var(--surface); }
 .table > thead th {
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    font-size: .78rem;
-    border-bottom: 2px solid var(--line);
+    font-family: 'Oswald', sans-serif; color: var(--steel); text-transform: uppercase;
+    letter-spacing: .05em; font-size: .8rem; font-weight: 600; border-bottom: 2px solid var(--line);
 }
 .table td { vertical-align: middle; }
 
 /* ---- Auth / centered forms ---------------------------------------------- */
-.auth-card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-md);
-    padding: 2rem;
-}
+.auth-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 2.25rem; }
 
-/* ---- Info cards (About page) -------------------------------------------- */
+/* ---- Info cards (About) -------------------------------------------------- */
 .info-card .info-icon {
-    width: 3rem;
-    height: 3rem;
-    border-radius: .85rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(14, 165, 233, .12);
-    color: var(--accent-d);
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+    width: 3rem; height: 3rem; border-radius: .7rem; display: flex; align-items: center; justify-content: center;
+    background: var(--amber-soft); color: var(--amber-d); font-size: 1.5rem; margin-bottom: 1rem;
 }
-
-/* Map embed — fixed, reasonable height (doesn't depend on Bootstrap's .ratio) */
 .map-embed { position: relative; width: 100%; height: 360px; }
 .map-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
 /* ---- Footer -------------------------------------------------------------- */
-.site-footer {
-    background: var(--ink);
-    color: rgba(226, 232, 240, .72);
-    margin-top: auto;
-    padding: 2.5rem 0 2rem;
-}
-.site-footer h5 { color: #fff; font-size: 1rem; margin-bottom: .75rem; }
+.site-footer { background: var(--navy); color: rgba(226, 232, 240, .72); margin-top: auto; padding: 2.75rem 0 2rem; }
+.site-footer h5 { color: #fff; text-transform: uppercase; letter-spacing: .05em; font-size: 1rem; margin-bottom: .75rem; }
 .site-footer a { color: rgba(226, 232, 240, .72); }
-.site-footer a:hover { color: #fff; }
-.site-footer .mdi { color: var(--accent); }
+.site-footer a:hover { color: var(--amber); }
+.site-footer .mdi { color: var(--amber); }
+
+@media (prefers-reduced-motion: reduce) {
+    .vehicle-card { transition: none; }
+}
 
 /* ============================================================================
-   Existing app utilities + print rules (unchanged)
+   Existing app utilities + print rules
    ========================================================================== */
-.card-picture {
-    max-width: 12.5rem;
-}
-
-.pointer {
-    cursor: pointer;
-}
-
-.signature {
-    border: 0;
-    border-bottom: 1px solid #000;
-}
-
-#placeholder {
-    height: 1.3em;
-}
+.card-picture { max-width: 12.5rem; }
+.pointer { cursor: pointer; }
+.signature { border: 0; border-bottom: 1px solid #000; }
+#placeholder { height: 1.3em; }
 
 @media print {
-    .no-print {
-        display: none;
-    }
-
-    #page-break {
-        page-break-before: always;
-    }
-
-    html {
-        font-size: .75rem;
-        line-height: 1.25rem;
-    }
-
-    .form-check-input:checked {
-        appearance: auto;
-    }
+    .no-print { display: none; }
+    #page-break { page-break-before: always; }
+    html { font-size: .75rem; line-height: 1.25rem; }
+    .form-check-input:checked { appearance: auto; }
 }

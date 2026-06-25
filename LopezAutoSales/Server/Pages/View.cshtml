@@ -10,34 +10,32 @@
 }
 else
 {
-    <div class="my-4">
-        <a href="/" class="text-muted"><i class="mdi mdi-arrow-left"></i> Back to inventory</a>
+    <div class="mt-4 mb-3">
+        <a href="/" class="odo"><i class="mdi mdi-arrow-left"></i> Back to the lot</a>
     </div>
     <div class="card p-4 mb-4">
+        <p class="eyebrow mb-1">Stock #@Model.Car.Id.ToString("D4") · @Model.Car.TitleStatus() Title</p>
         <div class="row align-items-center g-3">
             <div class="col-md">
-                <h1 class="mb-1">@Model.Car.Name()</h1>
-                <span class="badge rounded-pill" style="background: var(--surface-2); color: var(--muted); font-weight: 500;">
-                    <i class="mdi mdi-shield-check"></i> @Model.Car.TitleStatus() Title
-                </span>
+                <h1 class="mb-0" style="font-size: clamp(1.9rem, 4vw, 2.8rem); text-transform: uppercase;">@Model.Car.Name()</h1>
             </div>
             <div class="col-md-auto text-md-end">
-                <div style="color: var(--accent-d); font-weight: 800; font-size: 2rem; line-height: 1;">@Model.Car.ListPrice.ToString("C")</div>
+                <div class="price" style="font-size: 2.8rem;"><span class="cur">$</span>@Model.Car.ListPrice.ToString("N0")</div>
             </div>
         </div>
         <hr />
         <div class="row text-center g-3">
             <div class="col-6 col-md-4">
-                <div class="text-muted small text-uppercase">Mileage</div>
-                <div class="h5 mb-0">@Model.Car.MileageString() mi</div>
+                <p class="eyebrow mb-1" style="color: var(--steel);">Mileage</p>
+                <div class="odo" style="font-size: 1.1rem;">@Model.Car.MileageString() mi</div>
             </div>
             <div class="col-6 col-md-4">
-                <div class="text-muted small text-uppercase">Year</div>
-                <div class="h5 mb-0">@Model.Car.Year</div>
+                <p class="eyebrow mb-1" style="color: var(--steel);">Year</p>
+                <div class="odo" style="font-size: 1.1rem;">@Model.Car.Year</div>
             </div>
             <div class="col-12 col-md-4">
-                <div class="text-muted small text-uppercase">VIN</div>
-                <div class="h5 mb-0">@Model.Car.VIN</div>
+                <p class="eyebrow mb-1" style="color: var(--steel);">VIN</p>
+                <div class="odo" style="font-size: 1.1rem;">@Model.Car.VIN</div>
             </div>
         </div>
     </div>

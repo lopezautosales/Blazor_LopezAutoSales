@@ -7,49 +7,49 @@
 
 @if (Model.Cars == null)
 {
-    <p class="lead mt-4">Loading...</p>
+    <p class="lead mt-4">Loading…</p>
 }
 else
 {
-    <div class="page-hero">
-        <h1>Our Inventory</h1>
-        <p>
-            @if (Model.Cars.Count == 0)
-            {
-                @:Check back soon — new vehicles arrive regularly.
-            }
-            else
-            {
-                @($"{Model.Cars.Count} vehicle{(Model.Cars.Count == 1 ? "" : "s")} available · In-house financing on every purchase.")
-            }
-        </p>
-    </div>
+    <section class="lot-hero">
+        <p class="eyebrow">Family-owned · Emporia, Kansas</p>
+        <h1>Half down.<br />Drive home today.</h1>
+        <p class="lead">In-house financing on every vehicle — about $300 a month, no bank required. Here's what's on the lot.</p>
+    </section>
+
     @if (Model.Cars.Count == 0)
     {
-        <p class="lead text-center py-5">There's currently no vehicles available.</p>
+        <p class="lead text-center py-5">Nothing on the lot right now — check back soon.</p>
     }
     else
     {
+        <div class="section-head">
+            <h2>On the Lot</h2>
+            <span class="count">@Model.Cars.Count vehicle@(Model.Cars.Count == 1 ? "" : "s")</span>
+        </div>
         <div class="row g-4">
             @foreach (Car car in Model.Cars)
             {
                 <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
-                    <div class="card vehicle-card h-100">
-                        @if (car.Pictures.Any(x => x.IsThumbnail))
-                        {
-                            <img data-src="@car.Pictures.First(x => x.IsThumbnail).ThumbnailURL()" class="lazy card-img-top" alt="@car.Name()" />
-                        }
-                        else
-                        {
-                            <div class="img-placeholder"><i class="mdi mdi-car"></i></div>
-                        }
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">@car.Name()</h5>
-                            <div class="price mb-1">@car.ListPrice.ToString("C")</div>
-                            <div class="miles mb-3"><i class="mdi mdi-speedometer"></i> @car.MileageString() miles</div>
-                            <a href="/view/@car.Id" class="btn btn-primary w-100 mt-auto">View Details</a>
+                    <article class="card vehicle-card h-100">
+                        <div class="vehicle-media">
+                            @if (car.Pictures.Any(x => x.IsThumbnail))
+                            {
+                                <img data-src="@car.Pictures.First(x => x.IsThumbnail).ThumbnailURL()" class="lazy card-img-top" alt="@car.Name()" />
+                            }
+                            else
+                            {
+                                <div class="img-placeholder"><i class="mdi mdi-car-side"></i></div>
+                            }
+                            <span class="stock">STOCK #@car.Id.ToString("D4")</span>
                         </div>
-                    </div>
+                        <div class="card-body d-flex flex-column">
+                            <h3 class="vehicle-name">@car.Name()</h3>
+                            <div class="odo mb-3"><i class="mdi mdi-speedometer"></i> @car.MileageString() mi</div>
+                            <div class="price mb-3"><span class="cur">$</span>@car.ListPrice.ToString("N0")</div>
+                            <a href="/view/@car.Id" class="btn btn-primary w-100 mt-auto">View Details <i class="mdi mdi-arrow-right"></i></a>
+                        </div>
+                    </article>
                 </div>
             }
         </div>
