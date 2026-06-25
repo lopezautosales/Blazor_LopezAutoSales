@@ -102,7 +102,10 @@ namespace LopezAutoSales.Server
                 };
             });
 
-            services.AddControllersWithViews().AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            // Use the framework's System.Text.Json; IgnoreCycles handles the EF entity
+            // navigation loops the way Newtonsoft's ReferenceLoopHandling.Ignore did.
+            services.AddControllersWithViews().AddJsonOptions(o =>
+                o.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
             services.AddRazorPages();
 
             services.Configure<IdentityOptions>(options =>

@@ -9,6 +9,11 @@ namespace LopezAutoSales.Server
     {
         public static void Main(string[] args)
         {
+            // The Linux container defaults to InvariantCulture, which renders "¤" instead
+            // of "$" for server-side ToString("C") on the public pages. Pin en-US.
+            System.Globalization.CultureInfo enUs = new System.Globalization.CultureInfo("en-US");
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = enUs;
+            System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = enUs;
             CreateHostBuilder(args).Build().Run();
         }
 
