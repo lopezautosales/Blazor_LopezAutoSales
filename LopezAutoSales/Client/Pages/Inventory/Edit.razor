@@ -1,6 +1,6 @@
 ﻿@page "/app/inventory/edit/{id:int}"
+@attribute [Authorize(Roles = "Admin")]
 @inject AuthHttp auth
-@inject HttpClient http
 @inject IJSRuntime js
 @inject CarManager carManager
 @inject NavigationManager nav

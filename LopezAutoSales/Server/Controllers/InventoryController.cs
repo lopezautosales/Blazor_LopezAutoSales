@@ -44,8 +44,9 @@ namespace LopezAutoSales.Server.Controllers
         public IActionResult GetCar(int id)
         {
             Car car = _context.Cars.AsNoTracking().Include(x => x.Pictures).FirstOrDefault(x => x.Id == id);
-            if (car == null)
-                return BadRequest();
+            // Non-admins may only view listed cars (no id-enumeration of sold/unlisted).
+            if (car == null || (!car.IsListed && !User.IsInRole("Admin")))
+                return NotFound();
             if (!User.IsInRole("Admin"))
                 car.BoughtPrice = null;
             ResolveUrls(car.Pictures);
@@ -133,6 +134,7 @@ namespace LopezAutoSales.Server.Controllers
 
         [HttpPost("upload/{id}")]
         [Authorize(Roles = "Admin")]
+        [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> AddPictures(int id)
         {
             if (!HttpContext.Request.Form.Files.Any())
@@ -148,16 +150,23 @@ namespace LopezAutoSales.Server.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult DeleteVehicle(int id)
+        public async Task<IActionResult> DeleteVehicle(int id)
         {
-            Car car = _context.Cars.FirstOrDefault(x => x.Id == id);
+            Car car = _context.Cars.Include(x => x.Pictures).FirstOrDefault(x => x.Id == id);
 
             if (car == null)
-                return BadRequest("Car was not found.");
+                return NotFound("Car was not found.");
             if (!car.IsListed)
                 return BadRequest("Cannot remove cars that are not listed.");
 
             _logger.LogInformation($"{User.Identity?.Name} DELETED {car.Name()}");
+            // Remove the car's blobs from object storage so they don't leak.
+            foreach (Picture picture in car.Pictures)
+            {
+                await _storage.DeleteAsync(picture.URL);
+                if (picture.IsThumbnail)
+                    await _storage.DeleteAsync(picture.ThumbnailURL());
+            }
             _context.Remove(car);
             _context.SaveChanges();
             return Ok();
@@ -173,26 +182,40 @@ namespace LopezAutoSales.Server.Controllers
                 picture.URL = _storage.PublicUrl(picture.URL);
         }
 
+        // Reject images larger than this many pixels (decompression-bomb guard).
+        private const long MaxPixels = 100_000_000;
+
         private async Task HandleImagesAsync(Car car)
         {
             List<Picture> pictures = new List<Picture>();
             bool hasThumbnail = car.Pictures.Any(x => x.IsThumbnail);
             foreach (var file in HttpContext.Request.Form.Files)
             {
+                // Buffer so we can inspect the header before decoding the full image.
+                using MemoryStream buffer = new MemoryStream();
+                await file.CopyToAsync(buffer);
+                buffer.Position = 0;
+
+                IImageInfo info = Image.Identify(buffer);
+                buffer.Position = 0;
+                if (info == null || (long)info.Width * info.Height > MaxPixels)
+                    continue; // not a decodable image, or too large — skip
+
+                using Image image = Image.Load(buffer, out IImageFormat format);
+                image.Mutate(x => x.AutoOrient());
+
+                // Key from a GUID + the *detected* format (never the client filename),
+                // so uploads can't collide/overwrite or smuggle a wrong extension.
+                string extension = format.FileExtensions.FirstOrDefault() ?? "img";
                 Picture picture = new Picture
                 {
                     CarId = car.Id,
                     IsThumbnail = false,
-                    URL = $"Images/{Path.GetFileName(file.FileName)}"
+                    URL = $"Images/{Guid.NewGuid():N}.{extension}"
                 };
                 pictures.Add(picture);
 
-                using (Stream upload = file.OpenReadStream())
-                using (Image image = Image.Load(upload, out IImageFormat format))
-                {
-                    image.Mutate(x => x.AutoOrient());
-                    await SaveImageAsync(image, format, picture.URL);
-                }
+                await SaveImageAsync(image, format, picture.URL);
                 if (!hasThumbnail)
                 {
                     await CreateThumbnailAsync(picture);

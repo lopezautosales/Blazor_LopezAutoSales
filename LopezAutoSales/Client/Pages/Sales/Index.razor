@@ -1,5 +1,6 @@
 ﻿@page "/app/report/{year:int}"
 @page "/app/report"
+@attribute [Authorize(Roles = "Admin")]
 @inject AuthHttp http
 @inject IJSRuntime js
 

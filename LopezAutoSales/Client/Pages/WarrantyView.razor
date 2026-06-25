@@ -1,7 +1,8 @@
 ﻿@page "/app/warranty/{id:int}"
+@attribute [Authorize(Roles = "Admin")]
 @using LopezAutoSales.Client.Shared.Papers
 @inject CarManager carManager
-@inject HttpClient http
+@inject AuthHttp auth
 @inject IJSRuntime js
 
 @if (car != null)
@@ -19,7 +20,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        car = await carManager.GetCarAsync(http, Id);
+        car = await carManager.GetCarAsync(auth.Client, Id);
         await base.OnInitializedAsync();
     }
 

@@ -22,9 +22,12 @@ namespace LopezAutoSales.Server
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IWebHostEnvironment _env;
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            _env = env;
         }
 
         public IConfiguration Configuration { get; }
@@ -41,11 +44,21 @@ namespace LopezAutoSales.Server
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                // Railway's edge proxy IP isn't stable, so we can't pin KnownProxies.
+                // Only honor a single hop and rely on the host being reachable solely
+                // through that proxy; SecurePolicy=Always below prevents a spoofed
+                // X-Forwarded-Proto from downgrading the auth cookie.
+                options.ForwardLimit = 1;
                 options.KnownIPNetworks.Clear();
                 options.KnownProxies.Clear();
             });
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+                {
+                    // Default complexity (digit/upper/lower/symbol) plus a longer floor;
+                    // the single admin should use a long passphrase via Admin__Password.
+                    options.Password.RequiredLength = 8;
+                })
                 .AddDefaultTokenProviders()
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -59,6 +72,15 @@ namespace LopezAutoSales.Server
                 // Blazor login instead of the (now non-existent) /Identity/Account/Login.
                 options.LoginPath = "/app/login";
                 options.AccessDeniedPath = "/app/login";
+                // Harden the auth cookie. SameSite=Lax blocks cross-site POST (CSRF) for
+                // this cookie-auth API; force Secure in production (behind HTTPS) while
+                // allowing plain-HTTP local dev.
+                options.Cookie.SecurePolicy = _env.IsDevelopment()
+                    ? CookieSecurePolicy.SameAsRequest
+                    : CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.Lax;
+                options.ExpireTimeSpan = System.TimeSpan.FromHours(8);
+                options.SlidingExpiration = true;
                 options.Events.OnRedirectToLogin = context =>
                 {
                     if (context.Request.Path.StartsWithSegments("/api"))
@@ -107,6 +129,16 @@ namespace LopezAutoSales.Server
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseForwardedHeaders();
+
+            // Baseline security headers (CSP omitted to avoid breaking the Blazor WASM
+            // bootstrap; X-Frame-Options handles the clickjacking case).
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+                context.Response.Headers["X-Frame-Options"] = "DENY";
+                context.Response.Headers["Referrer-Policy"] = "no-referrer";
+                await next();
+            });
 
             // Apply pending EF migrations and seed the admin user on startup.
             using (IServiceScope scope = app.ApplicationServices.CreateScope())
@@ -164,6 +196,9 @@ namespace LopezAutoSales.Server
                 Username = System.Uri.UnescapeDataString(userInfo[0]),
                 Password = userInfo.Length > 1 ? System.Uri.UnescapeDataString(userInfo[1]) : string.Empty,
                 Database = uri.AbsolutePath.TrimStart('/'),
+                // Railway's internal DATABASE_URL connects over an isolated private
+                // network that doesn't offer TLS; Prefer encrypts when available and
+                // doesn't break the internal connection (Require would).
                 SslMode = SslMode.Prefer
             };
             return builder.ConnectionString;

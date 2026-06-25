@@ -20,8 +20,9 @@ namespace LopezAutoSales.Client
             builder.Services.AddTransient<CookieHandler>();
             builder.Services.AddHttpClient("LopezAutoSales.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<CookieHandler>();
-            builder.Services.AddHttpClient("NoAuth", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
-                .AddHttpMessageHandler<CookieHandler>();
+            // No cookie handler: this client is for credential-free calls (e.g. the
+            // external NHTSA VIN lookup); it must not attach the auth cookie.
+            builder.Services.AddHttpClient("NoAuth", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
 
             // Supply HttpClient instances that include the auth cookie when making requests to the server project
             builder.Services.AddScoped(x => new AuthHttp(x.GetRequiredService<IHttpClientFactory>().CreateClient("LopezAutoSales.ServerAPI")));

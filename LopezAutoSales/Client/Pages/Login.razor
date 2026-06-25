@@ -53,6 +53,15 @@
         _busy = false;
 
         if (_error == null)
-            Navigation.NavigateTo(string.IsNullOrWhiteSpace(ReturnUrl) ? "app" : ReturnUrl);
+            Navigation.NavigateTo(IsLocal(ReturnUrl) ? ReturnUrl : "app");
+    }
+
+    // Only follow app-relative return URLs, never an attacker-supplied absolute or
+    // protocol-relative ("//evil") one.
+    private static bool IsLocal(string url)
+    {
+        return !string.IsNullOrWhiteSpace(url)
+            && System.Uri.IsWellFormedUriString(url, System.UriKind.Relative)
+            && !url.StartsWith("/") && !url.StartsWith("\\");
     }
 }
