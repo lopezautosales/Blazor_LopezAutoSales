@@ -71,7 +71,7 @@ main, [role="main"] { padding-bottom: 3rem; }
     color: #fff !important;
     background: rgba(255, 255, 255, .08);
 }
-.app-navbar .nav-link.active { box-shadow: inset 0 -2px 0 var(--amber); border-radius: 0; }
+.app-navbar .nav-link.active { background: rgba(255, 255, 255, .12); box-shadow: inset 0 -2px 0 var(--amber); }
 .app-navbar .dropdown-menu { border: 1px solid var(--line); border-radius: .7rem; box-shadow: var(--shadow-md); padding: .4rem; }
 .app-navbar .dropdown-item { border-radius: .45rem; font-weight: 500; }
 .app-navbar .navbar-toggler { border-color: rgba(255, 255, 255, .2); }
