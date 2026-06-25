@@ -51,7 +51,12 @@
                             <a class="nav-link" href="/app"><i class="mdi mdi-clipboard"></i> App</a>
                         </li>
                     }
-                    <partial name="_LoginPartial" />
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/app/login"><i class="mdi mdi-login"></i> Login</a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>

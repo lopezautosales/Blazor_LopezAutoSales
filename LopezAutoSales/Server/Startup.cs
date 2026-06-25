@@ -46,7 +46,6 @@ namespace LopezAutoSales.Server
             });
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddDefaultUI()
                 .AddDefaultTokenProviders()
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -56,6 +55,10 @@ namespace LopezAutoSales.Server
             // to the login HTML page (which a SPA can't follow).
             services.ConfigureApplicationCookie(options =>
             {
+                // The scaffolded Identity UI is removed; point any stray redirect at the
+                // Blazor login instead of the (now non-existent) /Identity/Account/Login.
+                options.LoginPath = "/app/login";
+                options.AccessDeniedPath = "/app/login";
                 options.Events.OnRedirectToLogin = context =>
                 {
                     if (context.Request.Path.StartsWithSegments("/api"))
