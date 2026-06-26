@@ -46,7 +46,7 @@ else
                         </td>
                         <td class="no-print">
                             @{ string id = $"editPaymentModal{payment.Id}"; }
-                            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#@id">Edit</button>
+                            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#@id" @onclick="() => OpenEdit(payment)">Edit</button>
                             <div class="modal fade" id="@id" tabindex="-1" role="dialog" aria-hidden="true">
                                 <div class="modal-dialog" role="document">
                                     <div class="modal-content">
@@ -57,7 +57,7 @@ else
                                         <div class="modal-body">
                                             <div class="mb-3">
                                                 <label>Original Payment Date:</label>
-                                                <input type="datetime" value="@payment.Date" readonly class="form-control" />
+                                                <input type="text" value="@payment.Date.ToShortDateString()" readonly class="form-control" />
                                             </div>
                                             <div class="mb-3">
                                                 <label>Original Payment Amount:</label>
@@ -169,6 +169,13 @@ else
             payment.Amount = editPayment.Amount = account.MonthlyPayment;
         }
         await base.OnInitializedAsync();
+    }
+
+    // Seed the shared edit model from the row being opened so the dialog shows that
+    // payment's real values (not a stale 0001-01-01 default carried over from another row).
+    private void OpenEdit(Payment payment)
+    {
+        editPayment = new Payment { AccountId = Id, Id = payment.Id, Date = payment.Date, Amount = payment.Amount };
     }
 
     private async Task SubmitPayment()

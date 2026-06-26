@@ -17,10 +17,16 @@ RUN dotnet publish LopezAutoSales/Server/LopezAutoSales.Server.csproj -c Release
 # ---- runtime ----
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
-# Npgsql probes for Kerberos/GSSAPI at startup; curl is used by the healthcheck.
+# Npgsql probes for Kerberos/GSSAPI at startup; curl is used by the healthcheck;
+# tzdata provides the zoneinfo DB so TZ below resolves to a real timezone.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libgssapi-krb5-2 curl \
+    && apt-get install -y --no-install-recommends libgssapi-krb5-2 curl tzdata \
     && rm -rf /var/lib/apt/lists/*
+# The dealership is in Emporia, Kansas (Central). Without this the container's
+# local time is UTC, so DateTime.Now/Today on sales & payments would record the
+# wrong calendar day for anything entered in the evening. (Npgsql still maps
+# DateTime as "timestamp without time zone" — this only sets the wall clock.)
+ENV TZ=America/Chicago
 COPY --from=build /app ./
 # Run as the non-root user the aspnet image ships with.
 RUN chown -R app:app /app

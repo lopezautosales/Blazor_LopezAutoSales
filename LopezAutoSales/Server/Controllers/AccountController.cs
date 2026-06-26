@@ -28,7 +28,9 @@ namespace LopezAutoSales.Server.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult GetAccounts()
         {
-            List<Account> accounts = _context.Accounts.AsNoTracking().Include(x => x.Sale).ThenInclude(x => x.Car).OrderBy(x => x.Sale.Buyer).ToList();
+            // Payments must be included so the client can compute Balance()/LateDue()
+            // per account without an N+1 round-trip (and without NRE on a null list).
+            List<Account> accounts = _context.Accounts.AsNoTracking().Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).OrderBy(x => x.Sale.Buyer).ToList();
             return Ok(accounts);
         }
 

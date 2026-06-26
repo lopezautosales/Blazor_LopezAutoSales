@@ -59,6 +59,10 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
+            // Guard against listing the same physical car twice — SellVehicle matches by
+            // VIN among listed cars, so a duplicate listing corrupts the sell flow + reports.
+            if (!string.IsNullOrWhiteSpace(car.VIN) && _context.Cars.Any(x => x.IsListed && x.VIN.ToUpper() == car.VIN.ToUpper()))
+                return BadRequest(new[] { $"A listed vehicle with VIN {car.VIN} is already in inventory." });
             _logger.LogInformation($"{User.Identity?.Name} ADDED {car.Name()} FOR {car.ListPrice}");
             car.IsListed = true;
             car.Date = DateTime.Now;
@@ -151,10 +155,14 @@ namespace LopezAutoSales.Server.Controllers
             Car car = _context.Cars.Include(x => x.Pictures).FirstOrDefault(x => x.Id == id);
             if (car == null)
                 return NotFound("Car not found.");
-            await HandleImagesAsync(car);
+            (List<Picture> added, int skipped) = await HandleImagesAsync(car);
             _context.SaveChanges();
-            ResolveUrls(car.Pictures);
-            return Ok(car.Pictures);
+            ResolveUrls(added);
+            // Tell the client if any files were rejected (not an image / too large / corrupt)
+            // so a partial upload doesn't look like a clean success.
+            if (skipped > 0)
+                Response.Headers["X-Skipped-Files"] = skipped.ToString();
+            return Ok(added);
         }
 
         [HttpDelete("{id}")]
@@ -196,45 +204,63 @@ namespace LopezAutoSales.Server.Controllers
         // Reject images larger than this many pixels (decompression-bomb guard).
         private const long MaxPixels = 100_000_000;
 
-        private async Task HandleImagesAsync(Car car)
+        // Returns the pictures actually stored and the count of files that were skipped
+        // (undecodable, oversized, or failed mid-processing). One bad file never aborts
+        // the rest of the batch.
+        private async Task<(List<Picture> Added, int Skipped)> HandleImagesAsync(Car car)
         {
             List<Picture> pictures = new List<Picture>();
             bool hasThumbnail = car.Pictures.Any(x => x.IsThumbnail);
+            int skipped = 0;
             foreach (var file in HttpContext.Request.Form.Files)
             {
-                // Buffer so we can inspect the header before decoding the full image.
-                using MemoryStream buffer = new MemoryStream();
-                await file.CopyToAsync(buffer);
-                buffer.Position = 0;
-
-                IImageInfo info = Image.Identify(buffer);
-                buffer.Position = 0;
-                if (info == null || (long)info.Width * info.Height > MaxPixels)
-                    continue; // not a decodable image, or too large — skip
-
-                using Image image = Image.Load(buffer, out IImageFormat format);
-                image.Mutate(x => x.AutoOrient());
-
-                // Key from a GUID + the *detected* format (never the client filename),
-                // so uploads can't collide/overwrite or smuggle a wrong extension.
-                string extension = format.FileExtensions.FirstOrDefault() ?? "img";
-                Picture picture = new Picture
+                try
                 {
-                    CarId = car.Id,
-                    IsThumbnail = false,
-                    URL = $"Images/{Guid.NewGuid():N}.{extension}"
-                };
-                pictures.Add(picture);
+                    // Buffer so we can inspect the header before decoding the full image.
+                    using MemoryStream buffer = new MemoryStream();
+                    await file.CopyToAsync(buffer);
+                    buffer.Position = 0;
 
-                await SaveImageAsync(image, format, picture.URL);
-                if (!hasThumbnail)
+                    IImageInfo info = Image.Identify(buffer);
+                    buffer.Position = 0;
+                    if (info == null || (long)info.Width * info.Height > MaxPixels)
+                    {
+                        skipped++;
+                        _logger.LogWarning("Skipped upload {File}: not a decodable image or exceeds the pixel limit.", file.FileName);
+                        continue;
+                    }
+
+                    using Image image = Image.Load(buffer, out IImageFormat format);
+                    image.Mutate(x => x.AutoOrient());
+
+                    // Key from a GUID + the *detected* format (never the client filename),
+                    // so uploads can't collide/overwrite or smuggle a wrong extension.
+                    string extension = format.FileExtensions.FirstOrDefault() ?? "img";
+                    Picture picture = new Picture
+                    {
+                        CarId = car.Id,
+                        IsThumbnail = false,
+                        URL = $"Images/{Guid.NewGuid():N}.{extension}"
+                    };
+
+                    // Store the blob first; only track the record once the blob exists.
+                    await SaveImageAsync(image, format, picture.URL);
+                    pictures.Add(picture);
+                    if (!hasThumbnail)
+                    {
+                        await CreateThumbnailAsync(picture);
+                        picture.IsThumbnail = true;
+                        hasThumbnail = true;
+                    }
+                }
+                catch (Exception ex)
                 {
-                    await CreateThumbnailAsync(picture);
-                    picture.IsThumbnail = true;
-                    hasThumbnail = true;
+                    skipped++;
+                    _logger.LogError(ex, "Skipped upload {File}: processing failed.", file.FileName);
                 }
             }
             _context.Pictures.AddRange(pictures);
+            return (pictures, skipped);
         }
 
         private async Task CreateThumbnailAsync(Picture picture)
