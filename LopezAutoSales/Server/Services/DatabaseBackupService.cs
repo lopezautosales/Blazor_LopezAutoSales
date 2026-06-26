@@ -41,7 +41,8 @@ namespace LopezAutoSales.Server.Services
             _storage = storage;
             _logger = logger;
             _enabled = config.GetValue("Backup:Enabled", true);
-            int hours = config.GetValue("Backup:IntervalHours", 24);
+            // Default cadence is weekly (168h); override with Backup:IntervalHours.
+            int hours = config.GetValue("Backup:IntervalHours", 168);
             _interval = TimeSpan.FromHours(hours < 1 ? 1 : hours);
         }
 
