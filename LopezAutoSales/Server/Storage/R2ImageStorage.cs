@@ -1,6 +1,7 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -66,6 +67,25 @@ namespace LopezAutoSales.Server.Storage
             {
                 return false;
             }
+        }
+
+        public async Task<IReadOnlyList<string>> ListKeysAsync(string prefix, CancellationToken ct = default)
+        {
+            List<string> keys = new List<string>();
+            ListObjectsV2Request request = new ListObjectsV2Request
+            {
+                BucketName = _options.Bucket,
+                Prefix = Normalize(prefix)
+            };
+            ListObjectsV2Response response;
+            do
+            {
+                response = await _s3.ListObjectsV2Async(request, ct);
+                foreach (S3Object obj in response.S3Objects)
+                    keys.Add(obj.Key);
+                request.ContinuationToken = response.NextContinuationToken;
+            } while (response.IsTruncated == true);
+            return keys;
         }
 
         public string PublicUrl(string key) => $"{_options.PublicBaseUrl.TrimEnd('/')}/{Normalize(key)}";

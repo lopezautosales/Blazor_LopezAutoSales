@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
@@ -74,8 +75,40 @@ namespace LopezAutoSales.Server.Services
             }
         }
 
+        // backups/lopez-yyyyMMdd-HHmmss.json.gz — the timestamp is the generation time.
+        private const string Prefix = "backups/lopez-";
+        private const string Suffix = ".json.gz";
+        private const string Stamp = "yyyyMMdd-HHmmss";
+
+        // Newest backup's generation time parsed from its key name, or null if none exist.
+        private async Task<DateTime?> LatestBackupTimeAsync(CancellationToken ct)
+        {
+            DateTime? latest = null;
+            foreach (string key in await _storage.ListKeysAsync(Prefix, ct))
+            {
+                string name = key.Replace('\\', '/');
+                if (!name.StartsWith(Prefix) || !name.EndsWith(Suffix))
+                    continue;
+                string stamp = name.Substring(Prefix.Length, name.Length - Prefix.Length - Suffix.Length);
+                if (DateTime.TryParseExact(stamp, Stamp, CultureInfo.InvariantCulture,
+                        DateTimeStyles.None, out DateTime when) && (latest is null || when > latest))
+                    latest = when;
+            }
+            return latest;
+        }
+
         private async Task BackupAsync(CancellationToken ct)
         {
+            // Skip if a backup already exists from within the current interval — keeps
+            // frequent restarts from each spawning a near-duplicate snapshot.
+            DateTime? latest = await LatestBackupTimeAsync(ct);
+            if (latest is DateTime t && DateTime.Now - t < _interval)
+            {
+                _logger.LogInformation("Skipping backup; most recent ({Latest:s}) is younger than the {Interval} interval.",
+                    t, _interval);
+                return;
+            }
+
             // BackgroundService is a singleton; the DbContext is scoped — resolve per run.
             using IServiceScope scope = _services.CreateScope();
             ApplicationDbContext db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
