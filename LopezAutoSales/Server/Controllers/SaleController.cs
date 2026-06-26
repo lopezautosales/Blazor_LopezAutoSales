@@ -46,7 +46,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
-            _logger.LogInformation($"{User.Identity?.Name} EDITED SALE {data.Id} {data.Buyers()} {data.Car.Name()}");
+            _logger.LogInformation($"{User.Identity?.Name} EDITED SALE {data.Id} {data.Buyers()} {data.Car?.Name()}");
             SetLien(data);
             _context.Update(data);
             // The sold car's cost basis is managed via inventory, never a sale edit:
@@ -118,12 +118,12 @@ namespace LopezAutoSales.Server.Controllers
         {
             DateTime start = new DateTime(year, 1, 1);
             DateTime end = start.AddYears(1);
-            return Ok(_context.Sales.Where(x => x.Date >= start && x.Date < end).Include(x => x.Account).Include(x => x.Car).OrderBy(x => x.Date).AsNoTracking().ToList());
+            return Ok(_context.Sales.Where(x => x.Date >= start && x.Date < end).Include(x => x.Account).Include(x => x.Car).Include(x => x.TradeIn).OrderBy(x => x.Date).AsNoTracking().ToList());
         }
 
         private void SetLien(Sale sale)
         {
-            if (sale.HasLien)
+            if (sale.HasLien && sale.Lienholder != null)
             {
                 sale.LienholderNormalizedName = sale.Lienholder.Name.ToUpper();
                 Lienholder lienholder = _context.Lienholders.Include(x => x.Address).FirstOrDefault(x => x.NormalizedName == sale.LienholderNormalizedName);

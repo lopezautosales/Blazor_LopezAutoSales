@@ -18,7 +18,7 @@
             TradeIn = new Car(),
             Address = new Address(),
             Account = new Account(),
-            Lienholder = new Lienholder { Address = Dealership.Address }
+            Lienholder = new Lienholder { Address = Dealership.Address.Copy() }
         };
 
     protected override async Task OnInitializedAsync()

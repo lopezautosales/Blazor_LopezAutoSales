@@ -182,7 +182,7 @@ else
         {
             payment.Id = int.Parse(await response.Content.ReadAsStringAsync());
             account.Payments.Add(payment);
-            payment = new Payment { Amount = account.MonthlyPayment };
+            payment = new Payment { AccountId = Id, Amount = account.MonthlyPayment };
         }
     }
 
@@ -205,7 +205,7 @@ else
         {
             payment.Date = editPayment.Date;
             payment.Amount = editPayment.Amount;
-            editPayment = new Payment { Amount = account.MonthlyPayment };
+            editPayment = new Payment { AccountId = Id, Amount = account.MonthlyPayment };
             await js.InvokeVoidAsync("toggleModal", id);
         }
     }

@@ -14,6 +14,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -198,12 +200,14 @@ namespace LopezAutoSales.Server
                     PhoneNumber = Dealership.Phone
                 };
                 string password = Configuration.GetValue<string>("Admin:Password");
-                IdentityResult result = userManager.CreateAsync(user, password).Result;
+                if (string.IsNullOrEmpty(password))
+                    throw new InvalidOperationException("Admin:Password (env Admin__Password) is not set — cannot seed the admin user.");
 
-                if (result.Succeeded)
-                {
-                    userManager.AddToRoleAsync(user, "Admin").Wait();
-                }
+                IdentityResult result = userManager.CreateAsync(user, password).Result;
+                if (!result.Succeeded)
+                    throw new InvalidOperationException("Failed to seed the admin user: " + string.Join("; ", result.Errors.Select(e => e.Description)));
+
+                userManager.AddToRoleAsync(user, "Admin").Wait();
             }
         }
     }

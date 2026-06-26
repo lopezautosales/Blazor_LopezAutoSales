@@ -91,21 +91,29 @@ namespace LopezAutoSales.Server.Controllers
             Picture picture = _context.Pictures.Find(id);
             if (picture == null)
                 return NotFound("Picture was not found.");
-            await _storage.DeleteAsync(picture.URL);
+
+            Picture otherPicture = null;
             if (picture.IsThumbnail)
             {
-                await _storage.DeleteAsync(picture.ThumbnailURL());
-
-                Picture otherPicture = _context.Pictures.FirstOrDefault(x => x.Id != id && x.CarId == picture.CarId);
+                otherPicture = _context.Pictures.FirstOrDefault(x => x.Id != id && x.CarId == picture.CarId);
                 if (otherPicture != null)
                 {
-                    await CreateThumbnailAsync(otherPicture);
                     otherPicture.IsThumbnail = true;
                     newThumbnailId = otherPicture.Id;
                 }
             }
             _context.Remove(picture);
             _context.SaveChanges();
+
+            // Storage cleanup after the DB commit — orphaned blobs are tolerated, but
+            // a failed SaveChanges must not leave records pointing at deleted blobs.
+            await _storage.DeleteAsync(picture.URL);
+            if (picture.IsThumbnail)
+            {
+                await _storage.DeleteAsync(picture.ThumbnailURL());
+                if (otherPicture != null)
+                    await CreateThumbnailAsync(otherPicture);
+            }
             return Ok(newThumbnailId);
         }
 
@@ -115,20 +123,21 @@ namespace LopezAutoSales.Server.Controllers
         {
             Car car = _context.Cars.Include(x => x.Pictures).FirstOrDefault(x => x.Id == carId);
             if (car == null)
-                return BadRequest();
+                return NotFound();
 
             Picture picture = car.Pictures.FirstOrDefault(x => x.Id == pictureId);
             if (picture == null)
-                return BadRequest();
-            List<Picture> thumbnails = car.Pictures.Where(x => x.IsThumbnail).ToList();
-            foreach (Picture removable in thumbnails)
-            {
+                return NotFound();
+            List<Picture> oldThumbnails = car.Pictures.Where(x => x.IsThumbnail).ToList();
+            foreach (Picture removable in oldThumbnails)
                 removable.IsThumbnail = false;
-                await _storage.DeleteAsync(removable.ThumbnailURL());
-            }
-            await CreateThumbnailAsync(picture);
             picture.IsThumbnail = true;
             _context.SaveChanges();
+
+            // Storage after the DB commit.
+            foreach (Picture removable in oldThumbnails)
+                await _storage.DeleteAsync(removable.ThumbnailURL());
+            await CreateThumbnailAsync(picture);
             return Ok();
         }
 
@@ -141,7 +150,7 @@ namespace LopezAutoSales.Server.Controllers
                 return BadRequest("No images uploaded.");
             Car car = _context.Cars.Include(x => x.Pictures).FirstOrDefault(x => x.Id == id);
             if (car == null)
-                return BadRequest("Car not found.");
+                return NotFound("Car not found.");
             await HandleImagesAsync(car);
             _context.SaveChanges();
             ResolveUrls(car.Pictures);
@@ -160,15 +169,17 @@ namespace LopezAutoSales.Server.Controllers
                 return BadRequest("Cannot remove cars that are not listed.");
 
             _logger.LogInformation($"{User.Identity?.Name} DELETED {car.Name()}");
-            // Remove the car's blobs from object storage so they don't leak.
-            foreach (Picture picture in car.Pictures)
+            List<Picture> pictures = car.Pictures.ToList();
+            _context.Remove(car);
+            _context.SaveChanges();
+
+            // Remove blobs after the DB commit so a failed save can't orphan records.
+            foreach (Picture picture in pictures)
             {
                 await _storage.DeleteAsync(picture.URL);
                 if (picture.IsThumbnail)
                     await _storage.DeleteAsync(picture.ThumbnailURL());
             }
-            _context.Remove(car);
-            _context.SaveChanges();
             return Ok();
         }
 
@@ -238,7 +249,7 @@ namespace LopezAutoSales.Server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex, "Failed to create thumbnail for {Key}", picture.URL);
             }
         }
 

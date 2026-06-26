@@ -145,10 +145,10 @@ else
         int i = 0;
         foreach (var file in e.GetMultipleFiles())
         {
-            using System.IO.Stream s = file.OpenReadStream(10000000);
+            using System.IO.Stream s = file.OpenReadStream(100_000_000);
             using System.IO.MemoryStream ms = new System.IO.MemoryStream();
             await s.CopyToAsync(ms);
-            content.Add(new ByteArrayContent(ms.GetBuffer()), $"\"upload{i}\"", file.Name);
+            content.Add(new ByteArrayContent(ms.GetBuffer(), 0, (int)ms.Length), $"\"upload{i}\"", file.Name);
             i++;
         }
         var response = await auth.Client.PostAsync($"/api/inventory/upload/{Id}", content);

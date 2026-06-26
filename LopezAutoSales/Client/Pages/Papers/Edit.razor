@@ -32,7 +32,7 @@ else
                 sale.Account = new Account();
             if (!sale.HasLien)
             {
-                sale.Lienholder = new Lienholder { Address = Dealership.Address };
+                sale.Lienholder = new Lienholder { Address = Dealership.Address.Copy() };
                 sale.LienAmount = Dealership.LienAmount;
             }
             if (!sale.HasTag)
