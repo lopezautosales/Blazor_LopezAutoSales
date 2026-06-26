@@ -1,14 +1,95 @@
-﻿@page "/app"
+@page "/app"
 @attribute [Authorize(Roles = "Admin")]
+@inject AuthHttp auth
+@* "Account" in this namespace is the Account.razor component, so alias the model. *@
+@using Acct = LopezAutoSales.Shared.Models.Account
 
-<h1 class="text-center">App Menu</h1>
-<div class="list-group w-50 mx-auto">
+<h1 class="text-center">Dashboard</h1>
+
+@if (loading)
+{
+    <p class="lead text-center">Loading...</p>
+}
+else
+{
+    <div class="row g-3 my-2">
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-uppercase small text-muted">In stock</div>
+                    <div class="display-6">@inStock</div>
+                    <div class="small text-muted">Lot @lotValue.ToString("C0") · cost @costBasis.ToString("C0")</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-uppercase small text-muted">Sales this month</div>
+                    <div class="display-6">@monthSalesCount</div>
+                    <div class="small text-muted">@monthRevenue.ToString("C0") revenue</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-uppercase small text-muted">Outstanding</div>
+                    <div class="display-6">@receivables.ToString("C0")</div>
+                    <div class="small text-muted">across @openAccounts open account@(openAccounts == 1 ? "" : "s")</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <a href="/app/payments" class="text-decoration-none">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="text-uppercase small text-muted">Past due</div>
+                        <div class="display-6 @(pastDue > 0 ? "text-danger" : null)">@pastDue</div>
+                        <div class="small text-muted">@pastDueAmount.ToString("C0") late — view</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+}
+
+<div class="list-group w-50 mx-auto mt-4">
+    <a href="/app/report" class="list-group-item list-group-item-action">Sales &amp; Cash-Flow Report</a>
     <a href="/" target="_blank" class="list-group-item list-group-item-action">Home Page</a>
     <a href="https://www.kdor.ks.gov/Apps/kcsc/login.aspx?ReturnUrl=%2fApps%2fKCSC%2fsecure%2fdefault.aspx" class="list-group-item list-group-item-action" target="_blank">Dealer Portal</a>
-    <a href="https://ksrevenue.org/pdf/tr150.pdf" class="list-group-item list-group-item-action" target="_blank">
-        Lien Release
-    </a>
+    <a href="https://ksrevenue.org/pdf/tr150.pdf" class="list-group-item list-group-item-action" target="_blank">Lien Release</a>
     <a href="https://ksrevenue.org/pdf/DMVAffidavitCorrection.pdf" class="list-group-item list-group-item-action" target="_blank">Affidavit of Correction</a>
     <a href="https://ksrevenue.org/dovforms.html" class="list-group-item list-group-item-action" target="_blank">DOV Papers</a>
-    <a href="/app/report" class="list-group-item list-group-item-action">Sales Report</a>
 </div>
+
+@code {
+    private bool loading = true;
+    private int inStock, monthSalesCount, openAccounts, pastDue;
+    private decimal lotValue, costBasis, monthRevenue, receivables, pastDueAmount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        DateTime today = DateTime.Today;
+        List<Car> inventory = await auth.Client.GetFromJsonAsync<List<Car>>("/api/inventory");
+        List<Sale> sales = await auth.Client.GetFromJsonAsync<List<Sale>>($"/api/sale/{today.Year}");
+        List<Acct> accounts = await auth.Client.GetFromJsonAsync<List<Acct>>("/api/account");
+
+        inStock = inventory.Count;
+        lotValue = inventory.Sum(x => x.ListPrice);
+        costBasis = inventory.Sum(x => x.BoughtPrice ?? 0);
+
+        List<Sale> monthSales = sales.Where(x => x.Date.Month == today.Month).ToList();
+        monthSalesCount = monthSales.Count;
+        monthRevenue = monthSales.Sum(x => x.SellingPrice);
+
+        List<Acct> open = accounts.Where(x => !x.IsPaid).ToList();
+        openAccounts = open.Count;
+        receivables = open.Sum(x => x.Balance());
+        List<Acct> due = open.Where(x => x.LateDue() > 0).ToList();
+        pastDue = due.Count;
+        pastDueAmount = due.Sum(x => x.LateDue());
+
+        loading = false;
+    }
+}

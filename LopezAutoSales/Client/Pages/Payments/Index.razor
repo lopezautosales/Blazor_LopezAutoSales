@@ -19,47 +19,68 @@ else
             <input type="text" class="form-control" id="Vehicle" @bind-value="vehicle" />
         </div>
     </div>
-    <div class="d-flex">
+    <div class="d-flex gap-3 mt-2">
         <div class="form-check ms-auto">
+            <input type="checkbox" class="form-check-input" id="pastDueOnly" @bind-value="pastDueOnly">
+            <label class="form-check-label" for="pastDueOnly">Past due only</label>
+        </div>
+        <div class="form-check">
             <input type="checkbox" class="form-check-input" id="showPaid" @bind-value="showPaid">
             <label class="form-check-label" for="showPaid">Show Paid</label>
         </div>
     </div>
     <div class="table-responsive">
-        <table class="table table-striped text-center">
+        <table class="table table-striped text-center align-middle">
             <thead>
                 <tr>
-                    <th>
-                        Buyer(s)
-                    </th>
-                    <th>
-                        Vehicle
-                    </th>
+                    <th scope="col">Buyer(s)</th>
+                    <th scope="col">Vehicle</th>
+                    <th scope="col" class="text-end">Balance</th>
+                    <th scope="col" class="text-end">Late Due</th>
+                    <th scope="col">Contract Ends</th>
+                    <th scope="col">Phone</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (Account account in accounts)
                 {
                     <tr class="@RowColor(account)">
-                        <td>
-                            @account.Sale.Buyers()
-                        </td>
+                        <td>@account.Sale.Buyers()</td>
                         <td>
                             <a class="btn btn-secondary" href="/app/payments/@account.Id">
                                 @account.Sale.Car.Name()
                             </a>
                         </td>
+                        <td class="text-end">@account.Balance().ToString("C")</td>
+                        <td class="text-end @(account.LateDue() > 0 ? "text-danger fw-bold" : null)">@account.LateDue().ToString("C")</td>
+                        <td>@account.ExpirationDate().ToShortDateString()</td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(account.Sale.Phone))
+                            {
+                                <a href="tel:@account.Sale.Phone"><i class="mdi mdi-phone"></i> @account.Sale.Phone</a>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>
+            <tfoot>
+                <tr class="fw-bold border-top">
+                    <td colspan="2" class="text-end">Totals (@accounts.Count() shown)</td>
+                    <td class="text-end">@accounts.Sum(x => x.Balance()).ToString("C")</td>
+                    <td class="text-end @(accounts.Sum(x => x.LateDue()) > 0 ? "text-danger" : null)">@accounts.Sum(x => x.LateDue()).ToString("C")</td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
         </table>
     </div>
 }
 @code {
-    private IEnumerable<Account> accounts;
+    private IEnumerable<Account> accounts = Enumerable.Empty<Account>();
     private IEnumerable<Account> results;
     private bool _showPaid = false;
     private bool showPaid { get { return _showPaid; } set { _showPaid = value; Search(); } }
+    private bool _pastDueOnly = false;
+    private bool pastDueOnly { get { return _pastDueOnly; } set { _pastDueOnly = value; Search(); } }
     private string _buyer;
     private string buyer { get { return _buyer; } set { _buyer = value; Search(); } }
     private string _vehicle;
@@ -68,7 +89,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         results = await auth.Client.GetFromJsonAsync<List<Account>>("/api/account");
-        accounts = results.Where(x => x.IsPaid == false);
+        Search();
         await base.OnInitializedAsync();
     }
 
@@ -78,6 +99,8 @@ else
         string query;
         if (!showPaid)
             search = search.Where(x => x.IsPaid == false);
+        if (pastDueOnly)
+            search = search.Where(x => x.LateDue() > 0);
         if (!string.IsNullOrEmpty(buyer))
         {
             query = buyer.ToUpper();
@@ -88,7 +111,8 @@ else
             query = vehicle.ToUpper();
             search = search.Where(x => x.Sale.Car.Name().ToUpper().Contains(query));
         }
-        accounts = search;
+        // Most overdue first so collections work sits at the top of the list.
+        accounts = search.OrderByDescending(x => x.LateDue()).ThenBy(x => x.Sale.Buyer).ToList();
     }
 
     private string RowColor(Account account)
@@ -97,6 +121,8 @@ else
             return "table-success";
         if (account.HasContractExpired())
             return "table-danger";
+        if (account.LateDue() > 0)
+            return "table-warning";
         return string.Empty;
     }
 }
