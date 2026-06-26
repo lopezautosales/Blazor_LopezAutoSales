@@ -1,9 +1,10 @@
-$primary: #02bbee;
-$secondary: #3502ee;
+// Brand colors — drive every Bootstrap component (buttons, checkboxes, focus rings, etc.)
+$primary: #16243e;   // navy (brand chrome)
+$secondary: #64748b; // slate
 $success: #43A047;
-$warning: #FFEA00;
+$warning: #f59e0b;   // amber (the accent)
 $danger: #ee3502;
 
-$enable-gradients: true;
+$enable-gradients: false;
 
 @import "./node_modules/bootstrap/scss/bootstrap";
