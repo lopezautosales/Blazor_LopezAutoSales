@@ -155,7 +155,12 @@ namespace LopezAutoSales.Server
                 {
                     ServiceURL = o.ServiceUrl,
                     ForcePathStyle = true,
-                    AuthenticationRegion = "auto"
+                    AuthenticationRegion = "auto",
+                    // Cloudflare R2 doesn't implement the AWS SDK's newer streaming checksum
+                    // trailer (STREAMING-AWS4-HMAC-SHA256-PAYLOAD-TRAILER), so uploads fail with
+                    // 501 Not Implemented. Only send/validate checksums when the op requires it.
+                    RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
+                    ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED
                 };
                 return new AmazonS3Client(new BasicAWSCredentials(o.AccessKey, o.SecretKey), config);
             });
