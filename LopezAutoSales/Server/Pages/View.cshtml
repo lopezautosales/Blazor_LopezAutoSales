@@ -86,12 +86,12 @@ else
     @if (Model.Car.Pictures.Count > 0)
     {
         <div id="carousel" class="carousel slide mx-auto no-print mb-4">
-            <ol class="carousel-indicators">
+            <div class="carousel-indicators">
                 @for (int i = 0; i < Model.Car.Pictures.Count; i++)
                 {
-                    <li data-bs-target="#carousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : string.Empty)"></li>
+                    <button type="button" data-bs-target="#carousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : string.Empty)" aria-label="Slide @(i + 1)" aria-current="@(i == 0 ? "true" : null)"></button>
                 }
-            </ol>
+            </div>
             <div class="carousel-inner">
                 @foreach (Picture p in Model.Car.Pictures.OrderByDescending(x => x.IsThumbnail))
                 {
@@ -102,14 +102,14 @@ else
             </div>
             @if (Model.Car.Pictures.Count > 1)
             {
-                <a class="carousel-control-prev" href="#carousel" role="button" data-bs-slide="prev">
+                <button class="carousel-control-prev" type="button" data-bs-target="#carousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Previous</span>
-                </a>
-                <a class="carousel-control-next" href="#carousel" role="button" data-bs-slide="next">
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carousel" data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Next</span>
-                </a>
+                </button>
             }
         </div>
     }
