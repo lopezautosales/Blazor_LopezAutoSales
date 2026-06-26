@@ -5,6 +5,7 @@ using LopezAutoSales.Server.Storage;
 using LopezAutoSales.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -41,6 +42,11 @@ namespace LopezAutoSales.Server
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(GetConnectionString()));
+
+            // Persist the Data Protection key ring (encrypts the auth cookie) to Postgres so
+            // it survives redeploys. On Railway's ephemeral filesystem the default on-disk key
+            // store is regenerated each deploy, which invalidates the admin's auth cookie.
+            services.AddDataProtection().PersistKeysToDbContext<ApplicationDbContext>();
 
             // Behind Railway's edge proxy (TLS terminates there): honor X-Forwarded-*
             // so the app sees the real scheme/host and issues Secure cookies correctly.

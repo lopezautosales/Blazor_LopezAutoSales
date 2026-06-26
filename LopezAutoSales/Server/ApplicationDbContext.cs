@@ -1,13 +1,17 @@
 ﻿using LopezAutoSales.Server.Models;
 using LopezAutoSales.Shared;
 using LopezAutoSales.Shared.Models;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace LopezAutoSales.Server
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    // IDataProtectionKeyContext: the Data Protection key ring (which encrypts the auth
+    // cookie) lives in Postgres so it survives container redeploys — otherwise Railway's
+    // ephemeral filesystem regenerates it each deploy and logs the admin out.
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IDataProtectionKeyContext
     {
         public DbSet<Sale> Sales { get; set; }
         public DbSet<Account> Accounts { get; set; }
@@ -17,6 +21,7 @@ namespace LopezAutoSales.Server
         public DbSet<Picture> Pictures { get; set; }
         public DbSet<Lienholder> Lienholders { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
