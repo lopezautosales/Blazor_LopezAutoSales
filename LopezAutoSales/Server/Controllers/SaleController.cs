@@ -1,4 +1,5 @@
-﻿using LopezAutoSales.Shared.Models;
+﻿using LopezAutoSales.Server.Models;
+using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,7 @@ namespace LopezAutoSales.Server.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
             _logger.LogInformation($"{User.Identity?.Name} EDITED SALE {data.Id} {data.Buyers()} {data.Car?.Name()}");
+            Audit("SaleEdited", $"Sale {data.Id} {data.Buyers()} {data.Car?.Name()}");
             SetLien(data);
             _context.Update(data);
             // The sold car's cost basis is managed via inventory, never a sale edit:
@@ -69,6 +71,7 @@ namespace LopezAutoSales.Server.Controllers
                 return BadRequest("Could not load the given sale/car.");
 
             _logger.LogInformation($"{User.Identity?.Name} SET BOUGHT PRICE {id} - {amount}");
+            Audit("BoughtPriceSet", $"Sale {id} [{sale.Car.Name()}] -> {amount:C}");
             sale.Car.BoughtPrice = amount;
             _context.SaveChanges();
             return Ok();
@@ -83,6 +86,7 @@ namespace LopezAutoSales.Server.Controllers
                 return BadRequest("Could not load the given sale/car.");
 
             _logger.LogInformation($"{User.Identity?.Name} REMOVED BOUGHT PRICE {id}");
+            Audit("BoughtPriceRemoved", $"Sale {id} [{sale.Car.Name()}]");
             sale.Car.BoughtPrice = null;
             _context.SaveChanges();
             return Ok();
@@ -108,6 +112,7 @@ namespace LopezAutoSales.Server.Controllers
             }
             SetLien(sale);
             _context.Sales.Add(sale);
+            Audit("SaleCreated", $"{sale.Buyers()} {carName}");
             _context.SaveChanges();
             _logger.LogInformation($"{User.Identity?.Name} SALE {sale.Id} {sale.Buyers()} {carName}");
             return Ok(sale.Id);
@@ -120,6 +125,10 @@ namespace LopezAutoSales.Server.Controllers
             DateTime end = start.AddYears(1);
             return Ok(_context.Sales.Where(x => x.Date >= start && x.Date < end).Include(x => x.Account).Include(x => x.Car).Include(x => x.TradeIn).OrderBy(x => x.Date).AsNoTracking().ToList());
         }
+
+        // Append a durable audit record; committed in the same SaveChanges as the action.
+        private void Audit(string action, string details)
+            => _context.AuditLogs.Add(new AuditLog { Timestamp = DateTime.Now, User = User.Identity?.Name, Action = action, Details = details });
 
         private void SetLien(Sale sale)
         {

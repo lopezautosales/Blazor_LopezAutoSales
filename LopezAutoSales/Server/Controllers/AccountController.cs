@@ -65,6 +65,7 @@ namespace LopezAutoSales.Server.Controllers
             account.IsPaid = account.Balance() <= data.Amount;
 
             _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: PAYMENT {data.Date} {data.Amount}");
+            Audit("PaymentAdded", $"{account.Sale.Buyers()} [{account.Sale.Car.Name()}] {data.Amount:C} dated {data.Date:d}");
             _context.Payments.Add(data);
             _context.SaveChanges();
             return Ok(data.Id);
@@ -84,6 +85,7 @@ namespace LopezAutoSales.Server.Controllers
             if (data.Date.Date == DateTime.Today)
                 data.Date = DateTime.Now;
             _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: ORIGINAL {payment.Date} {payment.Amount} EDIT {data.Date} {data.Amount} REASON {data.Reason}");
+            Audit("PaymentEdited", $"{account.Sale.Buyers()} [{account.Sale.Car.Name()}] {payment.Amount:C}@{payment.Date:d} -> {data.Amount:C}@{data.Date:d}. Reason: {data.Reason}");
             payment.Amount = data.Amount;
             payment.Date = data.Date;
             account.IsPaid = account.Balance() <= 0;
@@ -106,9 +108,14 @@ namespace LopezAutoSales.Server.Controllers
             account.Payments.Remove(payment);
             account.IsPaid = account.Balance() <= 0;
             _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: PAYMENT REMOVED {payment.Date} {payment.Amount} REASON {data.Reason}");
+            Audit("PaymentRemoved", $"{account.Sale.Buyers()} [{account.Sale.Car.Name()}] {payment.Amount:C}@{payment.Date:d}. Reason: {data.Reason}");
             // account + payments are tracked; removing the payment is enough.
             _context.SaveChanges();
             return Ok();
         }
+
+        // Append a durable audit record; committed in the same SaveChanges as the action.
+        private void Audit(string action, string details)
+            => _context.AuditLogs.Add(new AuditLog { Timestamp = DateTime.Now, User = User.Identity?.Name, Action = action, Details = details });
     }
 }

@@ -154,6 +154,10 @@ namespace LopezAutoSales.Server
                 return new AmazonS3Client(new BasicAWSCredentials(o.AccessKey, o.SecretKey), config);
             });
             services.AddSingleton<IImageStorage, R2ImageStorage>();
+
+            // Periodic owner-controlled DB backups to the object store (disable with
+            // Backup__Enabled=false, e.g. for local smoke tests with fake R2 creds).
+            services.AddHostedService<Services.DatabaseBackupService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

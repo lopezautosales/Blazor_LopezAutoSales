@@ -16,6 +16,7 @@ namespace LopezAutoSales.Server
         public DbSet<UserAccount> UserAccounts { get; set; }
         public DbSet<Picture> Pictures { get; set; }
         public DbSet<Lienholder> Lienholders { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
