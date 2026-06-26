@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace LopezAutoSales.Server.Controllers
 {
@@ -130,38 +129,6 @@ namespace LopezAutoSales.Server.Controllers
         // Append a durable audit record; committed in the same SaveChanges as the action.
         private void Audit(string action, string details)
             => _context.AuditLogs.Add(new AuditLog { Timestamp = DateTime.Now, User = User.Identity?.Name, Action = action, Details = details });
-
-        // Same data as the yearly report, as a downloadable CSV for the bookkeeper.
-        [HttpGet("report/{year}/csv")]
-        public IActionResult GetYearlyReportCsv(int year)
-        {
-            DateTime start = new DateTime(year, 1, 1);
-            DateTime end = start.AddYears(1);
-            List<Sale> sales = _context.Sales.AsNoTracking().Where(x => x.Date >= start && x.Date < end)
-                .Include(x => x.Car).Include(x => x.TradeIn).OrderBy(x => x.Date).ToList();
-
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Date,Buyers,Vehicle,VIN,BoughtPrice,SellingPrice,Tax,Subtotal,DownPayment,TotalDue");
-            foreach (Sale s in sales)
-                sb.AppendLine(string.Join(",", new[]
-                {
-                    Csv(s.Date.ToShortDateString()), Csv(s.Buyers()), Csv(s.Car?.Name()), Csv(s.Car?.VIN),
-                    (s.Car?.BoughtPrice ?? 0).ToString("0.00"), s.SellingPrice.ToString("0.00"),
-                    s.TaxAmount().ToString("0.00"), s.Subtotal().ToString("0.00"),
-                    s.DownPayment.ToString("0.00"), s.TotalDue().ToString("0.00")
-                }));
-            return File(Encoding.UTF8.GetBytes(sb.ToString()), "text/csv", $"sales-{year}.csv");
-        }
-
-        // Minimal CSV field escaping (RFC 4180): quote when the value contains a comma,
-        // quote, or newline, and double any embedded quotes.
-        private static string Csv(string value)
-        {
-            value ??= string.Empty;
-            if (value.IndexOfAny(new[] { ',', '"', '\n', '\r' }) >= 0)
-                return "\"" + value.Replace("\"", "\"\"") + "\"";
-            return value;
-        }
 
         private void SetLien(Sale sale)
         {

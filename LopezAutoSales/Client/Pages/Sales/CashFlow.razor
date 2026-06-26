@@ -1,0 +1,72 @@
+@page "/app/cashflow/{year:int}"
+@page "/app/cashflow"
+@attribute [Authorize(Roles = "Admin")]
+@inject AuthHttp http
+@inject IJSRuntime js
+
+<h1 class="text-center">@Year.Value Cash-Flow Report</h1>
+<div class="no-print row mb-3 align-items-center">
+    <div class="col">
+        <a class="btn btn-secondary" href="/app/cashflow/@(Year-1)">@(Year-1)</a>
+        @if (Year != DateTime.Today.Year)
+        {
+            <a class="btn btn-secondary" href="/app/cashflow/@(Year+1)">@(Year+1)</a>
+        }
+    </div>
+    <div class="col text-end">
+        <a class="btn btn-secondary" href="/app/report/@Year">Sales Report</a>
+        <button class="btn btn-primary" @onclick="Print"><i class="mdi mdi-printer"></i> Print</button>
+    </div>
+</div>
+<h4 class="text-center text-muted">Payments Collected</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Month</th>
+            <th class="text-center">Payments</th>
+            <th class="text-end">Collected</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (yearPayments != null)
+        {
+            @foreach (int m in Enumerable.Range(1, 12))
+            {
+                List<Payment> monthPays = yearPayments.Where(p => p.Date.Month == m).ToList();
+                if (monthPays.Count == 0)
+                    continue;
+                <tr>
+                    <td>@(new DateTime(Year.Value, m, 1).ToString("MMMM"))</td>
+                    <td class="text-center">@monthPays.Count</td>
+                    <td class="text-end">@monthPays.Sum(p => p.Amount).ToString("C")</td>
+                </tr>
+            }
+            <tr class="fw-bold border-top">
+                <td>Total</td>
+                <td class="text-center">@yearPayments.Count</td>
+                <td class="text-end">@yearPayments.Sum(p => p.Amount).ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public int? Year { get; set; }
+    private List<Payment> yearPayments;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Year.HasValue)
+            Year = DateTime.Today.Year;
+        // Cash-flow = money actually collected (payments), distinct from sale prices.
+        List<Account> accounts = await http.Client.GetFromJsonAsync<List<Account>>("/api/account");
+        yearPayments = accounts.SelectMany(a => a.Payments).Where(p => p.Date.Year == Year.Value).ToList();
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task Print()
+    {
+        await js.InvokeVoidAsync("print");
+    }
+}

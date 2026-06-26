@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 
 namespace LopezAutoSales.Server.Controllers
 {
@@ -113,38 +112,6 @@ namespace LopezAutoSales.Server.Controllers
             // account + payments are tracked; removing the payment is enough.
             _context.SaveChanges();
             return Ok();
-        }
-
-        // All payments collected in a year, as a downloadable CSV for the bookkeeper.
-        [HttpGet("payments/{year}/csv")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult GetPaymentsCsv(int year)
-        {
-            DateTime start = new DateTime(year, 1, 1);
-            DateTime end = start.AddYears(1);
-            List<Payment> payments = _context.Payments.AsNoTracking()
-                .Where(p => p.Date >= start && p.Date < end)
-                .Include(p => p.Account).ThenInclude(a => a.Sale).ThenInclude(s => s.Car)
-                .OrderBy(p => p.Date).ToList();
-
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Date,Buyers,Vehicle,Amount");
-            foreach (Payment p in payments)
-                sb.AppendLine(string.Join(",", new[]
-                {
-                    Csv(p.Date.ToShortDateString()), Csv(p.Account?.Sale?.Buyers()),
-                    Csv(p.Account?.Sale?.Car?.Name()), p.Amount.ToString("0.00")
-                }));
-            return File(Encoding.UTF8.GetBytes(sb.ToString()), "text/csv", $"payments-{year}.csv");
-        }
-
-        // Minimal CSV field escaping (RFC 4180).
-        private static string Csv(string value)
-        {
-            value ??= string.Empty;
-            if (value.IndexOfAny(new[] { ',', '"', '\n', '\r' }) >= 0)
-                return "\"" + value.Replace("\"", "\"\"") + "\"";
-            return value;
         }
 
         // Append a durable audit record; committed in the same SaveChanges as the action.
