@@ -117,6 +117,10 @@ main, [role="main"] { padding-bottom: 3rem; }
 /* ---- Cards --------------------------------------------------------------- */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
 
+/* Dashboard stat cards are links — give them a clickable lift. */
+.dash-card { transition: transform .16s ease, box-shadow .16s ease; }
+.dash-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
 .vehicle-card { overflow: hidden; transition: transform .16s ease, box-shadow .16s ease; }
 .vehicle-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
 .vehicle-media { position: relative; }
@@ -194,7 +198,7 @@ a:focus-visible, button:focus-visible, .btn:focus-visible,
 .site-footer .mdi { color: var(--amber); }
 
 @media (prefers-reduced-motion: reduce) {
-    .vehicle-card { transition: none; }
+    .vehicle-card, .dash-card { transition: none; }
 }
 
 /* ============================================================================

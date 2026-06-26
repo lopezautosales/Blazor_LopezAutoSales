@@ -14,55 +14,51 @@ else
 {
     <div class="row g-3 my-2">
         <div class="col-12 col-md-6 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="text-uppercase small text-muted">In stock</div>
-                    <div class="display-6">@inStock</div>
-                    <div class="small text-muted">Lot @lotValue.ToString("C0") · cost @costBasis.ToString("C0")</div>
+            <a href="/app/inventory" class="text-decoration-none text-reset">
+                <div class="card dash-card h-100">
+                    <div class="card-body">
+                        <div class="text-uppercase small text-muted">In stock</div>
+                        <div class="display-6">@inStock</div>
+                        <div class="small text-muted">Lot @lotValue.ToString("C0") · cost @costBasis.ToString("C0")</div>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-12 col-md-6 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="text-uppercase small text-muted">Sales this month</div>
-                    <div class="display-6">@monthSalesCount</div>
-                    <div class="small text-muted">@monthRevenue.ToString("C0") revenue</div>
+            <a href="/app/report" class="text-decoration-none text-reset">
+                <div class="card dash-card h-100">
+                    <div class="card-body">
+                        <div class="text-uppercase small text-muted">Sales this month</div>
+                        <div class="display-6">@monthSalesCount</div>
+                        <div class="small text-muted">@monthRevenue.ToString("C0") revenue</div>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-12 col-md-6 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="text-uppercase small text-muted">Outstanding</div>
-                    <div class="display-6">@receivables.ToString("C0")</div>
-                    <div class="small text-muted">across @openAccounts open account@(openAccounts == 1 ? "" : "s")</div>
+            <a href="/app/payments" class="text-decoration-none text-reset">
+                <div class="card dash-card h-100">
+                    <div class="card-body">
+                        <div class="text-uppercase small text-muted">Outstanding</div>
+                        <div class="display-6">@receivables.ToString("C0")</div>
+                        <div class="small text-muted">across @openAccounts open account@(openAccounts == 1 ? "" : "s")</div>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-12 col-md-6 col-xl-3">
-            <a href="/app/payments" class="text-decoration-none">
-                <div class="card h-100">
+            <a href="/app/payments" class="text-decoration-none text-reset">
+                <div class="card dash-card h-100">
                     <div class="card-body">
                         <div class="text-uppercase small text-muted">Past due</div>
                         <div class="display-6 @(pastDue > 0 ? "text-danger" : null)">@pastDue</div>
-                        <div class="small text-muted">@pastDueAmount.ToString("C0") late — view</div>
+                        <div class="small text-muted">@pastDueAmount.ToString("C0") late</div>
                     </div>
                 </div>
             </a>
         </div>
     </div>
 }
-
-<div class="list-group w-50 mx-auto mt-4">
-    <a href="/app/report" class="list-group-item list-group-item-action">Sales Report</a>
-    <a href="/app/cashflow" class="list-group-item list-group-item-action">Cash-Flow Report</a>
-    <a href="/" target="_blank" class="list-group-item list-group-item-action">Home Page</a>
-    <a href="https://www.kdor.ks.gov/Apps/kcsc/login.aspx?ReturnUrl=%2fApps%2fKCSC%2fsecure%2fdefault.aspx" class="list-group-item list-group-item-action" target="_blank">Dealer Portal</a>
-    <a href="https://ksrevenue.org/pdf/tr150.pdf" class="list-group-item list-group-item-action" target="_blank">Lien Release</a>
-    <a href="https://ksrevenue.org/pdf/DMVAffidavitCorrection.pdf" class="list-group-item list-group-item-action" target="_blank">Affidavit of Correction</a>
-    <a href="https://ksrevenue.org/dovforms.html" class="list-group-item list-group-item-action" target="_blank">DOV Papers</a>
-</div>
 
 @code {
     private bool loading = true;
