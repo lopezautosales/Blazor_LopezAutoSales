@@ -31,7 +31,12 @@ namespace LopezAutoSales.Server.Storage
                 BucketName = _options.Bucket,
                 Key = Normalize(key),
                 InputStream = content,
-                ContentType = contentType
+                ContentType = contentType,
+                // Cloudflare R2 implements neither streaming SigV4 payload signing
+                // (STREAMING-AWS4-HMAC-SHA256-PAYLOAD) nor the SDK's default checksum;
+                // send an unsigned payload with no added checksum instead.
+                DisablePayloadSigning = true,
+                DisableDefaultChecksumValidation = true
             };
             await _s3.PutObjectAsync(request, ct);
         }
