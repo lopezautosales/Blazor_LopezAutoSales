@@ -3,6 +3,7 @@ using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -36,6 +37,7 @@ namespace LopezAutoSales.Server.Controllers
             });
         }
 
+        [EnableRateLimiting("auth")]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
@@ -57,6 +59,7 @@ namespace LopezAutoSales.Server.Controllers
         }
 
         [Authorize]
+        [EnableRateLimiting("auth")]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {

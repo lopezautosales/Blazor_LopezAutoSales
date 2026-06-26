@@ -28,7 +28,7 @@ namespace LopezAutoSales.Shared.Models
         public string CurrentPassword { get; set; }
 
         [Required]
-        [MinLength(6, ErrorMessage = "The new password must be at least 6 characters.")]
+        [MinLength(8, ErrorMessage = "The new password must be at least 8 characters.")]
         public string NewPassword { get; set; }
 
         [Required]

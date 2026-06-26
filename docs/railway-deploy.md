@@ -16,7 +16,7 @@ seeds the admin user. Images live in Cloudflare R2 (see `r2-images.md`).
 |---|---|
 | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (reference the Postgres service) |
 | `ASPNETCORE_ENVIRONMENT` | `Production` |
-| `Admin__Password` | the admin login password (min 6 chars, 1 upper, 1 digit, 1 symbol) |
+| `Admin__Password` | the admin login password (min 8 chars, 1 upper, 1 lower, 1 digit, 1 symbol — the app refuses to start if seeding fails) |
 | `ObjectStorage__ServiceUrl` | `https://<accountid>.r2.cloudflarestorage.com` |
 | `ObjectStorage__Bucket` | `lopezautosales` |
 | `ObjectStorage__PublicBaseUrl` | your public R2 URL |

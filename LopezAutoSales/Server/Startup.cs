@@ -9,11 +9,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Serilog;
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -59,6 +61,9 @@ namespace LopezAutoSales.Server
                     // Default complexity (digit/upper/lower/symbol) plus a longer floor;
                     // the single admin should use a long passphrase via Admin__Password.
                     options.Password.RequiredLength = 8;
+                    // Make the brute-force policy explicit instead of relying on defaults.
+                    options.Lockout.MaxFailedAccessAttempts = 5;
+                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
                 })
                 .AddDefaultTokenProviders()
                 .AddRoles<IdentityRole>()
@@ -113,8 +118,30 @@ namespace LopezAutoSales.Server
             services.Configure<IdentityOptions>(options =>
                 options.ClaimsIdentity.UserIdClaimType = ClaimTypes.NameIdentifier);
 
-            // Object storage (Cloudflare R2 / S3) for car images.
-            services.Configure<ObjectStorageOptions>(Configuration.GetSection("ObjectStorage"));
+            // Throttle credential endpoints (brute-force / DoS) — Identity lockout alone
+            // doesn't cap request rate.
+            services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                options.AddFixedWindowLimiter("auth", w =>
+                {
+                    w.PermitLimit = 8;
+                    w.Window = TimeSpan.FromMinutes(1);
+                    w.QueueLimit = 0;
+                });
+            });
+
+            // Liveness/readiness for Railway + uptime monitors (incl. DB connectivity).
+            services.AddHealthChecks().AddDbContextCheck<ApplicationDbContext>();
+
+            // Object storage (Cloudflare R2 / S3) for car images. Fail fast at startup if
+            // it's misconfigured rather than on the first image request.
+            services.AddOptions<ObjectStorageOptions>()
+                .Bind(Configuration.GetSection("ObjectStorage"))
+                .Validate(o => !string.IsNullOrWhiteSpace(o.ServiceUrl) && !string.IsNullOrWhiteSpace(o.Bucket)
+                    && !string.IsNullOrWhiteSpace(o.PublicBaseUrl),
+                    "ObjectStorage ServiceUrl, Bucket and PublicBaseUrl are required.")
+                .ValidateOnStart();
             services.AddSingleton<IAmazonS3>(sp =>
             {
                 ObjectStorageOptions o = sp.GetRequiredService<IOptions<ObjectStorageOptions>>().Value;
@@ -166,13 +193,16 @@ namespace LopezAutoSales.Server
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 
+            app.UseSerilogRequestLogging();
             app.UseRouting();
+            app.UseRateLimiter();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHealthChecks("/health").AllowAnonymous();
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
