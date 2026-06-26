@@ -112,18 +112,12 @@ namespace LopezAutoSales.Server.Controllers
             // Storage cleanup after the DB commit — orphaned blobs are tolerated, but
             // a failed SaveChanges must not leave records pointing at deleted blobs.
             await _storage.DeleteAsync(picture.URL);
-            if (picture.IsThumbnail)
-            {
-                await _storage.DeleteAsync(picture.ThumbnailURL());
-                if (otherPicture != null)
-                    await CreateThumbnailAsync(otherPicture);
-            }
             return Ok(newThumbnailId);
         }
 
         [HttpPut("thumbnail/{carId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> SetThumbnail([FromRoute] int carId, [FromBody] int pictureId)
+        public IActionResult SetThumbnail([FromRoute] int carId, [FromBody] int pictureId)
         {
             Car car = _context.Cars.Include(x => x.Pictures).FirstOrDefault(x => x.Id == carId);
             if (car == null)
@@ -132,16 +126,11 @@ namespace LopezAutoSales.Server.Controllers
             Picture picture = car.Pictures.FirstOrDefault(x => x.Id == pictureId);
             if (picture == null)
                 return NotFound();
-            List<Picture> oldThumbnails = car.Pictures.Where(x => x.IsThumbnail).ToList();
-            foreach (Picture removable in oldThumbnails)
+            // IsThumbnail is just the cover-photo flag now; no thumbnail file to regenerate.
+            foreach (Picture removable in car.Pictures.Where(x => x.IsThumbnail))
                 removable.IsThumbnail = false;
             picture.IsThumbnail = true;
             _context.SaveChanges();
-
-            // Storage after the DB commit.
-            foreach (Picture removable in oldThumbnails)
-                await _storage.DeleteAsync(removable.ThumbnailURL());
-            await CreateThumbnailAsync(picture);
             return Ok();
         }
 
@@ -183,11 +172,7 @@ namespace LopezAutoSales.Server.Controllers
 
             // Remove blobs after the DB commit so a failed save can't orphan records.
             foreach (Picture picture in pictures)
-            {
                 await _storage.DeleteAsync(picture.URL);
-                if (picture.IsThumbnail)
-                    await _storage.DeleteAsync(picture.ThumbnailURL());
-            }
             return Ok();
         }
 
@@ -246,9 +231,10 @@ namespace LopezAutoSales.Server.Controllers
                     // Store the blob first; only track the record once the blob exists.
                     await SaveImageAsync(image, format, picture.URL);
                     pictures.Add(picture);
+                    // The car's first picture becomes its cover (IsThumbnail). Display sizes
+                    // are produced on the fly by Cloudflare resizing — no thumbnail file.
                     if (!hasThumbnail)
                     {
-                        await CreateThumbnailAsync(picture);
                         picture.IsThumbnail = true;
                         hasThumbnail = true;
                     }
@@ -261,22 +247,6 @@ namespace LopezAutoSales.Server.Controllers
             }
             _context.Pictures.AddRange(pictures);
             return (pictures, skipped);
-        }
-
-        private async Task CreateThumbnailAsync(Picture picture)
-        {
-            try
-            {
-                using Stream original = await _storage.OpenReadAsync(picture.URL);
-                using Image image = Image.Load(original, out IImageFormat format);
-                double ratio = Constants.ThumbnailSize / (double)image.Width;
-                image.Mutate(x => x.AutoOrient().Resize((int)(image.Width * ratio), (int)(image.Height * ratio)));
-                await SaveImageAsync(image, format, picture.ThumbnailURL());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to create thumbnail for {Key}", picture.URL);
-            }
         }
 
         private async Task SaveImageAsync(Image image, IImageFormat format, string key)

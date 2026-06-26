@@ -1,5 +1,6 @@
 ﻿@page "/"
 @model IndexModel
+@inject LopezAutoSales.Server.Storage.IImageStorage Storage
 @{
     ViewBag.Title = "Inventory";
 }
@@ -35,7 +36,7 @@ else
                         <div class="vehicle-media">
                             @if (car.Pictures.Any(x => x.IsThumbnail))
                             {
-                                <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="@car.Pictures.First(x => x.IsThumbnail).ThumbnailURL()" class="lazy card-img-top" alt="@car.Name()" />
+                                <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="@Storage.ResizedUrl(car.Pictures.First(x => x.IsThumbnail).URL, LopezAutoSales.Server.Constants.ThumbnailSize)" class="lazy card-img-top" alt="@car.Name()" />
                             }
                             else
                             {

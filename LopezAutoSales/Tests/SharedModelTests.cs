@@ -5,15 +5,6 @@ namespace LopezAutoSales.Tests
 {
     public class SharedModelTests
     {
-        [Theory]
-        [InlineData("Images/abc.jpg", "Images/abc.thumbnail.jpg")]
-        [InlineData("Images/photo.with.dots.png", "Images/photo.with.dots.thumbnail.png")]
-        public void ThumbnailUrl_inserts_thumbnail_before_extension(string url, string expected)
-        {
-            Picture picture = new Picture { URL = url };
-            Assert.Equal(expected, picture.ThumbnailURL());
-        }
-
         [Fact]
         public void Address_formats_full_and_area()
         {

@@ -21,5 +21,10 @@ namespace LopezAutoSales.Server.Storage
         Task<IReadOnlyList<string>> ListKeysAsync(string prefix, CancellationToken ct = default);
 
         string PublicUrl(string key);
+
+        // Builds a Cloudflare Image Resizing URL for the key at the given width (format
+        // auto-negotiated, e.g. WebP/AVIF). Requires the public domain to be a Cloudflare
+        // zone with Image Transformations enabled.
+        string ResizedUrl(string key, int width);
     }
 }

@@ -89,5 +89,10 @@ namespace LopezAutoSales.Server.Storage
         }
 
         public string PublicUrl(string key) => $"{_options.PublicBaseUrl.TrimEnd('/')}/{Normalize(key)}";
+
+        // Cloudflare serves a resized, format-optimized copy from the same zone via the
+        // /cdn-cgi/image/ prefix; the original object is never modified.
+        public string ResizedUrl(string key, int width)
+            => $"{_options.PublicBaseUrl.TrimEnd('/')}/cdn-cgi/image/width={width},format=auto/{Normalize(key)}";
     }
 }

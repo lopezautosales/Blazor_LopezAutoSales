@@ -2,6 +2,7 @@
 {
     public static class Constants
     {
-        public const int ThumbnailSize = 200;
+        // Width (px) requested for the inventory-grid card image via Cloudflare resizing.
+        public const int ThumbnailSize = 400;
     }
 }
