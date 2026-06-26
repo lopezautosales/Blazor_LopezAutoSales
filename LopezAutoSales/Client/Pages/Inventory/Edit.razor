@@ -72,7 +72,8 @@ else
         </div>
     </EditForm>
     <div class="my-3">
-        <InputFile class="form-control" OnChange="HandleSelection" multiple></InputFile>
+        <label for="photoUpload" class="form-label">Add photos</label>
+        <InputFile id="photoUpload" class="form-control" OnChange="HandleSelection" multiple accept="image/*"></InputFile>
     </div>
     <div class="row">
         @foreach (Picture picture in car.Pictures)

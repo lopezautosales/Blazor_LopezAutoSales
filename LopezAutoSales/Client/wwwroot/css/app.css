@@ -2,9 +2,9 @@
    Lopez Auto Sales — "honest lot" identity
    Navy chrome + warm paper + amber price/signage. Oswald (signage), Source Sans 3
    (body), Roboto Mono (data plate). Shared by the public site and the admin app.
+   Fonts are loaded via <link rel="preconnect"> + stylesheet in _Layout.cshtml
+   (public) and index.html (admin) rather than a render-blocking @import.
    ========================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Roboto+Mono:wght@500;600&display=swap');
-
 :root {
     --navy: #16243e;      /* brand chrome — nav, footer, headings */
     --navy-2: #233452;
@@ -37,8 +37,9 @@ h1, h2, h3, h4, h5, .navbar-brand {
 }
 
 .lead { color: var(--steel); font-weight: 400; }
-a { color: var(--amber-d); text-decoration: none; }
-a:hover { color: var(--navy); }
+/* Darker than the brand amber so small link text passes WCAG AA on light surfaces. */
+a { color: #b45309; text-decoration: none; }
+a:hover { color: var(--navy); text-decoration: underline; }
 main, [role="main"] { padding-bottom: 3rem; }
 
 .eyebrow {
@@ -156,6 +157,16 @@ label, .form-label { color: var(--navy); font-weight: 600; }
     letter-spacing: .05em; font-size: .8rem; font-weight: 600; border-bottom: 2px solid var(--line);
 }
 .table td { vertical-align: middle; }
+/* Sortable header buttons — keyboard-operable, styled like the header text. */
+.th-sort { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; cursor: pointer; }
+.th-sort:hover { color: var(--navy); }
+
+/* Visible keyboard focus everywhere (don't rely on the browser default). */
+a:focus-visible, button:focus-visible, .btn:focus-visible,
+.form-control:focus-visible, .nav-link:focus-visible, .th-sort:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+}
 
 /* ---- Auth / centered forms ---------------------------------------------- */
 .auth-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 2.25rem; }

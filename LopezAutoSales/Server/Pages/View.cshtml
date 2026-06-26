@@ -14,7 +14,7 @@ else
         <a href="/" class="odo"><i class="mdi mdi-arrow-left"></i> Back to the lot</a>
     </div>
     <div class="card p-4 mb-4">
-        <p class="eyebrow mb-1">Stock #@Model.Car.Id.ToString("D4") · @Model.Car.TitleStatus() Title</p>
+        <p class="eyebrow mb-1" style="color: var(--steel);">Stock #@Model.Car.Id.ToString("D4") · @Model.Car.TitleStatus() Title</p>
         <div class="row align-items-center g-3">
             <div class="col-md">
                 <h1 class="mb-0" style="font-size: clamp(1.9rem, 4vw, 2.8rem); text-transform: uppercase;">@Model.Car.Name()</h1>
@@ -41,7 +41,7 @@ else
     </div>
     @if (Model.Car.Pictures.Count > 0)
     {
-        <div id="carousel" class="carousel slide mx-auto no-print mb-4" data-bs-ride="carousel">
+        <div id="carousel" class="carousel slide mx-auto no-print mb-4">
             <ol class="carousel-indicators">
                 @for (int i = 0; i < Model.Car.Pictures.Count; i++)
                 {
@@ -52,7 +52,7 @@ else
                 @foreach (Picture p in Model.Car.Pictures.OrderByDescending(x => x.IsThumbnail))
                 {
                     <div class="carousel-item @(p.IsThumbnail ? "active": string.Empty)">
-                        <img data-src="@p.URL" class="lazy d-block w-100">
+                        <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="@p.URL" class="lazy d-block w-100" alt="@Model.Car.Name()" />
                     </div>
                 }
             </div>
@@ -60,11 +60,11 @@ else
             {
                 <a class="carousel-control-prev" href="#carousel" role="button" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Previous</span>
+                    <span class="visually-hidden">Previous</span>
                 </a>
                 <a class="carousel-control-next" href="#carousel" role="button" data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Next</span>
+                    <span class="visually-hidden">Next</span>
                 </a>
             }
         </div>
