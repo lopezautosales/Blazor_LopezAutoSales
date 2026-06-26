@@ -1,7 +1,38 @@
 ﻿@page "{id:int}"
+@using LopezAutoSales.Shared
 @model LopezAutoSales.Server.Pages.ViewModel
 @{
-    ViewData["Title"] = "View";
+    ViewData["Title"] = Model.Car?.Name() ?? "Vehicle";
+    string thumb = Model.Car?.Pictures.FirstOrDefault(p => p.IsThumbnail)?.URL;
+    string desc = Model.Car == null ? "" :
+        $"{Model.Car.Name()} — {Model.Car.MileageString()} miles, {Model.Car.ListPrice.ToString("C0")}. In-house financing in Emporia, KS.";
+}
+
+@section Head {
+    @if (Model.Car != null)
+    {
+        <meta name="description" content="@desc" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="@Model.Car.Name() · Lopez Auto Sales" />
+        <meta property="og:description" content="@desc" />
+        @if (thumb != null)
+        {
+            <meta property="og:image" content="@thumb" />
+        }
+        <script type="application/ld+json">
+        {
+          "@@context": "https://schema.org",
+          "@@type": "Vehicle",
+          "name": "@Model.Car.Name()",
+          "brand": "@Model.Car.Make",
+          "model": "@Model.Car.Model",
+          "vehicleModelDate": "@Model.Car.Year",
+          "mileageFromOdometer": { "@@type": "QuantitativeValue", "value": @(Model.Car.Mileage ?? 0), "unitCode": "SMI" },
+          "vehicleIdentificationNumber": "@Model.Car.VIN",
+          "offers": { "@@type": "Offer", "price": "@Model.Car.ListPrice", "priceCurrency": "USD", "availability": "https://schema.org/InStock" }
+        }
+        </script>
+    }
 }
 
 @if (Model.Car == null)
@@ -39,6 +70,19 @@ else
             </div>
         </div>
     </div>
+    <div class="card info-card p-4 mb-4">
+        <div class="row align-items-center g-3">
+            <div class="col-md">
+                <div class="info-icon"><i class="mdi mdi-cash-multiple"></i></div>
+                <h2 class="h5 mb-1">In-House Financing</h2>
+                <p class="mb-0">About <strong>@((Model.Car.ListPrice / 2).ToString("C0")) down</strong> and <strong>$@Dealership.MonthlyPayment a month</strong> — no bank required.</p>
+            </div>
+            <div class="col-md-auto">
+                <a href="tel:16202086250" class="btn btn-secondary btn-lg"><i class="mdi mdi-phone"></i> Call About This Vehicle</a>
+            </div>
+        </div>
+    </div>
+
     @if (Model.Car.Pictures.Count > 0)
     {
         <div id="carousel" class="carousel slide mx-auto no-print mb-4">

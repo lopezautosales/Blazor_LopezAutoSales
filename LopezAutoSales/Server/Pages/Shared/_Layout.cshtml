@@ -12,15 +12,28 @@
     <link href="~/css/bootstrap.min.css" rel="stylesheet" />
     <link href="~/dist/css/materialdesignicons.min.css" rel="stylesheet" />
     <link href="~/css/app.css" rel="stylesheet" />
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-179267166-1"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'UA-179267166-1');
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "AutoDealer",
+      "name": "Lopez Auto Sales, Inc.",
+      "image": "https://lopezautosales.com/favicon.ico",
+      "url": "https://lopezautosales.com",
+      "telephone": "+1-620-208-6250",
+      "email": "lopezauto@@outlook.com",
+      "address": {
+        "@@type": "PostalAddress",
+        "streetAddress": "515 Albert St",
+        "addressLocality": "Emporia",
+        "addressRegion": "KS",
+        "postalCode": "66801",
+        "addressCountry": "US"
+      },
+      "geo": { "@@type": "GeoCoordinates", "latitude": 38.4041, "longitude": -96.2021 },
+      "priceRange": "$$"
+    }
     </script>
+    @await RenderSectionAsync("Head", required: false)
 </head>
 
 <body class="d-flex flex-column min-vh-100">
