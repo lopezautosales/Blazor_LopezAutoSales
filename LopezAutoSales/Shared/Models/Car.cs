@@ -44,8 +44,18 @@ namespace LopezAutoSales.Shared.Models
 
         public void DeserializeJson()
         {
-            if (!string.IsNullOrEmpty(JsonData))
+            if (string.IsNullOrEmpty(JsonData))
+                return;
+            try
+            {
                 Data = JsonSerializer.Deserialize<CarData>(JsonData);
+            }
+            catch (JsonException)
+            {
+                // Tolerate a malformed/truncated blob instead of failing the page; the
+                // decoded NHTSA specs just won't be shown for that car.
+                Data = null;
+            }
         }
 
         public void Update(Car car)

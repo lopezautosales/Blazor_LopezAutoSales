@@ -126,8 +126,11 @@ INCLUDING ONLY TABLE NAMES LIKE $likeList IN SCHEMA 'dbo'
 ALTER SCHEMA 'dbo' RENAME TO 'public';
 "@
     Save-File "migrate.load" $load
+    # FreeTDS caps large text columns (e.g. JsonData / nvarchar(max)) on read at a small
+    # default, truncating them to ~2 KB. Point pgloader's FreeTDS at a config that lifts it.
+    Save-File "freetds.conf" "[global]`n    tds version = auto`n    text size = 2147483647`n"
     Write-Host "Running pgloader (SQL Server -> Railway Postgres)..." -ForegroundColor Cyan
-    docker run --rm -v "${work}:/data" dimitri/pgloader pgloader /data/migrate.load
+    docker run --rm -v "${work}:/data" -e FREETDSCONF=/data/freetds.conf dimitri/pgloader pgloader /data/migrate.load
     if ($LASTEXITCODE -ne 0) { throw "pgloader exited with code $LASTEXITCODE." }
     Write-Host "Import complete." -ForegroundColor Green
 
