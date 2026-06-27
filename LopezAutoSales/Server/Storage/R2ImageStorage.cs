@@ -37,7 +37,10 @@ namespace LopezAutoSales.Server.Storage
                 // (STREAMING-AWS4-HMAC-SHA256-PAYLOAD) nor the SDK's default checksum;
                 // send an unsigned payload with no added checksum instead.
                 DisablePayloadSigning = true,
-                DisableDefaultChecksumValidation = true
+                DisableDefaultChecksumValidation = true,
+                // Don't let the SDK dispose the caller's stream — the caller owns its
+                // lifetime (e.g. the backup service reads ms.Length after this returns).
+                AutoCloseStream = false
             };
             await _s3.PutObjectAsync(request, ct);
         }
