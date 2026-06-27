@@ -53,6 +53,11 @@ else
             </TemplateColumn>
         </QuickGrid>
     </div>
+    <div class="d-flex justify-content-end gap-4 fw-bold border-top pt-2 mt-2">
+        <span>@cars.Count() in stock</span>
+        <span>List value: @cars.Sum(c => c.ListPrice).ToString("C")</span>
+        <span>Cost: @cars.Sum(c => c.BoughtPrice ?? 0).ToString("C")</span>
+    </div>
 }
 
 @code {
