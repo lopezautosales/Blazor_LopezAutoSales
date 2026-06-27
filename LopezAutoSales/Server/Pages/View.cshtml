@@ -39,7 +39,11 @@
 
 @if (Model.Car == null)
 {
-    <p class="lead">Could not load the vehicle.</p>
+    <div class="text-center py-5">
+        <h1 class="mb-3">This vehicle has been sold</h1>
+        <p class="lead">It's no longer available — but we get new inventory in often.</p>
+        <a href="/" class="btn btn-primary btn-lg mt-2"><i class="mdi mdi-car"></i> See available inventory</a>
+    </div>
 }
 else
 {
@@ -58,15 +62,19 @@ else
         </div>
         <hr />
         <div class="row text-center g-3">
-            <div class="col-6 col-md-4">
+            <div class="col-6 col-md-3">
                 <p class="eyebrow mb-1" style="color: var(--steel);">Mileage</p>
-                <div class="odo" style="font-size: 1.1rem;">@Model.Car.MileageString() mi</div>
+                <div class="odo" style="font-size: 1.1rem;">@Model.Car.MileageDisplay()</div>
             </div>
-            <div class="col-6 col-md-4">
+            <div class="col-6 col-md-3">
                 <p class="eyebrow mb-1" style="color: var(--steel);">Year</p>
                 <div class="odo" style="font-size: 1.1rem;">@Model.Car.Year</div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-6 col-md-3">
+                <p class="eyebrow mb-1" style="color: var(--steel);">Color</p>
+                <div class="odo" style="font-size: 1.1rem;">@Model.Car.Color</div>
+            </div>
+            <div class="col-6 col-md-3">
                 <p class="eyebrow mb-1" style="color: var(--steel);">VIN</p>
                 <div class="odo" style="font-size: 1.1rem;">@Model.Car.VIN</div>
             </div>
@@ -79,8 +87,9 @@ else
                 <h2 class="h5 mb-1">In-House Financing</h2>
                 <p class="mb-0">About <strong>@((Model.Car.ListPrice / 2).ToString("C0")) down</strong> and <strong>$@Dealership.MonthlyPayment a month</strong> — no bank required.</p>
             </div>
-            <div class="col-md-auto">
+            <div class="col-md-auto d-grid gap-2">
                 <a href="tel:16202086250" class="btn btn-secondary btn-lg"><i class="mdi mdi-phone"></i> Call About This Vehicle</a>
+                <a href="mailto:lopezauto@outlook.com?subject=Stock%20%23@(Model.Car.Id.ToString("D4"))%20availability" class="btn btn-secondary btn-lg"><i class="mdi mdi-email"></i> Email About This Vehicle</a>
             </div>
         </div>
     </div>
@@ -117,23 +126,44 @@ else
     }
     @if (Model.Car.Data?.Results != null)
     {
-        <h2 class="h5 text-muted mb-3">Vehicle details (NHTSA)</h2>
+        // Lead with the handful of specs a shopper actually cares about; tuck the rest of
+        // the NHTSA dump (regulatory fields, etc.) behind an expander.
+        string[] highlight = new[] { "Body Class", "Drive Type", "Transmission Style", "Engine Number of Cylinders", "Displacement (L)", "Fuel Type - Primary", "Doors", "Trim", "Engine Brake (hp) From", "Engine Configuration" };
+        var specs = Model.Car.Data.Results
+            .Where(p => !string.IsNullOrEmpty(p.Value) && p.Value != "Not Applicable" && p.Value != "0")
+            .ToList();
+        var top = highlight.Select(name => specs.FirstOrDefault(p => p.Variable == name)).Where(p => p != null).ToList();
+        var rest = specs.Where(p => !highlight.Contains(p.Variable)).OrderBy(p => p.Variable).ToList();
+
+        <h2 class="h5 text-muted mb-3">Vehicle details</h2>
         <div class="text-center">
-            @foreach (CarProperty property in Model.Car.Data.Results.OrderBy(x => x.Variable))
+            @foreach (CarProperty property in top)
             {
-                @if (!string.IsNullOrEmpty(property.Value) && property.Value != "Not Applicable")
-                {
-                    <div class="card d-inline-block m-1">
-                        <div class="card-body">
-                            <h5 class="card-title">@property.Variable</h5>
-                            <div class="card-text">
-                                @property.Value
-                            </div>
-                        </div>
+                <div class="card d-inline-block m-1">
+                    <div class="card-body">
+                        <div class="card-title fw-bold">@property.Variable</div>
+                        <div class="card-text">@property.Value</div>
                     </div>
-                }
+                </div>
             }
         </div>
+        @if (rest.Any())
+        {
+            <details class="mt-3">
+                <summary class="text-muted">All decoded specs (NHTSA)</summary>
+                <div class="text-center mt-2">
+                    @foreach (CarProperty property in rest)
+                    {
+                        <div class="card d-inline-block m-1">
+                            <div class="card-body">
+                                <div class="card-title fw-bold">@property.Variable</div>
+                                <div class="card-text">@property.Value</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </details>
+        }
     }
 }
 

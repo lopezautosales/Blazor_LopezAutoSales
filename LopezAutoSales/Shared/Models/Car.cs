@@ -74,6 +74,13 @@ namespace LopezAutoSales.Shared.Models
             return Mileage.HasValue ? Mileage.Value.ToString("N0") : "Exempt";
         }
 
+        // Full customer-facing form so callers don't hard-append " mi" — which turned
+        // an exempt-odometer car into the nonsensical "Exempt mi".
+        public string MileageDisplay()
+        {
+            return Mileage.HasValue ? $"{Mileage.Value:N0} mi" : "Mileage exempt";
+        }
+
         public string TitleStatus()
         {
             return IsSalvage ? "Rebuilt Salvage" : "Clean";
