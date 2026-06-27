@@ -1,0 +1,81 @@
+@page "/pay"
+@model PayModel
+@{
+    ViewBag.Title = "Make a Payment";
+}
+
+<div class="page-hero">
+    <p class="eyebrow">In-house financing</p>
+    <h1>Make a Payment</h1>
+    <p>Pay your monthly note online with your bank account. Look up your account below.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card p-4 mb-4">
+            <h2 class="h5 mb-3">Find my account</h2>
+            <form method="post" asp-page-handler="Lookup">
+                <div class="mb-3">
+                    <label class="form-label" for="LastName">Last name</label>
+                    <input class="form-control" id="LastName" asp-for="LastName" autocomplete="off" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="VinLast4">Last 4 of your vehicle's VIN</label>
+                    <input class="form-control" id="VinLast4" asp-for="VinLast4" maxlength="4" inputmode="numeric"
+                           autocomplete="off" placeholder="1234" required />
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Find my account</button>
+            </form>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Message))
+        {
+            <div class="alert alert-info">@Model.Message</div>
+        }
+
+        @if (Model.Found)
+        {
+            <div class="card p-4">
+                <h2 class="h5 mb-3">Confirm your payment</h2>
+                <dl class="row mb-3">
+                    <dt class="col-5">Account holder</dt>
+                    <dd class="col-7">@Model.MaskedBuyer</dd>
+                    <dt class="col-5">Vehicle</dt>
+                    <dd class="col-7">@Model.CarLabel</dd>
+                    <dt class="col-5">VIN</dt>
+                    <dd class="col-7">@Model.VinMask</dd>
+                    <dt class="col-5">Amount due now</dt>
+                    <dd class="col-7"><strong>@Model.AmountDue.ToString("C")</strong></dd>
+                </dl>
+
+                @if (Model.PaymentsAvailable)
+                {
+                    <form method="post" asp-page-handler="Pay">
+                        <input type="hidden" asp-for="Token" />
+                        <div class="mb-3">
+                            <label class="form-label" for="Amount">Amount to pay</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input class="form-control" id="Amount" asp-for="Amount" type="number" step="0.01" min="1" />
+                            </div>
+                            <div class="form-text">You can pay the amount due or a different amount up to your balance.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="mdi mdi-bank"></i> Pay with bank account
+                        </button>
+                        <p class="form-text mt-2 mb-0">
+                            By continuing you'll authorize a one-time bank debit on the next secure screen.
+                            Card payment is also available there.
+                        </p>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-warning mb-0">
+                        Online payments are temporarily unavailable. Please call the dealership to make a payment.
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,14 @@
+@page "/pay/success"
+@model SuccessModel
+@{
+    ViewBag.Title = "Payment";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6 text-center py-5">
+        <div class="info-icon mx-auto mb-3"><i class="mdi mdi-check-circle-outline"></i></div>
+        <h1 class="h3">@Model.Heading</h1>
+        <p class="lead">@Model.Detail</p>
+        <a href="/" class="btn btn-primary mt-3"><i class="mdi mdi-home"></i> Back to inventory</a>
+    </div>
+</div>

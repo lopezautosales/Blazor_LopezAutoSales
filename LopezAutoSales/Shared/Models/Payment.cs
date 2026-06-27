@@ -16,6 +16,10 @@ namespace LopezAutoSales.Shared.Models
         [Required]
         public decimal Amount { get; set; }
 
+        // Idempotency / audit key for online (Stripe) payments. Null for in-person
+        // payments recorded via AccountController.AddPayment.
+        public string StripePaymentIntentId { get; set; }
+
         [NotMapped]
         public string Reason { get; set; }
     }

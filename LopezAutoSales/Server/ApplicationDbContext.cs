@@ -58,6 +58,14 @@ namespace LopezAutoSales.Server
             builder.Entity<Sale>().HasIndex(x => x.Date);
             builder.Entity<UserAccount>().HasKey(x => new { x.UserId, x.AccountId });
 
+            // Hard double-credit guard for online payments: at most one Payment per
+            // Stripe PaymentIntent. Partial index so the many in-person payments (null) are
+            // unconstrained, while each pi_… can be recorded at most once.
+            builder.Entity<Payment>()
+                .HasIndex(x => x.StripePaymentIntentId)
+                .IsUnique()
+                .HasFilter("\"StripePaymentIntentId\" IS NOT NULL");
+
             builder.Entity<Address>().HasData(dealershipAddress);
             builder.Entity<Lienholder>().HasData(dealership);
             base.OnModelCreating(builder);

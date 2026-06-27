@@ -1,0 +1,88 @@
+using LopezAutoSales.Server.Configuration;
+using Microsoft.Extensions.Options;
+using Stripe;
+using Stripe.Checkout;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace LopezAutoSales.Server.Services
+{
+    public interface IStripeCheckoutService
+    {
+        // False when Stripe keys are unset (payments are optional — the app still runs).
+        bool IsConfigured { get; }
+        Task<string> CreateAchCheckoutUrlAsync(int accountId, long amountCents, string buyerLabel, string baseUrl);
+        Task<Session> GetSessionAsync(string sessionId);
+    }
+
+    // Thin wrapper over the Stripe SDK so PageModels/tests don't bind to static config.
+    // Builds a StripeClient from options (no global mutable StripeConfiguration.ApiKey).
+    public class StripeCheckoutService : IStripeCheckoutService
+    {
+        private readonly SessionService _sessions;
+
+        public StripeCheckoutService(IOptions<StripeOptions> opts)
+        {
+            string key = opts.Value?.SecretKey;
+            IsConfigured = !string.IsNullOrWhiteSpace(key);
+            // Only build a client when keys exist; otherwise the service stays inert and
+            // callers gate on IsConfigured. A bogus client would throw on first use anyway.
+            if (IsConfigured)
+                _sessions = new SessionService(new StripeClient(key));
+        }
+
+        public bool IsConfigured { get; }
+
+        public async Task<string> CreateAchCheckoutUrlAsync(int accountId, long amountCents, string buyerLabel, string baseUrl)
+        {
+            SessionCreateOptions options = new SessionCreateOptions
+            {
+                Mode = "payment",
+                // ACH first; card is an optional fallback (higher fees).
+                PaymentMethodTypes = new List<string> { "us_bank_account", "card" },
+                LineItems = new List<SessionLineItemOptions>
+                {
+                    new SessionLineItemOptions
+                    {
+                        Quantity = 1,
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            Currency = "usd",
+                            UnitAmount = amountCents,
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = $"Auto note payment — {buyerLabel}"
+                            }
+                        }
+                    }
+                },
+                PaymentMethodOptions = new SessionPaymentMethodOptionsOptions
+                {
+                    UsBankAccount = new SessionPaymentMethodOptionsUsBankAccountOptions
+                    {
+                        // Instant Financial Connections, falls back to microdeposits.
+                        VerificationMethod = "automatic",
+                        FinancialConnections = new SessionPaymentMethodOptionsUsBankAccountFinancialConnectionsOptions
+                        {
+                            Permissions = new List<string> { "payment_method" }
+                        }
+                    }
+                },
+                // accountId is the ONLY trusted link payment->account; set server-side,
+                // read back in the webhook. Never trusted from the client.
+                PaymentIntentData = new SessionPaymentIntentDataOptions
+                {
+                    Metadata = new Dictionary<string, string> { ["accountId"] = accountId.ToString() }
+                },
+                Metadata = new Dictionary<string, string> { ["accountId"] = accountId.ToString() },
+                ClientReferenceId = accountId.ToString(),
+                SuccessUrl = $"{baseUrl}/pay/success?session_id={{CHECKOUT_SESSION_ID}}",
+                CancelUrl = $"{baseUrl}/pay/cancelled",
+            };
+            Session session = await _sessions.CreateAsync(options);
+            return session.Url;
+        }
+
+        public Task<Session> GetSessionAsync(string sessionId) => _sessions.GetAsync(sessionId);
+    }
+}

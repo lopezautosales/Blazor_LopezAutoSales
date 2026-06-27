@@ -1,5 +1,6 @@
 using Amazon.Runtime;
 using Amazon.S3;
+using LopezAutoSales.Server.Configuration;
 using LopezAutoSales.Server.Models;
 using LopezAutoSales.Server.Storage;
 using LopezAutoSales.Shared;
@@ -135,6 +136,13 @@ namespace LopezAutoSales.Server
                     w.Window = TimeSpan.FromMinutes(1);
                     w.QueueLimit = 0;
                 });
+                // Cap public account-lookup attempts on /pay to slow enumeration (IP-keyed).
+                options.AddFixedWindowLimiter("pay-lookup", w =>
+                {
+                    w.PermitLimit = 6;
+                    w.Window = TimeSpan.FromMinutes(1);
+                    w.QueueLimit = 0;
+                });
             });
 
             // Liveness/readiness for Railway + uptime monitors (incl. DB connectivity).
@@ -165,6 +173,15 @@ namespace LopezAutoSales.Server
                 return new AmazonS3Client(new BasicAWSCredentials(o.AccessKey, o.SecretKey), config);
             });
             services.AddSingleton<IImageStorage, R2ImageStorage>();
+
+            // Stripe (online note payments) is OPTIONAL — the app must still run without it
+            // (e.g. local smoke tests). So we bind the section but deliberately do NOT
+            // ValidateOnStart: the checkout service exposes IsConfigured and the public /pay
+            // page degrades gracefully when keys are unset. Real TEST keys come from
+            // user-secrets (dev) / env vars (prod): Stripe__SecretKey, Stripe__PublishableKey,
+            // Stripe__WebhookSecret. appsettings.json ships empty placeholders only.
+            services.AddOptions<StripeOptions>().Bind(Configuration.GetSection("Stripe"));
+            services.AddSingleton<Services.IStripeCheckoutService, Services.StripeCheckoutService>();
 
             // Periodic owner-controlled DB backups to the object store (disable with
             // Backup__Enabled=false, e.g. for local smoke tests with fake R2 creds).

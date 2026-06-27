@@ -61,8 +61,11 @@ docker run -d --name lopez-app --network lopeznet -p 8099:8080 -e ASPNETCORE_ENV
   -e "DATABASE_URL=postgresql://postgres:secret@lopez-pg:5432/postgres" -e "Admin__Password=Test1234!" \
   -e "ObjectStorage__ServiceUrl=https://example.r2.cloudflarestorage.com" \
   -e "ObjectStorage__PublicBaseUrl=https://img.example.com" -e "ObjectStorage__Bucket=test" \
+  -e "Stripe__SecretKey=sk_test_xxx" -e "Stripe__PublishableKey=pk_test_xxx" -e "Stripe__WebhookSecret=whsec_xxx" \
   lopezautosales:test
 # app at http://localhost:8099 ; admin login lopezauto@outlook.com / the Admin__Password value
+# Stripe is OPTIONAL — omit the Stripe__* vars and the app still runs; the public /pay page
+# just shows "online payments unavailable". Use `stripe listen` to get a real whsec_… to test webhooks.
 ```
 
 Deployment runbooks: `docs/railway-deploy.md` (hosting + DB + data migration) and `docs/r2-images.md` (image storage).
@@ -75,5 +78,5 @@ Deployment runbooks: `docs/railway-deploy.md` (hosting + DB + data migration) an
 - **Razor Pages: `page` is a reserved route token** — don't name a query-string/handler parameter `page` (it won't bind).
 - **Server-rendered currency is culture-sensitive.** The app pins `en-US` at startup so `ToString("C")` renders `$` on the Linux container (defaults to InvariantCulture → `¤`).
 - **`SixLabors.ImageSharp` is intentionally kept on the 2.x line** (Apache-2.0). 3.x/4.x switched to a paid commercial license — do not upgrade it.
-- **Secrets** (`Admin__Password`, `ObjectStorage__*`, `DATABASE_URL`) come from env vars / user-secrets; `appsettings.json` ships only empty placeholders.
+- **Secrets** (`Admin__Password`, `ObjectStorage__*`, `Stripe__*`, `DATABASE_URL`) come from env vars / user-secrets; `appsettings.json` ships only empty placeholders. `Stripe__*` (SecretKey/PublishableKey/WebhookSecret) are **TEST**-mode keys for the public `/pay` online-payment flow; they're optional (bound but not `ValidateOnStart`), so the app runs without them and `/pay` degrades gracefully.
 - After image uploads/deletes, object-storage and DB writes are **not transactional** (two systems). Delete blobs after a successful `SaveChanges` and tolerate orphans.
