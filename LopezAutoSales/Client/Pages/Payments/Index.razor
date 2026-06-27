@@ -1,4 +1,4 @@
-﻿@page "/app/payments"
+@page "/app/payments"
 @attribute [Authorize(Roles = "Admin")]
 @inject AuthHttp auth
 
@@ -30,53 +30,44 @@ else
         </div>
     </div>
     <div class="table-responsive">
-        <table class="table table-striped text-center align-middle">
-            <thead>
-                <tr>
-                    <th scope="col">Buyer(s)</th>
-                    <th scope="col">Vehicle</th>
-                    <th scope="col" class="text-end">Balance</th>
-                    <th scope="col" class="text-end">Late Due</th>
-                    <th scope="col">Contract Ends</th>
-                    <th scope="col">Phone</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (Account account in accounts)
+        <QuickGrid Items="accounts" Class="table table-striped text-center align-middle">
+            <TemplateColumn Title="Status" Align="Align.Center">
+                <span class="badge @StatusBadge(context)">@StatusText(context)</span>
+            </TemplateColumn>
+            <TemplateColumn Title="Buyer(s)" SortBy="@(GridSort<Account>.ByAscending(a => a.Sale.Buyer))" Align="Align.Center">
+                @context.Sale.Buyers()
+            </TemplateColumn>
+            <TemplateColumn Title="Vehicle" Align="Align.Center">
+                <a class="btn btn-secondary" href="/app/payments/@context.Id">
+                    @context.Sale.Car.Name()
+                </a>
+            </TemplateColumn>
+            <TemplateColumn Title="Balance" SortBy="@(GridSort<Account>.ByAscending(a => a.Balance()))" Align="Align.End">
+                @context.Balance().ToString("C")
+            </TemplateColumn>
+            <TemplateColumn Title="Late Due" SortBy="@(GridSort<Account>.ByDescending(a => a.LateDue()))" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn="true" Align="Align.End">
+                <span class="@(context.LateDue() > 0 ? "text-danger fw-bold" : null)">@context.LateDue().ToString("C")</span>
+            </TemplateColumn>
+            <TemplateColumn Title="Contract Ends" SortBy="@(GridSort<Account>.ByAscending(a => a.ExpirationDate()))" Align="Align.Center">
+                @context.ExpirationDate().ToShortDateString()
+            </TemplateColumn>
+            <TemplateColumn Title="Phone" Align="Align.Center">
+                @if (!string.IsNullOrWhiteSpace(context.Sale.Phone))
                 {
-                    <tr class="@RowColor(account)">
-                        <td>@account.Sale.Buyers()</td>
-                        <td>
-                            <a class="btn btn-secondary" href="/app/payments/@account.Id">
-                                @account.Sale.Car.Name()
-                            </a>
-                        </td>
-                        <td class="text-end">@account.Balance().ToString("C")</td>
-                        <td class="text-end @(account.LateDue() > 0 ? "text-danger fw-bold" : null)">@account.LateDue().ToString("C")</td>
-                        <td>@account.ExpirationDate().ToShortDateString()</td>
-                        <td>
-                            @if (!string.IsNullOrWhiteSpace(account.Sale.Phone))
-                            {
-                                <a href="tel:@account.Sale.Phone"><i class="mdi mdi-phone"></i> @account.Sale.Phone</a>
-                            }
-                        </td>
-                    </tr>
+                    <a href="tel:@context.Sale.Phone"><i class="mdi mdi-phone"></i> @context.Sale.Phone</a>
                 }
-            </tbody>
-            <tfoot>
-                <tr class="fw-bold border-top">
-                    <td colspan="2" class="text-end">Totals (@accounts.Count() shown)</td>
-                    <td class="text-end">@accounts.Sum(x => x.Balance()).ToString("C")</td>
-                    <td class="text-end @(accounts.Sum(x => x.LateDue()) > 0 ? "text-danger" : null)">@accounts.Sum(x => x.LateDue()).ToString("C")</td>
-                    <td colspan="2"></td>
-                </tr>
-            </tfoot>
-        </table>
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
+    <div class="d-flex justify-content-end gap-4 fw-bold border-top pt-2">
+        <span>Totals (@accounts.Count() shown)</span>
+        <span>Balance: @accounts.Sum(x => x.Balance()).ToString("C")</span>
+        <span class="@(accounts.Sum(x => x.LateDue()) > 0 ? "text-danger" : null)">Late Due: @accounts.Sum(x => x.LateDue()).ToString("C")</span>
     </div>
 }
 @code {
-    private IEnumerable<Account> accounts = Enumerable.Empty<Account>();
     private IEnumerable<Account> results;
+    private IQueryable<Account> accounts = Enumerable.Empty<Account>().AsQueryable();
     private bool _showPaid = false;
     private bool showPaid { get { return _showPaid; } set { _showPaid = value; Search(); } }
     private bool _pastDueOnly = false;
@@ -111,18 +102,28 @@ else
             query = vehicle.ToUpper();
             search = search.Where(x => x.Sale.Car.Name().ToUpper().Contains(query));
         }
-        // Most overdue first so collections work sits at the top of the list.
-        accounts = search.OrderByDescending(x => x.LateDue()).ThenBy(x => x.Sale.Buyer).ToList();
+        accounts = search.AsQueryable();
     }
 
-    private string RowColor(Account account)
+    private string StatusBadge(Account account)
     {
         if (account.IsPaid)
-            return "table-success";
+            return "text-bg-success";
         if (account.HasContractExpired())
-            return "table-danger";
+            return "text-bg-danger";
         if (account.LateDue() > 0)
-            return "table-warning";
-        return string.Empty;
+            return "text-bg-warning";
+        return "text-bg-secondary";
+    }
+
+    private string StatusText(Account account)
+    {
+        if (account.IsPaid)
+            return "Paid";
+        if (account.HasContractExpired())
+            return "Expired";
+        if (account.LateDue() > 0)
+            return "Past Due";
+        return "Current";
     }
 }
