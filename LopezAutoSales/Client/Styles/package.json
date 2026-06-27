@@ -8,6 +8,8 @@
   },
   "scripts": {
     "css-build": "sass bootstrap.scss ../wwwroot/css/bootstrap.min.css --style=compressed --no-source-map --quiet",
+    "js-build": "node copy-bootstrap-js.js",
+    "build": "npm run css-build && npm run js-build",
     "css-watch": "npm run css-build -- --watch",
     "start": "npm run css-watch"
   },
