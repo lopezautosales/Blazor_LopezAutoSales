@@ -67,8 +67,14 @@ else
             </div>
         </div>
         <div class="text-end">
-            <button type="button" class="btn btn-danger text-white" @onclick="DeleteVehicle">Delete</button>
-            <button type="submit" class="btn btn-secondary">Submit</button>
+            <button type="button" class="btn btn-danger text-white" @onclick="DeleteVehicle" disabled="@_busy">Delete</button>
+            <button type="submit" class="btn btn-secondary" disabled="@_busy">
+                @if (_busy)
+                {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                }
+                Submit
+            </button>
         </div>
     </EditForm>
     <div class="my-3">
@@ -99,6 +105,7 @@ else
     public int Id { get; set; }
     private Car car;
     private List<string> Errors { get; set; } = new List<string>();
+    private bool _busy;
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,15 +120,23 @@ else
 
     private async Task EditVehicle()
     {
-        await decoder.TryDecodeAsync(car);
-        var response = await auth.Client.PutAsJsonAsync<Car>($"/api/inventory/edit/{Id}", car);
-        if (response.IsSuccessStatusCode)
+        _busy = true;
+        try
         {
-            carManager.SetCar(car);
-            nav.NavigateTo($"/app/inventory");
+            await decoder.TryDecodeAsync(car);
+            var response = await auth.Client.PutAsJsonAsync<Car>($"/api/inventory/edit/{Id}", car);
+            if (response.IsSuccessStatusCode)
+            {
+                carManager.SetCar(car);
+                nav.NavigateTo($"/app/inventory");
+            }
+            else
+                await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
         }
-        else
-            await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task DeleteVehicle()
@@ -130,14 +145,22 @@ else
         if (!isConfirmed)
             return;
 
-        var response = await auth.Client.DeleteAsync($"/api/inventory/{Id}");
-        if (response.IsSuccessStatusCode)
+        _busy = true;
+        try
         {
-            carManager.DeleteCar(car);
-            nav.NavigateTo($"/app/inventory");
+            var response = await auth.Client.DeleteAsync($"/api/inventory/{Id}");
+            if (response.IsSuccessStatusCode)
+            {
+                carManager.DeleteCar(car);
+                nav.NavigateTo($"/app/inventory");
+            }
+            else
+                await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
         }
-        else
-            await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task HandleSelection(InputFileChangeEventArgs e)

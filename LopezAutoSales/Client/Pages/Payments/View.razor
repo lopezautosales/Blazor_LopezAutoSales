@@ -102,7 +102,13 @@ else
                 <InputNumber class="form-control text-center" placeholder="Payment amount..." id="PaymentAmount" @bind-Value="payment.Amount" />
             </div>
             <div class="text-end mt-auto col">
-                <button class="btn btn-secondary" type="submit">Submit</button>
+                <button class="btn btn-secondary" type="submit" disabled="@_busy">
+                    @if (_busy)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                    }
+                    Submit
+                </button>
             </div>
         </div>
     </EditForm>
@@ -158,6 +164,7 @@ else
     private Account account;
     private Payment payment = new Payment();
     private Payment editPayment = new Payment();
+    private bool _busy;
 
     protected override async Task OnInitializedAsync()
     {
@@ -182,12 +189,20 @@ else
     {
         if (account.Balance() - payment.Amount < 0 && !(await js.InvokeAsync<bool>("confirm", "Balance will be negative. Are you sure?")))
             return;
-        var response = await auth.Client.PostAsJsonAsync("/api/account/payment", payment);
-        if (response.IsSuccessStatusCode)
+        _busy = true;
+        try
         {
-            payment.Id = int.Parse(await response.Content.ReadAsStringAsync());
-            account.Payments.Add(payment);
-            payment = new Payment { AccountId = Id, Amount = account.MonthlyPayment };
+            var response = await auth.Client.PostAsJsonAsync("/api/account/payment", payment);
+            if (response.IsSuccessStatusCode)
+            {
+                payment.Id = int.Parse(await response.Content.ReadAsStringAsync());
+                account.Payments.Add(payment);
+                payment = new Payment { AccountId = Id, Amount = account.MonthlyPayment };
+            }
+        }
+        finally
+        {
+            _busy = false;
         }
     }
 

@@ -1,9 +1,11 @@
 ﻿@page "{id:int}"
 @using LopezAutoSales.Shared
 @model LopezAutoSales.Server.Pages.ViewModel
+@inject LopezAutoSales.Server.Storage.IImageStorage Storage
 @{
     ViewData["Title"] = Model.Car?.Name() ?? "Vehicle";
-    string thumb = Model.Car?.Pictures.FirstOrDefault(p => p.IsThumbnail)?.URL;
+    string thumbKey = Model.Car?.Pictures.FirstOrDefault(p => p.IsThumbnail)?.URL;
+    string thumb = thumbKey == null ? null : Storage.ResizedUrl(thumbKey, LopezAutoSales.Server.Constants.DetailSize);
     string desc = Model.Car == null ? "" :
         $"{Model.Car.Name()} — {Model.Car.MileageString()} miles, {Model.Car.ListPrice.ToString("C0")}. In-house financing in Emporia, KS.";
 }
@@ -96,7 +98,7 @@ else
                 @foreach (Picture p in Model.Car.Pictures.OrderByDescending(x => x.IsThumbnail))
                 {
                     <div class="carousel-item @(p.IsThumbnail ? "active": string.Empty)">
-                        <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="@p.URL" class="lazy d-block w-100" alt="@Model.Car.Name()" />
+                        <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="@Storage.ResizedUrl(p.URL, LopezAutoSales.Server.Constants.DetailSize)" class="lazy d-block w-100" alt="@Model.Car.Name()" />
                     </div>
                 }
             </div>

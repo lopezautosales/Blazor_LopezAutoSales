@@ -1,10 +1,13 @@
 @inject VINDecoder decoder
+@inject IJSRuntime js
 
 @* Shared sale form used by both "Sell a vehicle" and "Edit papers". The parent
    supplies the Sale and handles the actual POST/PUT in OnValidSubmit. *@
 <EditForm Model="Sale" OnSubmit="HandleSubmit">
     <DataAnnotationsValidator />
-    <ErrorDisplay Errors="Errors" />
+    <div id="saleform-errors">
+        <ErrorDisplay Errors="Errors" />
+    </div>
     <div class="row">
         <div class="col-12 col-md-3 ms-auto">
             <div class="mb-3">
@@ -325,7 +328,13 @@
         </div>
     }
     <p class="text-end">
-        <button type="submit" class="btn btn-primary no-print">@SubmitLabel</button>
+        <button type="submit" class="btn btn-primary no-print" disabled="@_busy">
+            @if (_busy)
+            {
+                <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            @SubmitLabel
+        </button>
     </p>
 </EditForm>
 
@@ -337,6 +346,7 @@
     [Parameter] public EventCallback<Sale> OnValidSubmit { get; set; }
 
     private bool hasTrade;
+    private bool _busy;
 
     protected override void OnInitialized() => hasTrade = HasTrade;
 
@@ -354,6 +364,7 @@
         if (due < 0)
         {
             Errors.Add("Total due cannot be less than 0");
+            await ScrollToErrors();
             return;
         }
         else if (due == 0)
@@ -361,6 +372,7 @@
             if (Sale.HasLien)
             {
                 Errors.Add("Cannot have a lien on a paid sale.");
+                await ScrollToErrors();
                 return;
             }
             Sale.Account = null;
@@ -371,7 +383,10 @@
         }
 
         if (!e.Validate())
+        {
+            await ScrollToErrors();
             return;
+        }
 
         if (!Sale.HasLien)
         {
@@ -383,6 +398,21 @@
             Sale.TradeInId = null;
             Sale.TradeIn = null;
         }
-        await OnValidSubmit.InvokeAsync(Sale);
+
+        _busy = true;
+        try
+        {
+            await OnValidSubmit.InvokeAsync(Sale);
+        }
+        finally
+        {
+            _busy = false;
+        }
+        // The parent populates Errors when the server rejects the save; on a tall
+        // form the summary is far above the submit button, so bring it into view.
+        if (Errors.Count > 0)
+            await ScrollToErrors();
     }
+
+    private async Task ScrollToErrors() => await js.InvokeVoidAsync("scrollToElement", "saleform-errors");
 }

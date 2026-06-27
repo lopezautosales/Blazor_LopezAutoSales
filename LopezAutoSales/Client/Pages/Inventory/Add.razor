@@ -57,24 +57,39 @@
         </div>
     </div>
     <div class="text-end">
-        <button type="submit" class="btn btn-secondary">Submit</button>
+        <button type="submit" class="btn btn-secondary" disabled="@_busy">
+            @if (_busy)
+            {
+                <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            Submit
+        </button>
     </div>
 </EditForm>
 
 @code {
     private Car car = new Car();
     private List<string> Errors { get; set; } = new List<string>();
+    private bool _busy;
 
     private async Task SubmitVehicle()
     {
-        await decoder.TryDecodeAsync(car);
-        var response = await auth.Client.PostAsJsonAsync<Car>("/api/inventory", car);
-        if (response.IsSuccessStatusCode)
+        _busy = true;
+        try
         {
-            string id = await response.Content.ReadAsStringAsync();
-            nav.NavigateTo($"/app/inventory/edit/{id}");
+            await decoder.TryDecodeAsync(car);
+            var response = await auth.Client.PostAsJsonAsync<Car>("/api/inventory", car);
+            if (response.IsSuccessStatusCode)
+            {
+                string id = await response.Content.ReadAsStringAsync();
+                nav.NavigateTo($"/app/inventory/edit/{id}");
+            }
+            else
+                await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
         }
-        else
-            await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
+        finally
+        {
+            _busy = false;
+        }
     }
 }
