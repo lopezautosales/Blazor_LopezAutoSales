@@ -114,6 +114,27 @@ namespace LopezAutoSales.Server.Controllers
             return Ok();
         }
 
+        [HttpPost("repossess/{id}")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult Repossess(int id)
+        {
+            Account account = _context.Accounts.Include(x => x.Payments).Include(x => x.Sale).ThenInclude(x => x.Car).FirstOrDefault(x => x.Id == id);
+            if (account == null)
+                return NotFound(new string[] { "Could not find the account." });
+            if (account.IsRepossessed)
+                return BadRequest(new string[] { "This account is already marked repossessed." });
+
+            account.IsRepossessed = true;
+            account.RepossessedDate = DateTime.Now;
+            decimal writtenOff = account.Balance();
+            _logger.LogInformation($"{account.Sale.Buyers()} [{account.Sale.Car.Name()}]: REPOSSESSED, balance written off {writtenOff:C}");
+            Audit("Repossessed", $"{account.Sale.Buyers()} [{account.Sale.Car.Name()}] balance written off {writtenOff:C}");
+            // account is tracked; mutating the flags is enough (no Update() — that would
+            // re-write the whole Sale/Car graph).
+            _context.SaveChanges();
+            return Ok();
+        }
+
         // Append a durable audit record; committed in the same SaveChanges as the action.
         private void Audit(string action, string details)
             => _context.AuditLogs.Add(new AuditLog { Timestamp = DateTime.Now, User = User.Identity?.Name, Action = action, Details = details });

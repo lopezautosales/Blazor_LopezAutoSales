@@ -93,7 +93,8 @@ else
 
     private void Search()
     {
-        IEnumerable<Account> search = results;
+        // Repossessed accounts are closed/written off — never part of active collections.
+        IEnumerable<Account> search = results.Where(x => !x.IsRepossessed);
         string query;
         if (!showPaid)
             search = search.Where(x => x.IsPaid == false);

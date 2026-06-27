@@ -12,6 +12,10 @@ else
     <h1 class="text-center">Payments for @account.Sale.Car.Name()</h1>
     <h2 class="h4 mb-0">@account.Sale.Buyers()</h2>
     <p class="text-muted">VIN @account.Sale.Car.VIN</p>
+    @if (account.IsRepossessed)
+    {
+        <div class="alert alert-warning no-print">Repossessed on @account.RepossessedDate?.ToShortDateString() — the remaining balance was written off.</div>
+    }
     <div class="row">
         <div class="col-12 col-sm-6">
             <p class="fw-semibold mb-1">Down Payment: @account.Sale.DownPayment.ToString("C")</p>
@@ -121,6 +125,12 @@ else
     <div class="text-end fw-bold">
         Balance: @account.Balance().ToString("C")
     </div>
+    @if (!account.IsRepossessed)
+    {
+        <div class="no-print text-end mt-2">
+            <button class="btn btn-danger" type="button" @onclick="Repossess">Mark Repossessed</button>
+        </div>
+    }
     <div class="table-responsive mt-5 no-print">
         <table class="table table-striped text-center">
             <thead>
@@ -234,6 +244,20 @@ else
             editPayment = new Payment { AccountId = Id, Amount = account.MonthlyPayment };
             await js.InvokeVoidAsync("toggleModal", id);
         }
+    }
+
+    private async Task Repossess()
+    {
+        if (!await js.InvokeAsync<bool>("confirm", $"Mark this account repossessed? The remaining balance of {account.Balance().ToString("C")} will be written off and the account will drop off the payments list."))
+            return;
+        var response = await auth.Client.PostAsync($"/api/account/repossess/{Id}", null);
+        if (response.IsSuccessStatusCode)
+        {
+            account.IsRepossessed = true;
+            account.RepossessedDate = DateTime.Now;
+        }
+        else
+            await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
     }
 
     private async Task Print()

@@ -39,6 +39,10 @@ else
                 </TemplateColumn>
                 <TemplateColumn Title="Vehicle" Align="Align.Center">
                     @context.Car.Name()
+                    @if (context.Account?.IsRepossessed == true)
+                    {
+                        <span class="badge text-bg-warning ms-1">Repossessed</span>
+                    }
                 </TemplateColumn>
                 <TemplateColumn Title="Actions" Align="Align.Center">
                     <div class="btn-group">
