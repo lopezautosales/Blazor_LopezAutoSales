@@ -168,13 +168,40 @@ label, .form-label { color: var(--navy); font-weight: 600; }
     letter-spacing: .05em; font-size: .8rem; font-weight: 600; border-bottom: 2px solid var(--line);
 }
 .table td { vertical-align: middle; }
-/* Sortable header buttons — keyboard-operable, styled like the header text. */
-.th-sort { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; cursor: pointer; }
-.th-sort:hover { color: var(--navy); }
+
+/* Sortable headers (QuickGrid). The CSS-isolation bundle that ships QuickGrid's
+   default theme isn't referenced, so style its markup directly:
+   <th.col-justify-*><div.col-header-content><button.col-title>
+       <div.col-title-text>…</div><div.sort-indicator></div></button>.
+   Make the button read like the plain header text (it inherits the Oswald/steel
+   styling from `.table > thead th`) and flag the active sort column with an amber
+   caret — a faint grey caret hints sortability on hover for the others. */
+.quickgrid .col-title {
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: none; border: 0; padding: 0;
+    font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit;
+    cursor: pointer;
+}
+.quickgrid .col-title:hover { color: var(--navy); }
+.quickgrid .sort-indicator {
+    width: 0; height: 0;
+    border-left: .3rem solid transparent; border-right: .3rem solid transparent;
+    border-top: .36rem solid transparent; /* down-caret shape, hidden by default */
+    opacity: 0; transition: opacity .12s;
+}
+.quickgrid th[aria-sort]:hover .sort-indicator { border-top-color: var(--steel); opacity: .45; }
+.quickgrid th.col-sort-desc .sort-indicator { border-top-color: var(--amber); opacity: 1; }
+.quickgrid th.col-sort-asc .sort-indicator {
+    border-top: 0; border-bottom: .36rem solid var(--amber); opacity: 1;
+}
+/* Column alignment (Align.Center / Align.End) — the inline-flex button and the
+   cell content both follow the th/td text-align. */
+.quickgrid .col-justify-center { text-align: center; }
+.quickgrid .col-justify-end { text-align: right; }
 
 /* Visible keyboard focus everywhere (don't rely on the browser default). */
 a:focus-visible, button:focus-visible, .btn:focus-visible,
-.form-control:focus-visible, .nav-link:focus-visible, .th-sort:focus-visible {
+.form-control:focus-visible, .nav-link:focus-visible, .quickgrid .col-title:focus-visible {
     outline: 2px solid var(--amber);
     outline-offset: 2px;
 }
