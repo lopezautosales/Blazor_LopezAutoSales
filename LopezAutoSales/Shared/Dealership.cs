@@ -14,6 +14,10 @@ namespace LopezAutoSales.Shared
         };
         public const string Email = "lopezauto@outlook.com";
         public const string Phone = "(620)208-6250";
+        // Customer-facing hours. Shown in the footer + About; mirrored as Mon–Sat
+        // 10:00–17:00 in the AutoDealer openingHoursSpecification JSON-LD (_Layout.cshtml).
+        public const string Hours = "Mon–Sat: 10 AM – 5 PM";
+        public const string HoursNote = "Sundays & after-hours by appointment";
         public const int Warranty = 20;
         public const decimal TaxRate = 8.5m;
         public const decimal MonthlyPayment = 300m;

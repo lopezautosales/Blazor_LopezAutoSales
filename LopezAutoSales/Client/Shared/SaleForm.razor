@@ -414,5 +414,16 @@
             await ScrollToErrors();
     }
 
-    private async Task ScrollToErrors() => await js.InvokeVoidAsync("scrollToElement", "saleform-errors");
+    private async Task ScrollToErrors()
+    {
+        // Scrolling is purely cosmetic — a JS interop hiccup (e.g. an old cached
+        // site.js right after a deploy) must never crash the actual sale submit.
+        try
+        {
+            await js.InvokeVoidAsync("scrollToElement", "saleform-errors");
+        }
+        catch (JSException)
+        {
+        }
+    }
 }
