@@ -3,25 +3,47 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewBag.Title - Lopez Auto Sales</title>
-    <meta name="theme-color" content="#02bbee" />
+    <meta name="theme-color" content="#16243e" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Roboto+Mono:wght@500;600&display=swap" rel="stylesheet" />
     <link href="~/css/bootstrap.min.css" rel="stylesheet" />
     <link href="~/dist/css/materialdesignicons.min.css" rel="stylesheet" />
     <link href="~/css/app.css" rel="stylesheet" />
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-179267166-1"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'UA-179267166-1');
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "AutoDealer",
+      "name": "Lopez Auto Sales, Inc.",
+      "image": "https://lopezautosales.com/favicon.ico",
+      "url": "https://lopezautosales.com",
+      "telephone": "+1-620-208-6250",
+      "email": "lopezauto@@outlook.com",
+      "address": {
+        "@@type": "PostalAddress",
+        "streetAddress": "515 Albert St",
+        "addressLocality": "Emporia",
+        "addressRegion": "KS",
+        "postalCode": "66801",
+        "addressCountry": "US"
+      },
+      "geo": { "@@type": "GeoCoordinates", "latitude": 38.4041, "longitude": -96.2021 },
+      "openingHoursSpecification": {
+        "@@type": "OpeningHoursSpecification",
+        "dayOfWeek": [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ],
+        "opens": "10:00",
+        "closes": "17:00"
+      },
+      "priceRange": "$$"
+    }
     </script>
+    @await RenderSectionAsync("Head", required: false)
 </head>
 
-<body class="d-flex flex-column">
-    <nav class="sticky-top navbar navbar-expand-lg navbar-light bg-primary bg-gradient">
+<body class="d-flex flex-column min-vh-100">
+    <nav class="sticky-top navbar navbar-expand-lg navbar-dark app-navbar">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">Lopez Auto Sales</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,7 +73,12 @@
                             <a class="nav-link" href="/app"><i class="mdi mdi-clipboard"></i> App</a>
                         </li>
                     }
-                    <partial name="_LoginPartial" />
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/app/login"><i class="mdi mdi-login"></i> Login</a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
@@ -59,7 +86,30 @@
     <div role="main" class="container">
         @RenderBody()
     </div>
-    <script src="~/dist/js/jquery.slim.min.js"></script>
+    <footer class="site-footer">
+        <div class="container">
+            <div class="row gy-4">
+                <div class="col-md-5">
+                    <h5>Lopez Auto Sales, Inc.</h5>
+                    <p class="mb-0">Quality used vehicles with in-house financing in Emporia, Kansas.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Visit Us</h5>
+                    <p class="mb-1"><i class="mdi mdi-map-marker"></i> 515 Albert St, Emporia, KS 66801</p>
+                    <p class="mb-1"><i class="mdi mdi-clock-outline"></i> @LopezAutoSales.Shared.Dealership.Hours</p>
+                    <p class="mb-1" style="color: rgba(226,232,240,.6)">@LopezAutoSales.Shared.Dealership.HoursNote</p>
+                    <p class="mb-0"><a href="https://goo.gl/maps/YZoFvQTUptU8cASW8" target="_blank">Get directions</a></p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Contact</h5>
+                    <p class="mb-1"><i class="mdi mdi-phone"></i> <a href="tel:16202086250">(620) 208-6250</a></p>
+                    <p class="mb-0"><i class="mdi mdi-email"></i> <a href="mailto:lopezauto@outlook.com">lopezauto@outlook.com</a></p>
+                </div>
+            </div>
+            <hr class="my-4" style="border-color: rgba(255,255,255,.12)" />
+            <small style="color: rgba(226,232,240,.55); font-family: 'Roboto Mono', monospace; font-size: .78rem;">&copy; @DateTime.Now.Year Lopez Auto Sales, Inc.</small>
+        </div>
+    </footer>
     <script src="~/dist/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", false)
 </body>

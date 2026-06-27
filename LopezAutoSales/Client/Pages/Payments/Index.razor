@@ -1,4 +1,4 @@
-﻿@page "/app/payments"
+@page "/app/payments"
 @attribute [Authorize(Roles = "Admin")]
 @inject AuthHttp auth
 
@@ -12,54 +12,73 @@ else
     <div class="row">
         <div class="col">
             <label for="Buyer">Search Buyers:</label>
-            <input type="text" class="form-control" id="Buyer" @bind-value="buyer" />
+            <input type="text" class="form-control" id="Buyer" @bind-value="buyer" @bind-value:event="oninput" />
         </div>
         <div class="col">
             <label for="Vehicle">Search Vehicles:</label>
-            <input type="text" class="form-control" id="Vehicle" @bind-value="vehicle" />
+            <input type="text" class="form-control" id="Vehicle" @bind-value="vehicle" @bind-value:event="oninput" />
         </div>
     </div>
-    <div class="d-flex">
+    <div class="d-flex gap-3 mt-2">
         <div class="form-check ms-auto">
+            <input type="checkbox" class="form-check-input" id="pastDueOnly" @bind-value="pastDueOnly">
+            <label class="form-check-label" for="pastDueOnly">Past due only</label>
+        </div>
+        <div class="form-check">
             <input type="checkbox" class="form-check-input" id="showPaid" @bind-value="showPaid">
             <label class="form-check-label" for="showPaid">Show Paid</label>
         </div>
     </div>
+    @if (!accounts.Any())
+    {
+        <p class="lead text-center py-4">No accounts match the current filters.</p>
+    }
+    else
+    {
     <div class="table-responsive">
-        <table class="table table-striped text-center">
-            <thead>
-                <tr>
-                    <th>
-                        Buyer(s)
-                    </th>
-                    <th>
-                        Vehicle
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (Account account in accounts)
+        <QuickGrid Items="accounts" Class="table table-striped text-center align-middle">
+            <TemplateColumn Title="Status" Align="Align.Center">
+                <span class="badge @StatusBadge(context)">@StatusText(context)</span>
+            </TemplateColumn>
+            <TemplateColumn Title="Buyer(s)" SortBy="@(GridSort<Account>.ByAscending(a => a.Sale.Buyer))" Align="Align.Center">
+                @context.Sale.Buyers()
+            </TemplateColumn>
+            <TemplateColumn Title="Vehicle" Align="Align.Center">
+                <a class="btn btn-secondary" href="/app/payments/@context.Id">
+                    @context.Sale.Car.Name()
+                </a>
+            </TemplateColumn>
+            <TemplateColumn Title="Balance" SortBy="@(GridSort<Account>.ByAscending(a => a.Balance()))" Align="Align.End">
+                @context.Balance().ToString("C")
+            </TemplateColumn>
+            <TemplateColumn Title="Late Due" SortBy="@(GridSort<Account>.ByDescending(a => a.LateDue()))" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn="true" Align="Align.End">
+                <span class="@(context.LateDue() > 0 ? "text-danger fw-bold" : null)">@context.LateDue().ToString("C")</span>
+            </TemplateColumn>
+            <TemplateColumn Title="Contract Ends" SortBy="@(GridSort<Account>.ByAscending(a => a.ExpirationDate()))" Align="Align.Center">
+                @context.ExpirationDate().ToShortDateString()
+            </TemplateColumn>
+            <TemplateColumn Title="Phone" Align="Align.Center">
+                @if (!string.IsNullOrWhiteSpace(context.Sale.Phone))
                 {
-                    <tr class="@RowColor(account)">
-                        <td>
-                            @account.Sale.Buyers()
-                        </td>
-                        <td>
-                            <a class="btn btn-secondary" href="/app/payments/@account.Id">
-                                @account.Sale.Car.Name()
-                            </a>
-                        </td>
-                    </tr>
+                    <a href="tel:@context.Sale.Phone"><i class="mdi mdi-phone"></i> @context.Sale.Phone</a>
                 }
-            </tbody>
-        </table>
+            </TemplateColumn>
+        </QuickGrid>
     </div>
+    <div class="d-flex justify-content-end gap-4 fw-bold border-top pt-2">
+        <span>Totals (@accounts.Count() shown)</span>
+        <span>Balance: @accounts.Sum(x => x.Balance()).ToString("C")</span>
+        <span class="@(accounts.Sum(x => x.LateDue()) > 0 ? "text-danger" : null)">Late Due: @accounts.Sum(x => x.LateDue()).ToString("C")</span>
+    </div>
+    }
 }
 @code {
-    private IEnumerable<Account> accounts;
     private IEnumerable<Account> results;
+    private IQueryable<Account> accounts = Enumerable.Empty<Account>().AsQueryable();
     private bool _showPaid = false;
     private bool showPaid { get { return _showPaid; } set { _showPaid = value; Search(); } }
+    private bool _pastDueOnly = false;
+    private bool pastDueOnly { get { return _pastDueOnly; } set { _pastDueOnly = value; Search(); } }
     private string _buyer;
     private string buyer { get { return _buyer; } set { _buyer = value; Search(); } }
     private string _vehicle;
@@ -68,16 +87,19 @@ else
     protected override async Task OnInitializedAsync()
     {
         results = await auth.Client.GetFromJsonAsync<List<Account>>("/api/account");
-        accounts = results.Where(x => x.IsPaid == false);
+        Search();
         await base.OnInitializedAsync();
     }
 
     private void Search()
     {
-        IEnumerable<Account> search = results;
+        // Repossessed accounts are closed/written off — never part of active collections.
+        IEnumerable<Account> search = results.Where(x => !x.IsRepossessed);
         string query;
         if (!showPaid)
             search = search.Where(x => x.IsPaid == false);
+        if (pastDueOnly)
+            search = search.Where(x => x.LateDue() > 0);
         if (!string.IsNullOrEmpty(buyer))
         {
             query = buyer.ToUpper();
@@ -88,15 +110,28 @@ else
             query = vehicle.ToUpper();
             search = search.Where(x => x.Sale.Car.Name().ToUpper().Contains(query));
         }
-        accounts = search;
+        accounts = search.AsQueryable();
     }
 
-    private string RowColor(Account account)
+    private string StatusBadge(Account account)
     {
         if (account.IsPaid)
-            return "table-success";
+            return "text-bg-success";
         if (account.HasContractExpired())
-            return "table-danger";
-        return string.Empty;
+            return "text-bg-danger";
+        if (account.LateDue() > 0)
+            return "text-bg-warning";
+        return "text-bg-secondary";
+    }
+
+    private string StatusText(Account account)
+    {
+        if (account.IsPaid)
+            return "Paid";
+        if (account.HasContractExpired())
+            return "Expired";
+        if (account.LateDue() > 0)
+            return "Past Due";
+        return "Current";
     }
 }

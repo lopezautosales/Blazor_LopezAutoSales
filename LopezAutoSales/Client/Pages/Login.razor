@@ -1,0 +1,67 @@
+@page "/app/login"
+@layout MainLayout
+@inject CookieAuthenticationStateProvider AuthProvider
+@inject NavigationManager Navigation
+
+<div class="row justify-content-center mt-5">
+    <div class="col-12 col-sm-9 col-md-6 col-lg-4 auth-card">
+        <h1 class="text-center mb-4">Login</h1>
+        <EditForm Model="_model" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <InputText class="form-control" @bind-Value="_model.Email" autocomplete="username" />
+                <ValidationMessage For="() => _model.Email" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <InputText type="password" class="form-control" @bind-Value="_model.Password" autocomplete="current-password" />
+                <ValidationMessage For="() => _model.Password" />
+            </div>
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" @bind-Value="_model.RememberMe" id="rememberMe" />
+                <label class="form-check-label" for="rememberMe">Remember me</label>
+            </div>
+            @if (_error != null)
+            {
+                <div class="alert alert-danger" role="alert">@_error</div>
+            }
+            <button type="submit" class="btn btn-primary w-100" disabled="@_busy">
+                @if (_busy)
+                {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                }
+                Login
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string ReturnUrl { get; set; }
+
+    private LoginRequest _model = new LoginRequest();
+    private string _error;
+    private bool _busy;
+
+    private async Task HandleLogin()
+    {
+        _busy = true;
+        _error = null;
+        _error = await AuthProvider.LoginAsync(_model);
+        _busy = false;
+
+        if (_error == null)
+            Navigation.NavigateTo(IsLocal(ReturnUrl) ? ReturnUrl : "app");
+    }
+
+    // Only follow app-relative return URLs, never an attacker-supplied absolute or
+    // protocol-relative ("//evil") one.
+    private static bool IsLocal(string url)
+    {
+        return !string.IsNullOrWhiteSpace(url)
+            && System.Uri.IsWellFormedUriString(url, System.UriKind.Relative)
+            && !url.StartsWith("/") && !url.StartsWith("\\");
+    }
+}

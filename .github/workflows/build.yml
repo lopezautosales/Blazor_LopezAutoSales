@@ -1,0 +1,53 @@
+name: build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-
+      - name: Restore
+        run: dotnet restore LopezAutoSales.sln
+      - name: Build
+        run: dotnet build LopezAutoSales.sln -c Release --no-restore
+      - name: Test
+        run: dotnet test LopezAutoSales.sln -c Release --no-build --verbosity normal
+      - name: Check for un-generated EF migrations
+        working-directory: LopezAutoSales/Server
+        env:
+          DATABASE_URL: postgresql://u:p@localhost:5432/ci
+        run: |
+          dotnet tool restore
+          dotnet dotnet-ef migrations has-pending-model-changes
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

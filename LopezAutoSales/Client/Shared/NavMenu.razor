@@ -1,4 +1,4 @@
-﻿<nav class="sticky-top navbar navbar-expand-lg navbar-light bg-primary bg-gradient no-print">
+<nav class="sticky-top navbar navbar-expand-lg navbar-dark app-navbar no-print">
     <div class="container">
         <a class="navbar-brand fw-bold" href="/app">Lopez Auto Sales</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
@@ -14,6 +14,28 @@
                 </li>
                 <li class="nav-item">
                     <NavLink class="nav-link" href="/app/papers" Match="NavLinkMatch.Prefix"><i class="mdi mdi-file"></i> Papers</NavLink>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="reportsMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="mdi mdi-chart-bar"></i> Reports
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="reportsMenu">
+                        <li><a class="dropdown-item" href="/app/report"><i class="mdi mdi-cash-register"></i> Sales Report</a></li>
+                        <li><a class="dropdown-item" href="/app/cashflow"><i class="mdi mdi-chart-line"></i> Cash-Flow Report</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="resourcesMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="mdi mdi-folder-open"></i> Resources
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="resourcesMenu">
+                        <li><a class="dropdown-item" href="https://www.kdor.ks.gov/Apps/kcsc/login.aspx?ReturnUrl=%2fApps%2fKCSC%2fsecure%2fdefault.aspx" target="_blank"><i class="mdi mdi-login-variant"></i> Dealer Portal</a></li>
+                        <li><a class="dropdown-item" href="https://ksrevenue.org/pdf/tr150.pdf" target="_blank"><i class="mdi mdi-file-pdf-box"></i> Lien Release</a></li>
+                        <li><a class="dropdown-item" href="https://ksrevenue.org/pdf/DMVAffidavitCorrection.pdf" target="_blank"><i class="mdi mdi-file-pdf-box"></i> Affidavit of Correction</a></li>
+                        <li><a class="dropdown-item" href="https://ksrevenue.org/dovforms.html" target="_blank"><i class="mdi mdi-file-document-multiple"></i> DOV Papers</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/" target="_blank"><i class="mdi mdi-open-in-new"></i> View public site</a></li>
+                    </ul>
                 </li>
                 <LoginDisplay />
             </ul>

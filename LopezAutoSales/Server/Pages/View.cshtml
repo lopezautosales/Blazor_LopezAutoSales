@@ -1,101 +1,170 @@
 ﻿@page "{id:int}"
+@using LopezAutoSales.Shared
 @model LopezAutoSales.Server.Pages.ViewModel
+@inject LopezAutoSales.Server.Storage.IImageStorage Storage
 @{
-    ViewData["Title"] = "View";
+    ViewData["Title"] = Model.Car?.Name() ?? "Vehicle";
+    string thumbKey = Model.Car?.Pictures.FirstOrDefault(p => p.IsThumbnail)?.URL;
+    string thumb = thumbKey == null ? null : Storage.ResizedUrl(thumbKey, LopezAutoSales.Server.Constants.DetailSize);
+    string desc = Model.Car == null ? "" :
+        $"{Model.Car.Name()} — {Model.Car.MileageString()} miles, {Model.Car.ListPrice.ToString("C0")}. In-house financing in Emporia, KS.";
+}
+
+@section Head {
+    @if (Model.Car != null)
+    {
+        <meta name="description" content="@desc" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="@Model.Car.Name() · Lopez Auto Sales" />
+        <meta property="og:description" content="@desc" />
+        @if (thumb != null)
+        {
+            <meta property="og:image" content="@thumb" />
+        }
+        <script type="application/ld+json">
+        {
+          "@@context": "https://schema.org",
+          "@@type": "Vehicle",
+          "name": "@Model.Car.Name()",
+          "brand": "@Model.Car.Make",
+          "model": "@Model.Car.Model",
+          "vehicleModelDate": "@Model.Car.Year",
+          "mileageFromOdometer": { "@@type": "QuantitativeValue", "value": @(Model.Car.Mileage ?? 0), "unitCode": "SMI" },
+          "vehicleIdentificationNumber": "@Model.Car.VIN",
+          "offers": { "@@type": "Offer", "price": "@Model.Car.ListPrice", "priceCurrency": "USD", "availability": "https://schema.org/InStock" }
+        }
+        </script>
+    }
 }
 
 @if (Model.Car == null)
 {
-    <p class="lead">Could not load the vehicle.</p>
+    <div class="text-center py-5">
+        <h1 class="mb-3">This vehicle has been sold</h1>
+        <p class="lead">It's no longer available — but we get new inventory in often.</p>
+        <a href="/" class="btn btn-primary btn-lg mt-2"><i class="mdi mdi-car"></i> See available inventory</a>
+    </div>
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-sm text-center table-borderless">
-            <thead>
-                <tr>
-                    <th>
-                        Price
-                    </th>
-                    <th>
-                        Car
-                    </th>
-                    <th>
-                        Mileage
-                    </th>
-                    <th>
-                        VIN
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="h5">
-                    <td>
-                        @Model.Car.ListPrice.ToString("C")
-                    </td>
-                    <td>
-                        @Model.Car.Name()
-                    </td>
-                    <td>
-                        @Model.Car.MileageString()
-                    </td>
-                    <td>
-                        @Model.Car.VIN
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="mt-4 mb-3">
+        <a href="/" class="odo"><i class="mdi mdi-arrow-left"></i> Back to the lot</a>
     </div>
-    <div class="lead">
-        @Model.Car.TitleStatus() Title
+    <div class="card p-4 mb-4">
+        <p class="eyebrow mb-1" style="color: var(--steel);">Stock #@Model.Car.Id.ToString("D4") · @Model.Car.TitleStatus() Title</p>
+        <div class="row align-items-center g-3">
+            <div class="col-md">
+                <h1 class="mb-0" style="font-size: clamp(1.9rem, 4vw, 2.8rem); text-transform: uppercase;">@Model.Car.Name()</h1>
+            </div>
+            <div class="col-md-auto text-md-end">
+                <div class="price" style="font-size: 2.8rem;"><span class="cur">$</span>@Model.Car.ListPrice.ToString("N0")</div>
+            </div>
+        </div>
+        <hr />
+        <div class="row text-center g-3">
+            <div class="col-6 col-md-3">
+                <p class="eyebrow mb-1" style="color: var(--steel);">Mileage</p>
+                <div class="odo" style="font-size: 1.1rem;">@Model.Car.MileageDisplay()</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <p class="eyebrow mb-1" style="color: var(--steel);">Year</p>
+                <div class="odo" style="font-size: 1.1rem;">@Model.Car.Year</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <p class="eyebrow mb-1" style="color: var(--steel);">Color</p>
+                <div class="odo" style="font-size: 1.1rem;">@Model.Car.Color</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <p class="eyebrow mb-1" style="color: var(--steel);">VIN</p>
+                <div class="odo" style="font-size: 1.1rem;">@Model.Car.VIN</div>
+            </div>
+        </div>
     </div>
+    <div class="card info-card p-4 mb-4">
+        <div class="row align-items-center g-3">
+            <div class="col-md">
+                <div class="info-icon"><i class="mdi mdi-cash-multiple"></i></div>
+                <h2 class="h5 mb-1">In-House Financing</h2>
+                <p class="mb-0">About <strong>@((Model.Car.ListPrice / 2).ToString("C0")) down</strong> and <strong>$@Dealership.MonthlyPayment a month</strong> — no bank required.</p>
+            </div>
+            <div class="col-md-auto d-grid gap-2">
+                <a href="tel:16202086250" class="btn btn-secondary btn-lg"><i class="mdi mdi-phone"></i> Call About This Vehicle</a>
+                <a href="mailto:lopezauto@outlook.com?subject=Stock%20%23@(Model.Car.Id.ToString("D4"))%20availability" class="btn btn-secondary btn-lg"><i class="mdi mdi-email"></i> Email About This Vehicle</a>
+            </div>
+        </div>
+    </div>
+
     @if (Model.Car.Pictures.Count > 0)
     {
-        <div id="carousel" class="carousel slide mx-auto no-print" data-bs-ride="carousel">
-            <ol class="carousel-indicators">
+        <div id="carousel" class="carousel slide mx-auto no-print mb-4">
+            <div class="carousel-indicators">
                 @for (int i = 0; i < Model.Car.Pictures.Count; i++)
                 {
-                    <li data-bs-target="#carousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : string.Empty)"></li>
+                    <button type="button" data-bs-target="#carousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : string.Empty)" aria-label="Slide @(i + 1)" aria-current="@(i == 0 ? "true" : null)"></button>
                 }
-            </ol>
+            </div>
             <div class="carousel-inner">
                 @foreach (Picture p in Model.Car.Pictures.OrderByDescending(x => x.IsThumbnail))
                 {
                     <div class="carousel-item @(p.IsThumbnail ? "active": string.Empty)">
-                        <img data-src="/@p.URL" class="lazy d-block w-100">
+                        <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="@Storage.ResizedUrl(p.URL, LopezAutoSales.Server.Constants.DetailSize)" class="lazy d-block w-100" alt="@Model.Car.Name()" />
                     </div>
                 }
             </div>
             @if (Model.Car.Pictures.Count > 1)
             {
-                <a class="carousel-control-prev" href="#carousel" role="button" data-bs-slide="prev">
+                <button class="carousel-control-prev" type="button" data-bs-target="#carousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Previous</span>
-                </a>
-                <a class="carousel-control-next" href="#carousel" role="button" data-bs-slide="next">
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carousel" data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Next</span>
-                </a>
+                    <span class="visually-hidden">Next</span>
+                </button>
             }
         </div>
     }
-    <div class="lead">Data provided by the NHTSA:</div>
-    <div class="text-center">
-        @foreach (CarProperty property in Model.Car.Data.Results.OrderBy(x => x.Variable))
-        {
-            @if (!string.IsNullOrEmpty(property.Value) && property.Value != "Not Applicable")
+    @if (Model.Car.Data?.Results != null)
+    {
+        // Lead with the handful of specs a shopper actually cares about; tuck the rest of
+        // the NHTSA dump (regulatory fields, etc.) behind an expander.
+        string[] highlight = new[] { "Body Class", "Drive Type", "Transmission Style", "Engine Number of Cylinders", "Displacement (L)", "Fuel Type - Primary", "Doors", "Trim", "Engine Brake (hp) From", "Engine Configuration" };
+        var specs = Model.Car.Data.Results
+            .Where(p => !string.IsNullOrEmpty(p.Value) && p.Value != "Not Applicable" && p.Value != "0")
+            .ToList();
+        var top = highlight.Select(name => specs.FirstOrDefault(p => p.Variable == name)).Where(p => p != null).ToList();
+        var rest = specs.Where(p => !highlight.Contains(p.Variable)).OrderBy(p => p.Variable).ToList();
+
+        <h2 class="h5 text-muted mb-3">Vehicle details</h2>
+        <div class="text-center">
+            @foreach (CarProperty property in top)
             {
                 <div class="card d-inline-block m-1">
                     <div class="card-body">
-                        <h5 class="card-title">@property.Variable</h5>
-                        <div class="card-text">
-                            @property.Value
-                        </div>
+                        <div class="card-title fw-bold">@property.Variable</div>
+                        <div class="card-text">@property.Value</div>
                     </div>
                 </div>
             }
+        </div>
+        @if (rest.Any())
+        {
+            <details class="mt-3">
+                <summary class="text-muted">All decoded specs (NHTSA)</summary>
+                <div class="text-center mt-2">
+                    @foreach (CarProperty property in rest)
+                    {
+                        <div class="card d-inline-block m-1">
+                            <div class="card-body">
+                                <div class="card-title fw-bold">@property.Variable</div>
+                                <div class="card-text">@property.Value</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </details>
         }
-    </div>
+    }
 }
 
 @section Scripts{

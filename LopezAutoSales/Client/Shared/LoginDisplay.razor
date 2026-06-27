@@ -1,30 +1,36 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
 
 @inject NavigationManager Navigation
+@inject CookieAuthenticationStateProvider AuthProvider
 
 <AuthorizeView>
     <Authorized>
-        <li class="nav-item">
-            <a class="nav-link" href="/authentication/profile"><i class="mdi mdi-account"></i> @context.User.Identity.Name</a>
-        </li>
-        <li class="nav-item">
-            <button class="btn nav-link" @onclick="BeginSignOut"><i class="mdi mdi-logout"></i> Logout</button>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="profileMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="mdi mdi-account-circle"></i> @context.User.Identity.Name
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
+                <li>
+                    <NavLink class="dropdown-item" href="/app/account"><i class="mdi mdi-key"></i> Change Password</NavLink>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                    <button class="dropdown-item" @onclick="BeginSignOut"><i class="mdi mdi-logout"></i> Logout</button>
+                </li>
+            </ul>
         </li>
     </Authorized>
     <NotAuthorized>
         <li class="nav-item">
-            <a class="nav-link" href="/authentication/register"><i class="mdi mdi-account-plus"></i> Register</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="/authentication/login"><i class="mdi mdi-login"></i> Login</a>
+            <a class="nav-link" href="/app/login"><i class="mdi mdi-login"></i> Login</a>
         </li>
     </NotAuthorized>
 </AuthorizeView>
 
-@code{
-    private void BeginSignOut(MouseEventArgs args)
+@code {
+    private async Task BeginSignOut()
     {
-        Navigation.NavigateToLogout("authentication/logout");
+        await AuthProvider.LogoutAsync();
+        Navigation.NavigateTo("/");
     }
 }

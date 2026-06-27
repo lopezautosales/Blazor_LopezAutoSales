@@ -1,84 +1,98 @@
-﻿@page "/app/report/{year:int}"
+@page "/app/report/{year:int}"
 @page "/app/report"
+@attribute [Authorize(Roles = "Admin")]
 @inject AuthHttp http
 @inject IJSRuntime js
 
 <h1 class="text-center">@Year.Value Sales Report</h1>
-<div class="no-print row mb-2">
-    <div class="col-6">
-        <a class="btn btn-secondary" href="/app/report/@(Year-1)">@(Year-1) Report</a>
-    </div>
-    <div class="col-6 text-end">
+<div class="no-print row mb-3 align-items-center">
+    <div class="col">
+        <a class="btn btn-secondary" href="/app/report/@(Year-1)">@(Year-1)</a>
         @if (Year != DateTime.Today.Year)
         {
-            <a class="btn btn-secondary" href="/app/report/@(Year+1)">@(Year+1) Report</a>
+            <a class="btn btn-secondary" href="/app/report/@(Year+1)">@(Year+1)</a>
         }
     </div>
+    <div class="col text-end">
+        <button class="btn btn-primary" @onclick="Print"><i class="mdi mdi-printer"></i> Print</button>
+    </div>
 </div>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Buyers</th>
-            <th>Car</th>
-            <th>Bought Price</th>
-            <th>Sales Price</th>
-            <th>Tax</th>
-            <th class="no-print">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (sales != null)
-        {
-            decimal boughtTotal = 0, sellingTotal = 0, taxTotal = 0;
-            @foreach (Sale sale in sales)
-            {
+@if (sales is null)
+{
+    <p class="lead">Loading...</p>
+}
+else if (sales.Count == 0)
+{
+    <p class="lead text-center py-4">No sales recorded for @Year.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>@sale.Date.ToShortDateString()</td>
-                    <td>@sale.Buyers()</td>
-                    <td>@sale.Car.Name()</td>
-                    <td class="@(sale.Car.BoughtPrice.HasValue ? string.Empty : "bg-danger")">
-                        @if (isEditing && editId == sale.Id)
-                        {
-                            <input type="number" class="form-control form-control-sm" @bind-value="@editAmount" />
-                        }
-                        else
-                        {
-                            @sale.Car.BoughtPrice?.ToString("C")
-                        }
-                    </td>
-                    <td>@sale.SellingPrice.ToString("C")</td>
-                    <td>@sale.TaxAmount()</td>
-                    <td class="no-print">
-                        <div class="btn-group" role="group" aria-label="Action buttons">
+                    <th>Date</th>
+                    <th>Buyers</th>
+                    <th>Car</th>
+                    <th>Bought Price</th>
+                    <th>Sales Price</th>
+                    <th>Tax</th>
+                    <th class="no-print">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    decimal boughtTotal = 0, sellingTotal = 0, taxTotal = 0;
+                }
+                @foreach (Sale sale in sales)
+                {
+                    <tr>
+                        <td>@sale.Date.ToShortDateString()</td>
+                        <td>@sale.Buyers()</td>
+                        <td>@sale.Car.Name()</td>
+                        <td class="@(sale.Car.BoughtPrice.HasValue ? string.Empty : "bg-danger")">
                             @if (isEditing && editId == sale.Id)
                             {
-                                <button type="button" class="btn btn-sm btn-success" @onclick="() => SaveEdit(sale.Id, editAmount)">Save</button>
-                                <button type="button" class="btn btn-sm btn-danger" @onclick="CancelEdit">Cancel</button>
+                                <input type="number" class="form-control form-control-sm" @bind-value="editAmount" @onkeydown="@(e => EditKey(e, sale.Id))" />
                             }
                             else
                             {
-                                <button type="button" class="btn btn-sm btn-secondary" @onclick="() => StartEditing(sale.Id, sale.Car.BoughtPrice)">Edit</button>
+                                @sale.Car.BoughtPrice?.ToString("C")
                             }
-                        </div>
-                    </td>
+                        </td>
+                        <td>@sale.SellingPrice.ToString("C")</td>
+                        <td>@sale.TaxAmount()</td>
+                        <td class="no-print">
+                            <div class="btn-group" role="group" aria-label="Action buttons">
+                                @if (isEditing && editId == sale.Id)
+                                {
+                                    <button type="button" class="btn btn-sm btn-success" @onclick="() => SaveEdit(sale.Id, editAmount)">Save</button>
+                                    <button type="button" class="btn btn-sm btn-danger" @onclick="CancelEdit">Cancel</button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-sm btn-secondary" @onclick="() => StartEditing(sale.Id, sale.Car.BoughtPrice)">Edit</button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                    boughtTotal += sale.Car.BoughtPrice ?? 0;
+                    sellingTotal += sale.SellingPrice;
+                    taxTotal += sale.TaxAmount();
+                }
+                <tr>
+                    <td>Profit:</td>
+                    <td>@((sellingTotal - boughtTotal).ToString("C"))</td>
+                    <td>Totals:</td>
+                    <td>@boughtTotal.ToString("C")</td>
+                    <td>@sellingTotal.ToString("C")</td>
+                    <td>@taxTotal.ToString("C")</td>
+                    <td class="no-print"></td>
                 </tr>
-                boughtTotal += sale.Car.BoughtPrice ?? 0;
-                sellingTotal += sale.SellingPrice;
-                taxTotal += sale.TaxAmount();
-            }
-            <tr>
-                <td>Profit:</td>
-                <td>@((sellingTotal - boughtTotal).ToString("C"))</td>
-                <td>Totals:</td>
-                <td>@boughtTotal.ToString("C")</td>
-                <td>@sellingTotal.ToString("C")</td>
-                <td>@taxTotal.ToString("C")</td>
-                <td class="no-print"></td>
-            </tr>
-        }
-    </tbody>
-</table>
+            </tbody>
+        </table>
+    </div>
+}
 
 @code {
     [Parameter]
@@ -112,6 +126,14 @@
         editAmount = null;
     }
 
+    private async Task EditKey(KeyboardEventArgs e, int id)
+    {
+        if (e.Key == "Enter")
+            await SaveEdit(id, editAmount);
+        else if (e.Key == "Escape")
+            CancelEdit();
+    }
+
     private async Task SaveEdit(int id, decimal? boughtPrice)
     {
         if (boughtPrice.HasValue)
@@ -119,16 +141,19 @@
             var response = await http.Client.PutAsJsonAsync<decimal?>($"/api/sale/boughtPrice/{id}", boughtPrice);
             if (!response.IsSuccessStatusCode)
             {
-                await js.InvokeVoidAsync("alert", "This change could not be saved: " + response.Content.ReadAsStringAsync());
+                await js.InvokeVoidAsync("alert", "This change could not be saved: " + await response.Content.ReadAsStringAsync());
                 return;
             }
         }
         else
         {
+            // An empty field removes the bought price entirely — confirm before discarding it.
+            if (!await js.InvokeAsync<bool>("confirm", "Clear the bought price for this sale?"))
+                return;
             var response = await http.Client.DeleteAsync($"/api/sale/boughtPrice/{id}");
             if (!response.IsSuccessStatusCode)
             {
-                await js.InvokeVoidAsync("alert", "This change could not be saved: " + response.Content.ReadAsStringAsync());
+                await js.InvokeVoidAsync("alert", "This change could not be saved: " + await response.Content.ReadAsStringAsync());
                 return;
             }
         }
@@ -136,5 +161,10 @@
         if (sale != null)
             sale.Car.BoughtPrice = boughtPrice;
         CancelEdit();
+    }
+
+    private async Task Print()
+    {
+        await js.InvokeVoidAsync("print");
     }
 }

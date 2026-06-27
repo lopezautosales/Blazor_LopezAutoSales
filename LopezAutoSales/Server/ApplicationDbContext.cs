@@ -1,16 +1,17 @@
-﻿using Duende.IdentityServer.EntityFramework.Extensions;
-using Duende.IdentityServer.EntityFramework.Options;
-using LopezAutoSales.Server.Models;
+﻿using LopezAutoSales.Server.Models;
 using LopezAutoSales.Shared;
 using LopezAutoSales.Shared.Models;
-using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace LopezAutoSales.Server
 {
-    public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>
+    // IDataProtectionKeyContext: the Data Protection key ring (which encrypts the auth
+    // cookie) lives in Postgres so it survives container redeploys — otherwise Railway's
+    // ephemeral filesystem regenerates it each deploy and logs the admin out.
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IDataProtectionKeyContext
     {
         public DbSet<Sale> Sales { get; set; }
         public DbSet<Account> Accounts { get; set; }
@@ -19,13 +20,11 @@ namespace LopezAutoSales.Server
         public DbSet<UserAccount> UserAccounts { get; set; }
         public DbSet<Picture> Pictures { get; set; }
         public DbSet<Lienholder> Lienholders { get; set; }
-        private OperationalStoreOptions OperationalStoreOptions { get; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
-        public ApplicationDbContext(
-            DbContextOptions options,
-            IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
+        public ApplicationDbContext(DbContextOptions options) : base(options)
         {
-            OperationalStoreOptions = operationalStoreOptions.Value;
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -34,10 +33,21 @@ namespace LopezAutoSales.Server
             {
                 Id = "2301D884-221A-4E7D-B509-0113DCC043E1",
                 Name = "Admin",
-                NormalizedName = "ADMIN"
+                NormalizedName = "ADMIN",
+                // Pinned so the seed is deterministic; IdentityRole otherwise generates a
+                // random ConcurrencyStamp each model build, which breaks migrations.
+                ConcurrencyStamp = "2301d884-221a-4e7d-b509-0113dcc043e1"
             });
 
-            Dealership.Address.Id = 1;
+            // Seed from a fresh instance instead of mutating the shared static Dealership.Address.
+            Address dealershipAddress = new Address
+            {
+                Id = 1,
+                Street = Dealership.Address.Street,
+                City = Dealership.Address.City,
+                State = Dealership.Address.State,
+                ZIP = Dealership.Address.ZIP
+            };
             Lienholder dealership = new Lienholder
             {
                 Name = Dealership.Name,
@@ -45,10 +55,11 @@ namespace LopezAutoSales.Server
                 NormalizedName = Dealership.Name.ToUpper()
             };
             builder.Entity<Car>().HasIndex(x => x.IsListed);
+            builder.Entity<Sale>().HasIndex(x => x.Date);
             builder.Entity<UserAccount>().HasKey(x => new { x.UserId, x.AccountId });
-            builder.Entity<Address>().HasData(Dealership.Address);
+
+            builder.Entity<Address>().HasData(dealershipAddress);
             builder.Entity<Lienholder>().HasData(dealership);
-            builder.ConfigurePersistedGrantContext(OperationalStoreOptions);
             base.OnModelCreating(builder);
         }
     }

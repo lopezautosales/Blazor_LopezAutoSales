@@ -1,0 +1,70 @@
+@page "/app/account"
+@attribute [Authorize(Roles = "Admin")]
+@inject AuthHttp auth
+
+<div class="row justify-content-center mt-4">
+    <div class="col-12 col-sm-9 col-md-6 col-lg-4 auth-card">
+        <h1 class="text-center mb-4">Change Password</h1>
+        <EditForm Model="_model" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            <div class="mb-3">
+                <label class="form-label">Current password</label>
+                <InputText type="password" class="form-control" @bind-Value="_model.CurrentPassword" autocomplete="current-password" />
+                <ValidationMessage For="() => _model.CurrentPassword" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">New password</label>
+                <InputText type="password" class="form-control" @bind-Value="_model.NewPassword" autocomplete="new-password" />
+                <ValidationMessage For="() => _model.NewPassword" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Confirm new password</label>
+                <InputText type="password" class="form-control" @bind-Value="_model.ConfirmPassword" autocomplete="new-password" />
+                <ValidationMessage For="() => _model.ConfirmPassword" />
+            </div>
+            @if (_error != null)
+            {
+                <div class="alert alert-danger" role="alert">@_error</div>
+            }
+            @if (_success)
+            {
+                <div class="alert alert-success" role="alert">Password changed.</div>
+            }
+            <button type="submit" class="btn btn-primary w-100" disabled="@_busy">
+                @if (_busy)
+                {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                }
+                Change Password
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private ChangePasswordRequest _model = new ChangePasswordRequest();
+    private string _error;
+    private bool _success;
+    private bool _busy;
+
+    private async Task HandleSubmit()
+    {
+        _busy = true;
+        _error = null;
+        _success = false;
+
+        HttpResponseMessage response = await auth.Client.PostAsJsonAsync("/api/auth/change-password", _model);
+        _busy = false;
+
+        if (response.IsSuccessStatusCode)
+        {
+            _success = true;
+            _model = new ChangePasswordRequest();
+        }
+        else
+        {
+            string message = await response.Content.ReadAsStringAsync();
+            _error = string.IsNullOrWhiteSpace(message) ? "Could not change password." : message;
+        }
+    }
+}

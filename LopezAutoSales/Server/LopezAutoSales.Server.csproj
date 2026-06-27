@@ -1,70 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
-		<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+		<TargetFramework>net10.0</TargetFramework>
 		<UserSecretsId>8cd82f10-404b-41a1-a627-f38b15bf415a</UserSecretsId>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	</PropertyGroup>
-	<ItemGroup>
-		<Compile Remove="dist\**" />
-		<Compile Remove="Services\**" />
-		<Content Remove="dist\**" />
-		<Content Remove="Services\**" />
-		<EmbeddedResource Remove="dist\**" />
-		<EmbeddedResource Remove="Services\**" />
-		<None Remove="dist\**" />
-		<None Remove="Services\**" />
-	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Remove="Migrations\20200714023313_Initial.cs" />
-		<Compile Remove="Migrations\20200714023313_Initial.Designer.cs" />
-		<Compile Remove="Migrations\20200714024113_Initial.cs" />
-		<Compile Remove="Migrations\20200714024113_Initial.Designer.cs" />
-		<Compile Remove="Migrations\20200716183458_Initial.cs" />
-		<Compile Remove="Migrations\20200716183458_Initial.Designer.cs" />
-		<Compile Remove="Migrations\20200717014819_Picture.cs" />
-		<Compile Remove="Migrations\20200717014819_Picture.Designer.cs" />
-		<Compile Remove="Migrations\20200717043625_Builder.cs" />
-		<Compile Remove="Migrations\20200717043625_Builder.Designer.cs" />
-		<Compile Remove="Migrations\20200717060555_IntId.cs" />
-		<Compile Remove="Migrations\20200717060555_IntId.Designer.cs" />
-		<Compile Remove="Migrations\20200717060644_IntId.cs" />
-		<Compile Remove="Migrations\20200717060644_IntId.Designer.cs" />
-		<Compile Remove="Migrations\20200717060742_IntId.cs" />
-		<Compile Remove="Migrations\20200717060742_IntId.Designer.cs" />
-		<Compile Remove="Migrations\20200717063500_needs.cs" />
-		<Compile Remove="Migrations\20200717063500_needs.Designer.cs" />
-		<Compile Remove="Migrations\20200717063614_PictureId.cs" />
-		<Compile Remove="Migrations\20200717063614_PictureId.Designer.cs" />
-		<Compile Remove="Migrations\20200722233434_Accounts.cs" />
-		<Compile Remove="Migrations\20200722233434_Accounts.Designer.cs" />
-		<Compile Remove="Migrations\20200722233749_Accounts.cs" />
-		<Compile Remove="Migrations\20200722233749_Accounts.Designer.cs" />
-		<Compile Remove="Migrations\20200728174218_AccountForeign.cs" />
-		<Compile Remove="Migrations\20200728174218_AccountForeign.Designer.cs" />
-		<Compile Remove="Migrations\20200730164949_Liens2.cs" />
-		<Compile Remove="Migrations\20200730164949_Liens2.Designer.cs" />
-		<Compile Remove="Migrations\20200731194518_FK.cs" />
-		<Compile Remove="Migrations\20200731194518_FK.Designer.cs" />
-		<Compile Remove="Migrations\20200731195732_FK.cs" />
-		<Compile Remove="Migrations\20200731195732_FK.Designer.cs" />
-		<Compile Remove="Migrations\20200803220137_Test.cs" />
-		<Compile Remove="Migrations\20200803220137_Test.Designer.cs" />
-		<Compile Remove="Migrations\20200813220803_Update.cs" />
-		<Compile Remove="Migrations\20200813220803_Update.Designer.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Duende.BFF" Version="2.0.0" />
-		<PackageReference Include="EntityFramework" Version="6.4.4" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.2" />
-		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.2" />
-		<PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
-		<PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
+		<PackageReference Include="AWSSDK.S3" Version="3.7.511.8" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.9" />
+		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="2.1.13" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -73,22 +20,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="7.0.2" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.2" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.2">
+		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.9" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.9" />
+		<PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.9" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.9">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
 
-	<ItemGroup>
-		<Folder Include="Logs\stdout\" />
-		<Folder Include="wwwroot\dist\js\" />
-		<Folder Include="wwwroot\Images\" />
-		<Folder Include="wwwroot\Images\" />
-	</ItemGroup>
 
 </Project>

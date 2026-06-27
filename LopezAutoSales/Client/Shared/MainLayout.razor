@@ -1,7 +1,22 @@
 ﻿@inherits LayoutComponentBase
-@attribute [Authorize(Roles = "Admin")]
 
 <NavMenu />
-<main role="main" class="container">
-    @Body
+<main role="main" class="container pt-4">
+    <ErrorBoundary @ref="_errorBoundary">
+        <ChildContent>
+            @Body
+        </ChildContent>
+        <ErrorContent>
+            <div class="alert alert-danger m-3" role="alert">
+                Something went wrong loading this page. Please refresh and try again.
+            </div>
+        </ErrorContent>
+    </ErrorBoundary>
 </main>
+
+@code {
+    private ErrorBoundary _errorBoundary;
+
+    // Reset the boundary on navigation so an error on one page doesn't stick.
+    protected override void OnParametersSet() => _errorBoundary?.Recover();
+}

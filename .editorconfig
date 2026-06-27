@@ -1,0 +1,27 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{csproj,props,targets}]
+indent_style = tab
+
+[*.{json,yml,yaml}]
+indent_size = 2
+
+[*.{razor,cshtml,html,css,scss}]
+indent_size = 4
+
+[*.cs]
+# Prefer modern C# idioms (warnings, not build-breaking)
+dotnet_style_namespace_match_folder = true:suggestion
+csharp_style_namespace_declarations = block_scoped:silent
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
+csharp_prefer_braces = true:silent
+dotnet_diagnostic.CA2007.severity = none

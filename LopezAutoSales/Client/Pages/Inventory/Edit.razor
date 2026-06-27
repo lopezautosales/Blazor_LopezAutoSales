@@ -1,6 +1,6 @@
 ﻿@page "/app/inventory/edit/{id:int}"
+@attribute [Authorize(Roles = "Admin")]
 @inject AuthHttp auth
-@inject HttpClient http
 @inject IJSRuntime js
 @inject CarManager carManager
 @inject NavigationManager nav
@@ -20,9 +20,9 @@ else
         <DataAnnotationsValidator />
         <ErrorDisplay Errors="Errors" />
         <div class="mb-3">
-            <label>VIN</label>
+            <label for="VIN">VIN</label>
             <div class="input-group">
-                <InputText class="form-control" @bind-Value="car.VIN"></InputText>
+                <InputText id="VIN" class="form-control" @bind-Value="car.VIN"></InputText>
                 <div class="input-group-append">
                     <button type="button" class="btn btn-secondary" @onclick="async () => await decoder.TryDecodeAsync(car)">Verify</button>
                 </div>
@@ -30,34 +30,34 @@ else
         </div>
         <div class="row">
             <div class="col-md-3">
-                <label>Year</label>
-                <InputNumber class="form-control" @bind-Value="car.Year"></InputNumber>
+                <label for="Year">Year</label>
+                <InputNumber id="Year" class="form-control" @bind-Value="car.Year"></InputNumber>
             </div>
             <div class="col-md-3">
-                <label>Make</label>
-                <InputText class="form-control" @bind-Value="car.Make"></InputText>
+                <label for="Make">Make</label>
+                <InputText id="Make" class="form-control" @bind-Value="car.Make"></InputText>
             </div>
             <div class="col-md-3">
-                <label>Model</label>
-                <InputText class="form-control" @bind-Value="car.Model"></InputText>
+                <label for="Model">Model</label>
+                <InputText id="Model" class="form-control" @bind-Value="car.Model"></InputText>
             </div>
             <div class="col-md-3">
-                <label>Color</label>
-                <InputText class="form-control" @bind-Value="car.Color"></InputText>
+                <label for="Color">Color</label>
+                <InputText id="Color" class="form-control" @bind-Value="car.Color"></InputText>
             </div>
         </div>
         <div class="row">
             <div class="col-md-3">
-                <label>Mileage</label>
-                <InputNumber class="form-control" placeholder="Exempt" @bind-Value="car.Mileage"></InputNumber>
+                <label for="Mileage">Mileage</label>
+                <InputNumber id="Mileage" class="form-control" placeholder="Exempt" @bind-Value="car.Mileage"></InputNumber>
             </div>
             <div class="col-md-3">
-                <label>Bought Price</label>
-                <InputNumber class="form-control" @bind-Value="car.BoughtPrice"></InputNumber>
+                <label for="BoughtPrice">Bought Price</label>
+                <InputNumber id="BoughtPrice" class="form-control" @bind-Value="car.BoughtPrice"></InputNumber>
             </div>
             <div class="col-md-3">
-                <label>List Price</label>
-                <InputNumber class="form-control" @bind-Value="car.ListPrice"></InputNumber>
+                <label for="ListPrice">List Price</label>
+                <InputNumber id="ListPrice" class="form-control" @bind-Value="car.ListPrice"></InputNumber>
             </div>
             <div class="col-md-3 my-auto">
                 <div class="form-check">
@@ -67,19 +67,26 @@ else
             </div>
         </div>
         <div class="text-end">
-            <button type="button" class="btn btn-danger text-white" @onclick="DeleteVehicle">Delete</button>
-            <button type="submit" class="btn btn-secondary">Submit</button>
+            <button type="button" class="btn btn-danger text-white" @onclick="DeleteVehicle" disabled="@_busy">Delete</button>
+            <button type="submit" class="btn btn-primary" disabled="@_busy">
+                @if (_busy)
+                {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                }
+                Submit
+            </button>
         </div>
     </EditForm>
     <div class="my-3">
-        <InputFile class="form-control" OnChange="HandleSelection" multiple></InputFile>
+        <label for="photoUpload" class="form-label">Add photos</label>
+        <InputFile id="photoUpload" class="form-control" OnChange="HandleSelection" multiple accept="image/*"></InputFile>
     </div>
     <div class="row">
         @foreach (Picture picture in car.Pictures)
         {
             <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mt-2">
                 <div class="card card-picture">
-                    <img src="@picture.URL" class="card-img-top" />
+                    <img src="@picture.URL" class="card-img-top" alt="@car.Name() photo" />
                     <div class="card-body text-center">
                         @if (!picture.IsThumbnail)
                         {
@@ -98,6 +105,7 @@ else
     public int Id { get; set; }
     private Car car;
     private List<string> Errors { get; set; } = new List<string>();
+    private bool _busy;
 
     protected override async Task OnInitializedAsync()
     {
@@ -112,15 +120,23 @@ else
 
     private async Task EditVehicle()
     {
-        await decoder.TryDecodeAsync(car);
-        var response = await auth.Client.PutAsJsonAsync<Car>($"/api/inventory/edit/{Id}", car);
-        if (response.IsSuccessStatusCode)
+        _busy = true;
+        try
         {
-            carManager.SetCar(car);
-            nav.NavigateTo($"/app/inventory");
+            await decoder.TryDecodeAsync(car);
+            var response = await auth.Client.PutAsJsonAsync<Car>($"/api/inventory/edit/{Id}", car);
+            if (response.IsSuccessStatusCode)
+            {
+                carManager.SetCar(car);
+                nav.NavigateTo($"/app/inventory");
+            }
+            else
+                await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
         }
-        else
-            await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task DeleteVehicle()
@@ -129,14 +145,22 @@ else
         if (!isConfirmed)
             return;
 
-        var response = await auth.Client.DeleteAsync($"/api/inventory/{Id}");
-        if (response.IsSuccessStatusCode)
+        _busy = true;
+        try
         {
-            carManager.DeleteCar(car);
-            nav.NavigateTo($"/app/inventory");
+            var response = await auth.Client.DeleteAsync($"/api/inventory/{Id}");
+            if (response.IsSuccessStatusCode)
+            {
+                carManager.DeleteCar(car);
+                nav.NavigateTo($"/app/inventory");
+            }
+            else
+                await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
         }
-        else
-            await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task HandleSelection(InputFileChangeEventArgs e)
@@ -145,10 +169,10 @@ else
         int i = 0;
         foreach (var file in e.GetMultipleFiles())
         {
-            using System.IO.Stream s = file.OpenReadStream(10000000);
+            using System.IO.Stream s = file.OpenReadStream(100_000_000);
             using System.IO.MemoryStream ms = new System.IO.MemoryStream();
             await s.CopyToAsync(ms);
-            content.Add(new ByteArrayContent(ms.GetBuffer()), $"\"upload{i}\"", file.Name);
+            content.Add(new ByteArrayContent(ms.GetBuffer(), 0, (int)ms.Length), $"\"upload{i}\"", file.Name);
             i++;
         }
         var response = await auth.Client.PostAsync($"/api/inventory/upload/{Id}", content);
@@ -157,6 +181,8 @@ else
             List<Picture> pictures = await response.Content.ReadFromJsonAsync<List<Picture>>();
             car.Pictures.AddRange(pictures);
             carManager.SetCar(car);
+            if (response.Headers.TryGetValues("X-Skipped-Files", out var skipped))
+                await js.InvokeVoidAsync("alert", $"{skipped.First()} file(s) were skipped — not a valid image or too large.");
         }
     }
 

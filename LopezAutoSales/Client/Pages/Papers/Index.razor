@@ -1,4 +1,4 @@
-﻿@page "/app/papers"
+@page "/app/papers"
 @page "/app/papers/{year:int}"
 @attribute [Authorize(Roles = "Admin")]
 @inject AuthHttp auth
@@ -7,11 +7,6 @@
 @if (sales == null)
 {
     <p class="lead">Loading...</p>
-
-}
-else if (sales.Count == 0)
-{
-    <p class="lead">No papers could be found.</p>
 }
 else
 {
@@ -26,60 +21,69 @@ else
             }
         </div>
     </div>
-    <div class="table-responsive">
-        <table class="table table-striped text-center">
-            <thead>
-                <tr>
-                    <th scope="col">
-                        Date
-                    </th>
-                    <th scope="col">
-                        Buyers
-                    </th>
-                    <th scope="col">
-                        Vehicle
-                    </th>
-                    <th scope="col">
-                        Actions
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (Sale sale in sales)
-                {
-                    <tr>
-                        <td>
-                            @sale.Date
-                        </td>
-                        <td>
-                            @sale.Buyers()
-                        </td>
-                        <td>
-                            @sale.Car.Name()
-                        </td>
-                        <td>
-                            <div class="btn-group">
-                                <a class="btn btn-secondary" href="/app/papers/view/@sale.Id">View</a>
-                                <a class="btn btn-secondary" href="/app/papers/edit/@sale.Id">Edit</a>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    @if (sales.Count == 0)
+    {
+        <p class="lead text-center py-4">No papers for @Year.</p>
+    }
+    else
+    {
+        <div class="mb-3">
+            <label for="search">Search buyer or vehicle:</label>
+            <input id="search" type="text" class="form-control" @bind-value="search" @bind-value:event="oninput" />
+        </div>
+        <div class="table-responsive">
+            <QuickGrid Items="filtered" Class="table table-striped text-center">
+                <PropertyColumn Title="Date" Property="@(s => s.Date)" Format="MM/dd/yyyy" Sortable="true" IsDefaultSortColumn="true" InitialSortDirection="SortDirection.Descending" Align="Align.Center" />
+                <TemplateColumn Title="Buyers" SortBy="@(GridSort<Sale>.ByAscending(s => s.Buyer))" Align="Align.Center">
+                    @context.Buyers()
+                </TemplateColumn>
+                <TemplateColumn Title="Vehicle" Align="Align.Center">
+                    @context.Car.Name()
+                    @if (context.Account?.IsRepossessed == true)
+                    {
+                        <span class="badge text-bg-warning ms-1">Repossessed</span>
+                    }
+                </TemplateColumn>
+                <TemplateColumn Title="Actions" Align="Align.Center">
+                    <div class="btn-group">
+                        <a class="btn btn-secondary" href="/app/papers/view/@context.Id">View</a>
+                        <a class="btn btn-secondary" href="/app/papers/edit/@context.Id">Edit</a>
+                    </div>
+                </TemplateColumn>
+            </QuickGrid>
+        </div>
+        @if (!filtered.Any())
+        {
+            <p class="lead text-center py-3">No papers match "@search".</p>
+        }
+    }
 }
 
 @code {
     [Parameter]
     public int? Year { get; set; }
     private List<Sale> sales;
+    private string _search;
+    private string search { get { return _search; } set { _search = value; Filter(); } }
+    private IQueryable<Sale> filtered = Enumerable.Empty<Sale>().AsQueryable();
 
     protected override async Task OnParametersSetAsync()
     {
         if (!Year.HasValue)
             Year = DateTime.Today.Year;
         sales = await auth.Client.GetFromJsonAsync<List<Sale>>($"/api/sale/{Year}");
+        Filter();
         await base.OnParametersSetAsync();
+    }
+
+    private void Filter()
+    {
+        IEnumerable<Sale> s = sales ?? Enumerable.Empty<Sale>();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            string q = search.ToUpper();
+            s = s.Where(x => x.Buyers().ToUpper().Contains(q) || x.Car.Name().ToUpper().Contains(q));
+        }
+        filtered = s.AsQueryable();
     }
 }

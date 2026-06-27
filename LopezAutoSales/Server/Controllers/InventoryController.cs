@@ -1,16 +1,17 @@
-﻿using Duende.IdentityServer.Extensions;
+﻿using LopezAutoSales.Server.Storage;
 using LopezAutoSales.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace LopezAutoSales.Server.Controllers
 {
@@ -20,13 +21,13 @@ namespace LopezAutoSales.Server.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<InventoryController> _logger;
-        private readonly IWebHostEnvironment _env;
+        private readonly IImageStorage _storage;
 
-        public InventoryController(ApplicationDbContext context, ILogger<InventoryController> logger, IWebHostEnvironment env)
+        public InventoryController(ApplicationDbContext context, ILogger<InventoryController> logger, IImageStorage storage)
         {
             _context = context;
             _logger = logger;
-            _env = env;
+            _storage = storage;
         }
 
         [HttpGet]
@@ -35,6 +36,7 @@ namespace LopezAutoSales.Server.Controllers
             List<Car> cars = _context.Cars.AsNoTracking().Where(x => x.IsListed).Include(x => x.Pictures).ToList();
             if (!User.IsInRole("Admin"))
                 cars.ForEach(x => x.BoughtPrice = null);
+            cars.ForEach(x => ResolveUrls(x.Pictures));
             return Ok(cars);
         }
 
@@ -42,10 +44,12 @@ namespace LopezAutoSales.Server.Controllers
         public IActionResult GetCar(int id)
         {
             Car car = _context.Cars.AsNoTracking().Include(x => x.Pictures).FirstOrDefault(x => x.Id == id);
-            if (car == null)
-                return BadRequest();
+            // Non-admins may only view listed cars (no id-enumeration of sold/unlisted).
+            if (car == null || (!car.IsListed && !User.IsInRole("Admin")))
+                return NotFound();
             if (!User.IsInRole("Admin"))
                 car.BoughtPrice = null;
+            ResolveUrls(car.Pictures);
             return Ok(car);
         }
 
@@ -55,7 +59,11 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
-            _logger.LogInformation($"{User.GetDisplayName()} ADDED {car.Name()} FOR {car.ListPrice}");
+            // Guard against listing the same physical car twice — SellVehicle matches by
+            // VIN among listed cars, so a duplicate listing corrupts the sell flow + reports.
+            if (!string.IsNullOrWhiteSpace(car.VIN) && _context.Cars.Any(x => x.IsListed && x.VIN.ToUpper() == car.VIN.ToUpper()))
+                return BadRequest(new[] { $"A listed vehicle with VIN {car.VIN} is already in inventory." });
+            _logger.LogInformation($"{User.Identity?.Name} ADDED {car.Name()} FOR {car.ListPrice}");
             car.IsListed = true;
             car.Date = DateTime.Now;
             _context.Cars.Add(car);
@@ -69,8 +77,8 @@ namespace LopezAutoSales.Server.Controllers
         {
             Car car = _context.Cars.FirstOrDefault(x => x.Id == id);
             if (car == null)
-                return BadRequest("Car was not found.");
-            _logger.LogInformation($"{User.GetDisplayName()} EDITED {car.Name()} FOR {car.ListPrice}");
+                return NotFound("Car was not found.");
+            _logger.LogInformation($"{User.Identity?.Name} EDITED {car.Name()} FOR {car.ListPrice}");
             car.Update(data);
             car.IsSalvage = data.IsSalvage;
             car.JsonData = data.JsonData;
@@ -81,29 +89,29 @@ namespace LopezAutoSales.Server.Controllers
 
         [HttpDelete("picture/{id}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult RemovePicture(int id)
+        public async Task<IActionResult> RemovePicture(int id)
         {
             int newThumbnailId = 0;
             Picture picture = _context.Pictures.Find(id);
             if (picture == null)
-                return BadRequest("Picture was not found.");
-            if (System.IO.File.Exists(FullPath(picture.URL)))
-                System.IO.File.Delete(FullPath(picture.URL));
+                return NotFound("Picture was not found.");
+
+            Picture otherPicture = null;
             if (picture.IsThumbnail)
             {
-                if (System.IO.File.Exists(FullPath(picture.ThumbnailURL())))
-                    System.IO.File.Delete(FullPath(picture.ThumbnailURL()));
-
-                Picture otherPicture = _context.Pictures.FirstOrDefault(x => x.Id != id && x.CarId == picture.CarId);
+                otherPicture = _context.Pictures.FirstOrDefault(x => x.Id != id && x.CarId == picture.CarId);
                 if (otherPicture != null)
                 {
-                    CreateThumbnail(otherPicture);
                     otherPicture.IsThumbnail = true;
                     newThumbnailId = otherPicture.Id;
                 }
             }
             _context.Remove(picture);
             _context.SaveChanges();
+
+            // Storage cleanup after the DB commit — orphaned blobs are tolerated, but
+            // a failed SaveChanges must not leave records pointing at deleted blobs.
+            await _storage.DeleteAsync(picture.URL);
             return Ok(newThumbnailId);
         }
 
@@ -113,19 +121,14 @@ namespace LopezAutoSales.Server.Controllers
         {
             Car car = _context.Cars.Include(x => x.Pictures).FirstOrDefault(x => x.Id == carId);
             if (car == null)
-                return BadRequest();
+                return NotFound();
 
             Picture picture = car.Pictures.FirstOrDefault(x => x.Id == pictureId);
             if (picture == null)
-                return BadRequest();
-            List<Picture> thumbnails = car.Pictures.Where(x => x.IsThumbnail).ToList();
-            foreach (Picture removable in thumbnails)
-            {
+                return NotFound();
+            // IsThumbnail is just the cover-photo flag now; no thumbnail file to regenerate.
+            foreach (Picture removable in car.Pictures.Where(x => x.IsThumbnail))
                 removable.IsThumbnail = false;
-                if (System.IO.File.Exists(FullPath(removable.ThumbnailURL())))
-                    System.IO.File.Delete(FullPath(removable.ThumbnailURL()));
-            }
-            CreateThumbnail(picture);
             picture.IsThumbnail = true;
             _context.SaveChanges();
             return Ok();
@@ -133,83 +136,126 @@ namespace LopezAutoSales.Server.Controllers
 
         [HttpPost("upload/{id}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult AddPictures(int id)
+        [RequestSizeLimit(100_000_000)]
+        public async Task<IActionResult> AddPictures(int id)
         {
             if (!HttpContext.Request.Form.Files.Any())
                 return BadRequest("No images uploaded.");
             Car car = _context.Cars.Include(x => x.Pictures).FirstOrDefault(x => x.Id == id);
             if (car == null)
-                return BadRequest("Car not found.");
-            HandleImages(car);
+                return NotFound("Car not found.");
+            (List<Picture> added, int skipped) = await HandleImagesAsync(car);
             _context.SaveChanges();
-            return Ok(car.Pictures);
+            ResolveUrls(added);
+            // Tell the client if any files were rejected (not an image / too large / corrupt)
+            // so a partial upload doesn't look like a clean success.
+            if (skipped > 0)
+                Response.Headers["X-Skipped-Files"] = skipped.ToString();
+            return Ok(added);
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult DeleteVehicle(int id)
+        public async Task<IActionResult> DeleteVehicle(int id)
         {
-            Car car = _context.Cars.FirstOrDefault(x => x.Id == id);
+            Car car = _context.Cars.Include(x => x.Pictures).FirstOrDefault(x => x.Id == id);
 
             if (car == null)
-                return BadRequest("Car was not found.");
+                return NotFound("Car was not found.");
             if (!car.IsListed)
                 return BadRequest("Cannot remove cars that are not listed.");
 
-            _logger.LogInformation($"{User.GetDisplayName()} DELETED {car.Name()}");
+            _logger.LogInformation($"{User.Identity?.Name} DELETED {car.Name()}");
+            List<Picture> pictures = car.Pictures.ToList();
             _context.Remove(car);
             _context.SaveChanges();
+
+            // Remove blobs after the DB commit so a failed save can't orphan records.
+            foreach (Picture picture in pictures)
+                await _storage.DeleteAsync(picture.URL);
             return Ok();
         }
 
         #region Helpers
 
-        public void HandleImages(Car car)
+        // Rewrites stored object keys to absolute public URLs for display. Safe to call
+        // on materialized entities once they are no longer going to be saved.
+        private void ResolveUrls(IEnumerable<Picture> pictures)
+        {
+            foreach (Picture picture in pictures)
+                picture.URL = _storage.PublicUrl(picture.URL);
+        }
+
+        // Reject images larger than this many pixels (decompression-bomb guard).
+        private const long MaxPixels = 100_000_000;
+
+        // Returns the pictures actually stored and the count of files that were skipped
+        // (undecodable, oversized, or failed mid-processing). One bad file never aborts
+        // the rest of the batch.
+        private async Task<(List<Picture> Added, int Skipped)> HandleImagesAsync(Car car)
         {
             List<Picture> pictures = new List<Picture>();
             bool hasThumbnail = car.Pictures.Any(x => x.IsThumbnail);
+            int skipped = 0;
             foreach (var file in HttpContext.Request.Form.Files)
             {
-                Picture picture = new Picture
+                try
                 {
-                    CarId = car.Id,
-                    IsThumbnail = false,
-                    URL = Path.Combine("Images", file.FileName)
-                };
-                if (System.IO.File.Exists(FullPath(picture.URL)))
-                    System.IO.File.Delete(FullPath(picture.URL));
-                pictures.Add(picture);
-                using Image image = Image.Load(file.OpenReadStream());
-                image.Mutate(x => x.AutoOrient());
-                image.Save(FullPath(picture.URL));
-                if (!hasThumbnail)
+                    // Buffer so we can inspect the header before decoding the full image.
+                    using MemoryStream buffer = new MemoryStream();
+                    await file.CopyToAsync(buffer);
+                    buffer.Position = 0;
+
+                    IImageInfo info = Image.Identify(buffer);
+                    buffer.Position = 0;
+                    if (info == null || (long)info.Width * info.Height > MaxPixels)
+                    {
+                        skipped++;
+                        _logger.LogWarning("Skipped upload {File}: not a decodable image or exceeds the pixel limit.", file.FileName);
+                        continue;
+                    }
+
+                    using Image image = Image.Load(buffer, out IImageFormat format);
+                    image.Mutate(x => x.AutoOrient());
+
+                    // Key from a GUID + the *detected* format (never the client filename),
+                    // so uploads can't collide/overwrite or smuggle a wrong extension.
+                    string extension = format.FileExtensions.FirstOrDefault() ?? "img";
+                    Picture picture = new Picture
+                    {
+                        CarId = car.Id,
+                        IsThumbnail = false,
+                        URL = $"Images/{Guid.NewGuid():N}.{extension}"
+                    };
+
+                    // Store the blob first; only track the record once the blob exists.
+                    await SaveImageAsync(image, format, picture.URL);
+                    pictures.Add(picture);
+                    // The car's first picture becomes its cover (IsThumbnail). Display sizes
+                    // are produced on the fly by Cloudflare resizing — no thumbnail file.
+                    if (!hasThumbnail)
+                    {
+                        picture.IsThumbnail = true;
+                        hasThumbnail = true;
+                    }
+                }
+                catch (Exception ex)
                 {
-                    CreateThumbnail(picture);
-                    picture.IsThumbnail = true;
-                    hasThumbnail = true;
+                    skipped++;
+                    _logger.LogError(ex, "Skipped upload {File}: processing failed.", file.FileName);
                 }
             }
             _context.Pictures.AddRange(pictures);
+            return (pictures, skipped);
         }
 
-        private void CreateThumbnail(Picture picture)
+        private async Task SaveImageAsync(Image image, IImageFormat format, string key)
         {
-            try
-            {
-                using Image image = Image.Load(FullPath(picture.URL));
-                double ratio = Constants.ThumbnailSize / (double)image.Width;
-                image.Mutate(x => x.AutoOrient().Resize((int)(image.Width * ratio), (int)(image.Height * ratio)));
-                image.Save(FullPath(picture.ThumbnailURL()));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-            }
-        }
-
-        private string FullPath(string path)
-        {
-            return Path.Combine(_env.WebRootPath, path);
+            IImageEncoder encoder = Configuration.Default.ImageFormatsManager.FindEncoder(format);
+            using MemoryStream ms = new MemoryStream();
+            image.Save(ms, encoder);
+            ms.Position = 0;
+            await _storage.SaveAsync(key, ms, format.DefaultMimeType);
         }
 
         #endregion Helpers

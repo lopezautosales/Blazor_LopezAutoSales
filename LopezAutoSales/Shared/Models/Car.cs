@@ -44,8 +44,18 @@ namespace LopezAutoSales.Shared.Models
 
         public void DeserializeJson()
         {
-            if (!string.IsNullOrEmpty(JsonData))
+            if (string.IsNullOrEmpty(JsonData))
+                return;
+            try
+            {
                 Data = JsonSerializer.Deserialize<CarData>(JsonData);
+            }
+            catch (JsonException)
+            {
+                // Tolerate a malformed/truncated blob instead of failing the page; the
+                // decoded NHTSA specs just won't be shown for that car.
+                Data = null;
+            }
         }
 
         public void Update(Car car)
@@ -62,6 +72,13 @@ namespace LopezAutoSales.Shared.Models
         public string MileageString()
         {
             return Mileage.HasValue ? Mileage.Value.ToString("N0") : "Exempt";
+        }
+
+        // Full customer-facing form so callers don't hard-append " mi" — which turned
+        // an exempt-odometer car into the nonsensical "Exempt mi".
+        public string MileageDisplay()
+        {
+            return Mileage.HasValue ? $"{Mileage.Value:N0} mi" : "Mileage exempt";
         }
 
         public string TitleStatus()
