@@ -42,7 +42,14 @@ else
             </TemplateColumn>
             <PropertyColumn Title="List Price" Property="@(c => c.ListPrice)" Format="C" Sortable="true" Align="Align.Center" />
             <TemplateColumn Title="Salvage" SortBy="@(GridSort<Car>.ByAscending(c => c.IsSalvage))" Align="Align.Center">
-                <input class="form-check-input position-static" disabled type="checkbox" checked="@context.IsSalvage" />
+                @if (context.IsSalvage)
+                {
+                    <span class="badge text-bg-warning">Salvage</span>
+                }
+                else
+                {
+                    <span class="text-muted">Clean</span>
+                }
             </TemplateColumn>
             <TemplateColumn Title="Actions" Align="Align.Center">
                 <div class="btn-group" role="group">
