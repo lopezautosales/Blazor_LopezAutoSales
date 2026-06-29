@@ -125,12 +125,6 @@ else
     <div class="text-end fw-bold">
         Balance: @account.Balance().ToString("C")
     </div>
-    @if (!account.IsRepossessed)
-    {
-        <div class="no-print text-end mt-2">
-            <button class="btn btn-danger" type="button" @onclick="Repossess">Mark Repossessed</button>
-        </div>
-    }
     <div class="table-responsive mt-5 no-print">
         <table class="table table-striped text-center">
             <thead>
@@ -166,6 +160,10 @@ else
                             <a class="btn btn-secondary" href="/app/papers/view/@account.SaleId" target="_blank">View Papers</a>
                             <a class="btn btn-secondary" href="/app/papers/edit/@account.SaleId" target="_blank">Edit Papers</a>
                         </div>
+                        @if (!account.IsRepossessed)
+                        {
+                            <button class="btn btn-outline-danger ms-2 no-print" type="button" @onclick="Repossess">Mark Repossessed</button>
+                        }
                     </td>
                 </tr>
             </tbody>
@@ -248,7 +246,7 @@ else
 
     private async Task Repossess()
     {
-        if (!await js.InvokeAsync<bool>("confirm", $"Mark this account repossessed? The remaining balance of {account.Balance().ToString("C")} will be written off and the account will drop off the payments list."))
+        if (!await js.InvokeAsync<bool>("confirm", $"Mark this account as REPOSSESSED for {account.Sale.Buyers()} ({account.Sale.Car.Name()})?\n\nThe remaining balance of {account.Balance().ToString("C")} will be written off and the account will drop off the payments list. This can't be undone here."))
             return;
         var response = await auth.Client.PostAsync($"/api/account/repossess/{Id}", null);
         if (response.IsSuccessStatusCode)
