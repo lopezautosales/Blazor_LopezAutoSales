@@ -23,12 +23,13 @@
             Loading...
         </div>
     </div>
-    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/site.js"></script>
     <script>
-        navigator.serviceWorker.register('service-worker.js');
+        // Scope the worker to the admin app only — the public, server-rendered storefront
+        // (/, /view, /about) must never be served from the SW cache, so it can't go stale.
+        navigator.serviceWorker.register('service-worker.js', { scope: '/app/' });
     </script>
 </body>
 

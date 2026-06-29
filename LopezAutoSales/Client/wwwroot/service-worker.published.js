@@ -20,10 +20,14 @@ async function onInstall(event) {
         .filter(asset => !offlineAssetsExclude.some(pattern => pattern.test(asset.url)))
         .map(asset => new Request(asset.url, { integrity: asset.hash }));
 
-    // Also cache authentication configuration
-    assetsRequests.push(new Request('_configuration/LopezAutoSales.Client'));
-
     await caches.open(cacheName).then(cache => cache.addAll(assetsRequests));
+
+    // Activate this build on the next load instead of waiting for every tab to close,
+    // so a redeploy's assets apply promptly (prevents returning visitors getting stale
+    // CSS). NOTE: the old `_configuration/LopezAutoSales.Client` precache entry was
+    // removed — it's an IdentityServer endpoint that 404s under cookie auth, so
+    // cache.addAll() rejected and the worker failed to install/update at all.
+    await self.skipWaiting();
 }
 
 async function onActivate(event) {
@@ -34,6 +38,9 @@ async function onActivate(event) {
     await Promise.all(cacheKeys
         .filter(key => key.startsWith(cacheNamePrefix) && key !== cacheName)
         .map(key => caches.delete(key)));
+
+    // Take control of already-open pages immediately.
+    await self.clients.claim();
 }
 
 async function onFetch(event) {
