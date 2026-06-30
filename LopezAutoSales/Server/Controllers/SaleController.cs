@@ -29,7 +29,7 @@ namespace LopezAutoSales.Server.Controllers
         {
             DateTime start = new DateTime(year, 1, 1);
             DateTime end = start.AddYears(1);
-            List<Sale> sales = _context.Sales.AsNoTracking().Where(x => x.Date >= start && x.Date < end).OrderByDescending(x => x.Date).Include(x => x.Car).ToList();
+            List<Sale> sales = _context.Sales.AsNoTracking().Where(x => x.Date >= start && x.Date < end).OrderByDescending(x => x.Date).Include(x => x.Car).Include(x => x.Account).ToList();
             return Ok(sales);
         }
 

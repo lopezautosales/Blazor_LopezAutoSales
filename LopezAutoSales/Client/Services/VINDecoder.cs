@@ -1,5 +1,6 @@
 ﻿using LopezAutoSales.Shared.Models;
 using Microsoft.JSInterop;
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -23,7 +24,20 @@ namespace LopezAutoSales.Client
         public async Task TryDecodeAsync(Car car)
         {
             if (DecodedVIN != car.VIN)
-                JsonData = await _client.GetStringAsync(string.Format(Path, car.VIN));
+            {
+                try
+                {
+                    JsonData = await _client.GetStringAsync(string.Format(Path, car.VIN));
+                }
+                catch (Exception)
+                {
+                    // NHTSA is a best-effort third party. If it's unreachable we must NOT
+                    // throw — an unhandled exception here bubbles to the ErrorBoundary and
+                    // wipes the in-progress vehicle/sale entry. Let the user type details in.
+                    await _js.InvokeVoidAsync("alert", "The VIN decoder is unavailable right now — enter the vehicle details manually.");
+                    return;
+                }
+            }
             else if (car.JsonData == JsonData)
                 return;
 

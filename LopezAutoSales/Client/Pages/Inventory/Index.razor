@@ -1,4 +1,4 @@
-﻿@page "/app/inventory"
+@page "/app/inventory"
 @attribute [Authorize(Roles = "Admin")]
 @inject AuthHttp auth
 @inject CarManager carManager
@@ -12,95 +12,68 @@
         <a href="/app/inventory/add" class="btn btn-secondary"><i class="mdi mdi-plus"></i> Add Vehicle</a>
     </div>
 </div>
-@if (inventory is null)
+@if (cars is null)
 {
     <p class="lead">Loading...</p>
 }
-else if (inventory.Cars.Count() == 0)
+else if (!cars.Any())
 {
     <p class="lead">There's currently no active vehicles in inventory.</p>
 }
 else
 {
     <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="text-center">
-                <tr>
-                    <th scope="col">
-                        <button type="button" class="th-sort" @onclick="() => inventory.Sort(Inventory.SortMethod.Year)">
-                            Year <Chevron Down="inventory.Method == Inventory.SortMethod.Year" />
-                        </button>
-                    </th>
-                    <th scope="col">
-                        <button type="button" class="th-sort" @onclick="() => inventory.Sort(Inventory.SortMethod.Make)">
-                            Make <Chevron Down="inventory.Method == Inventory.SortMethod.Make" />
-                        </button>
-                    </th>
-                    <th scope="col">
-                        <button type="button" class="th-sort" @onclick="() => inventory.Sort(Inventory.SortMethod.Model)">
-                            Model <Chevron Down="inventory.Method == Inventory.SortMethod.Model" />
-                        </button>
-                    </th>
-                    <th scope="col">
-                        <button type="button" class="th-sort" @onclick="() => inventory.Sort(Inventory.SortMethod.Mileage)">
-                            Mileage <Chevron Down="inventory.Method == Inventory.SortMethod.Mileage" />
-                        </button>
-                    </th>
-                    <th scope="col">
-                        <button type="button" class="th-sort" @onclick="() => inventory.Sort(Inventory.SortMethod.BoughtPrice)">
-                            Bought Price <Chevron Down="inventory.Method == Inventory.SortMethod.BoughtPrice" />
-                        </button>
-                    </th>
-                    <th scope="col">
-                        <button type="button" class="th-sort" @onclick="() => inventory.Sort(Inventory.SortMethod.ListPrice)">
-                            List Price <Chevron Down="inventory.Method == Inventory.SortMethod.ListPrice" />
-                        </button>
-                    </th>
-                    <th scope="col">
-                        <button type="button" class="th-sort" @onclick="() => inventory.Sort(Inventory.SortMethod.Salvage)">
-                            Salvage <Chevron Down="inventory.Method == Inventory.SortMethod.Salvage" />
-                        </button>
-                    </th>
-                    <th scope="col">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="text-center">
-                @foreach (Car car in inventory.Cars)
+        <QuickGrid Items="cars" Class="table table-striped table-hover">
+            <PropertyColumn Property="@(c => c.Year)" Sortable="true" Align="Align.Center" />
+            <PropertyColumn Property="@(c => c.Make)" Sortable="true" IsDefaultSortColumn="true" Align="Align.Center" />
+            <PropertyColumn Property="@(c => c.Model)" Sortable="true" Align="Align.Center" />
+            <TemplateColumn Title="Mileage" SortBy="@(GridSort<Car>.ByAscending(c => c.Mileage))" Align="Align.Center">
+                @context.MileageString()
+            </TemplateColumn>
+            <TemplateColumn Title="Bought Price" SortBy="@(GridSort<Car>.ByAscending(c => c.BoughtPrice))" Align="Align.Center">
+                @if (context.BoughtPrice.HasValue)
                 {
-                    <tr>
-                        <td>
-                            @car.Year
-                        </td>
-                        <td>@car.Make</td>
-                        <td>@car.Model</td>
-                        <td>@car.MileageString()</td>
-                        <td class=@(car.BoughtPrice.HasValue ? string.Empty : "table-danger")>
-                            @car.BoughtPrice?.ToString("C")
-                        </td>
-                        <td>@car.ListPrice.ToString("C")</td>
-                        <td>
-                            <input class="form-check-input position-static" disabled type="checkbox" @bind="car.IsSalvage" />
-                        </td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <a href="/app/warranty/@car.Id" class="btn btn-secondary">Warranty</a>
-                                <a href="/app/inventory/edit/@car.Id" class="btn btn-secondary" @onclick="() => SetData(car)">Edit</a>
-                                <a href="/app/inventory/sell/@car.Id" class="btn btn-secondary">Sell</a>
-                            </div>
-                        </td>
-                    </tr>
+                    @context.BoughtPrice.Value.ToString("C")
                 }
-            </tbody>
-        </table>
+                else
+                {
+                    <span class="badge text-bg-danger">Missing</span>
+                }
+            </TemplateColumn>
+            <PropertyColumn Title="List Price" Property="@(c => c.ListPrice)" Format="C" Sortable="true" Align="Align.Center" />
+            <TemplateColumn Title="Salvage" SortBy="@(GridSort<Car>.ByAscending(c => c.IsSalvage))" Align="Align.Center">
+                @if (context.IsSalvage)
+                {
+                    <span class="badge text-bg-warning">Salvage</span>
+                }
+                else
+                {
+                    <span class="text-muted">Clean</span>
+                }
+            </TemplateColumn>
+            <TemplateColumn Title="Actions" Align="Align.Center">
+                <div class="btn-group" role="group">
+                    <a href="/app/warranty/@context.Id" class="btn btn-secondary">Warranty</a>
+                    <a href="/app/inventory/edit/@context.Id" class="btn btn-secondary" @onclick="() => SetData(context)">Edit</a>
+                    <a href="/app/inventory/sell/@context.Id" class="btn btn-secondary">Sell</a>
+                </div>
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
+    <div class="d-flex justify-content-end gap-4 fw-bold border-top pt-2 mt-2">
+        <span>@cars.Count() in stock</span>
+        <span>List value: @cars.Sum(c => c.ListPrice).ToString("C")</span>
+        <span>Cost: @cars.Sum(c => c.BoughtPrice ?? 0).ToString("C")</span>
     </div>
 }
 
 @code {
-    private Inventory inventory;
+    private IQueryable<Car> cars;
 
     protected override async Task OnInitializedAsync()
     {
-        inventory = new Inventory(await auth.Client.GetFromJsonAsync<IEnumerable<Car>>("/api/inventory"));
+        var result = await auth.Client.GetFromJsonAsync<IEnumerable<Car>>("/api/inventory");
+        cars = result.AsQueryable();
         await base.OnInitializedAsync();
     }
 

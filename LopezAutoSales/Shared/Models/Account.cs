@@ -13,6 +13,11 @@ namespace LopezAutoSales.Shared.Models
         public Sale Sale { get; set; }
 
         public bool IsPaid { get; set; }
+        // Repossession closes the deal: the lot keeps the down payment + payments made and
+        // the vehicle, and writes off the remaining Balance(). The account drops off the
+        // active payments list but the record (sale + payments) is preserved.
+        public bool IsRepossessed { get; set; }
+        public DateTime? RepossessedDate { get; set; }
         [Required]
         [Column(TypeName = "decimal(9,2)")]
         public decimal InitialDue { get; set; }

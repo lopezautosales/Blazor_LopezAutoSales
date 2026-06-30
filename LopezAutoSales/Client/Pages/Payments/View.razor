@@ -10,17 +10,22 @@
 else
 {
     <h1 class="text-center">Payments for @account.Sale.Car.Name()</h1>
-    <h3>@account.Sale.Buyers() @account.Sale.Car.VIN</h3>
+    <h2 class="h4 mb-0">@account.Sale.Buyers()</h2>
+    <p class="text-muted">VIN @account.Sale.Car.VIN</p>
+    @if (account.IsRepossessed)
+    {
+        <div class="alert alert-warning no-print">Repossessed on @account.RepossessedDate?.ToShortDateString() — the remaining balance was written off.</div>
+    }
     <div class="row">
-        <div class="col">
-            <h6>Down Payment: @account.Sale.DownPayment.ToString("C")</h6>
+        <div class="col-12 col-sm-6">
+            <p class="fw-semibold mb-1">Down Payment: @account.Sale.DownPayment.ToString("C")</p>
         </div>
-        <div class="col">
-            <h6>Purchase Date: @account.Sale.Date.ToShortDateString()</h6>
+        <div class="col-12 col-sm-6">
+            <p class="fw-semibold mb-1">Purchase Date: @account.Sale.Date.ToShortDateString()</p>
         </div>
     </div>
-    <h5>Initial Due: @account.InitialDue.ToString("C")</h5>
-    <h4>Payments</h4>
+    <p class="lead">Initial Due: @account.InitialDue.ToString("C")</p>
+    <h2 class="h4">Payments</h2>
     <div class="table-responsive">
         <table class="table table-sm table-hover table-bordered table-striped text-center">
             <thead>
@@ -56,26 +61,31 @@ else
                                         </div>
                                         <div class="modal-body">
                                             <div class="mb-3">
-                                                <label>Original Payment Date:</label>
-                                                <input type="text" value="@payment.Date.ToShortDateString()" readonly class="form-control" />
+                                                <label class="form-label w-100">Original Payment Date:
+                                                    <input type="text" value="@payment.Date.ToShortDateString()" readonly class="form-control" />
+                                                </label>
                                             </div>
                                             <div class="mb-3">
-                                                <label>Original Payment Amount:</label>
-                                                <input type="number" value="@payment.Amount" readonly class="form-control" />
+                                                <label class="form-label w-100">Original Payment Amount:
+                                                    <input type="number" value="@payment.Amount" readonly class="form-control" />
+                                                </label>
                                             </div>
                                         </div>
                                         <div class="modal-body">
                                             <div class="mb-3">
-                                                <label>New Payment Date:</label>
-                                                <input type="date" @bind-value="editPayment.Date" class="form-control" />
+                                                <label class="form-label w-100">New Payment Date:
+                                                    <input type="date" @bind-value="editPayment.Date" class="form-control" />
+                                                </label>
                                             </div>
                                             <div class="mb-3">
-                                                <label>New Payment Amount:</label>
-                                                <input type="number" @bind-value="editPayment.Amount" class="form-control" />
+                                                <label class="form-label w-100">New Payment Amount:
+                                                    <input type="number" @bind-value="editPayment.Amount" class="form-control" />
+                                                </label>
                                             </div>
                                             <div class="mb-3">
-                                                <label>Reason:</label>
-                                                <input type="text" @bind-value="editPayment.Reason" class="form-control" />
+                                                <label class="form-label w-100">Reason:
+                                                    <input type="text" @bind-value="editPayment.Reason" class="form-control" />
+                                                </label>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
@@ -93,16 +103,22 @@ else
     </div>
     <EditForm Model="payment" OnValidSubmit="SubmitPayment">
         <div class="no-print row pt-5">
-            <div class="col-3">
+            <div class="col-6 col-md-3">
                 <label for="PaymentDate">Date:</label>
                 <InputDate class="form-control text-center" placeholder="Payment date..." id="PaymentDate" @bind-Value="payment.Date" />
             </div>
-            <div class="col-3">
+            <div class="col-6 col-md-3">
                 <label for="PaymentAmount">Amount</label>
                 <InputNumber class="form-control text-center" placeholder="Payment amount..." id="PaymentAmount" @bind-Value="payment.Amount" />
             </div>
             <div class="text-end mt-auto col">
-                <button class="btn btn-secondary" type="submit">Submit</button>
+                <button class="btn btn-secondary" type="submit" disabled="@_busy">
+                    @if (_busy)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                    }
+                    Submit
+                </button>
             </div>
         </div>
     </EditForm>
@@ -144,6 +160,10 @@ else
                             <a class="btn btn-secondary" href="/app/papers/view/@account.SaleId" target="_blank">View Papers</a>
                             <a class="btn btn-secondary" href="/app/papers/edit/@account.SaleId" target="_blank">Edit Papers</a>
                         </div>
+                        @if (!account.IsRepossessed)
+                        {
+                            <button class="btn btn-outline-danger ms-2 no-print" type="button" @onclick="Repossess">Mark Repossessed</button>
+                        }
                     </td>
                 </tr>
             </tbody>
@@ -158,6 +178,7 @@ else
     private Account account;
     private Payment payment = new Payment();
     private Payment editPayment = new Payment();
+    private bool _busy;
 
     protected override async Task OnInitializedAsync()
     {
@@ -182,12 +203,20 @@ else
     {
         if (account.Balance() - payment.Amount < 0 && !(await js.InvokeAsync<bool>("confirm", "Balance will be negative. Are you sure?")))
             return;
-        var response = await auth.Client.PostAsJsonAsync("/api/account/payment", payment);
-        if (response.IsSuccessStatusCode)
+        _busy = true;
+        try
         {
-            payment.Id = int.Parse(await response.Content.ReadAsStringAsync());
-            account.Payments.Add(payment);
-            payment = new Payment { AccountId = Id, Amount = account.MonthlyPayment };
+            var response = await auth.Client.PostAsJsonAsync("/api/account/payment", payment);
+            if (response.IsSuccessStatusCode)
+            {
+                payment.Id = int.Parse(await response.Content.ReadAsStringAsync());
+                account.Payments.Add(payment);
+                payment = new Payment { AccountId = Id, Amount = account.MonthlyPayment };
+            }
+        }
+        finally
+        {
+            _busy = false;
         }
     }
 
@@ -213,6 +242,20 @@ else
             editPayment = new Payment { AccountId = Id, Amount = account.MonthlyPayment };
             await js.InvokeVoidAsync("toggleModal", id);
         }
+    }
+
+    private async Task Repossess()
+    {
+        if (!await js.InvokeAsync<bool>("confirm", $"Mark this account as REPOSSESSED for {account.Sale.Buyers()} ({account.Sale.Car.Name()})?\n\nThe remaining balance of {account.Balance().ToString("C")} will be written off and the account will drop off the payments list. This can't be undone here."))
+            return;
+        var response = await auth.Client.PostAsync($"/api/account/repossess/{Id}", null);
+        if (response.IsSuccessStatusCode)
+        {
+            account.IsRepossessed = true;
+            account.RepossessedDate = DateTime.Now;
+        }
+        else
+            await js.InvokeVoidAsync("alert", await response.Content.ReadAsStringAsync());
     }
 
     private async Task Print()

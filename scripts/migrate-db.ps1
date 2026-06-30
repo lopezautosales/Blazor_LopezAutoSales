@@ -56,6 +56,13 @@ $ErrorActionPreference = "Stop"
 # ids that aren't migrated.
 $tables = @('Cars', 'Sales', 'Payments', 'Accounts', 'Lienholders', 'Pictures', 'Address')
 
+# Tables whose primary key is an EF identity ("Id") backed by a Postgres sequence.
+# After a data-only import we reset these sequences to MAX(Id) ourselves -- pgloader's
+# own "reset sequences" has proven unreliable here, and if a sequence is left at 1 the
+# app's first insert collides on the primary key. 'Lienholders' is omitted on purpose:
+# its key is the string column NormalizedName, so it has no sequence.
+$seqTables = @('Cars', 'Sales', 'Payments', 'Accounts', 'Pictures', 'Address')
+
 function Require-Env($name) {
     $val = [Environment]::GetEnvironmentVariable($name)
     if ([string]::IsNullOrWhiteSpace($val)) {
@@ -134,12 +141,34 @@ ALTER SCHEMA 'dbo' RENAME TO 'public';
     if ($LASTEXITCODE -ne 0) { throw "pgloader exited with code $LASTEXITCODE." }
     Write-Host "Import complete." -ForegroundColor Green
 
+    # --- reset identity sequences to MAX(Id) ---
+    # Don't trust pgloader's "reset sequences": if a sequence is left at its default the
+    # app's first insert reuses an existing Id and fails on the primary key. setval(...)
+    # marks the sequence is_called=true so the next nextval() returns MAX(Id)+1.
+    Write-Host "Resetting identity sequences to MAX(Id)..." -ForegroundColor Cyan
+    $setvals = ($seqTables | ForEach-Object {
+        "SELECT setval(pg_get_serial_sequence('""$_""', 'Id'), (SELECT max(""Id"") FROM ""$_""));"
+    }) -join "`n"
+    Save-File "sequences.sql" $setvals
+    Run-Psql "sequences.sql"
+
     # --- verify ---
     if (-not $SkipVerify) {
         Write-Host "Row counts on Railway Postgres (compare to the SQL Server counts before flipping DNS):" -ForegroundColor Cyan
         $counts = ($tables | ForEach-Object { "SELECT '$_' AS t, count(*) FROM ""$_""" }) -join ' UNION ALL '
         Save-File "verify.sql" "$counts ORDER BY t;"
         Run-Psql "verify.sql"
+
+        # After the setval step every sequence should report last_value = MAX(Id) of its
+        # table (a NULL last_value here means the sequence was never set -> first insert
+        # would collide). pg_sequences.last_value is non-NULL only once the sequence has
+        # been called, which setval(..., is_called=true) guarantees.
+        Write-Host "Identity sequences (last_value should equal the table's MAX(Id); next insert = last_value+1):" -ForegroundColor Cyan
+        $seqs = ($seqTables | ForEach-Object {
+            "SELECT '$_' AS t, last_value FROM pg_sequences WHERE schemaname='public' AND sequencename='${_}_Id_seq'"
+        }) -join ' UNION ALL '
+        Save-File "verify-seq.sql" "$seqs ORDER BY t;"
+        Run-Psql "verify-seq.sql"
     }
 }
 finally {

@@ -16,6 +16,7 @@ else
         <p class="eyebrow">Family-owned · Emporia, Kansas</p>
         <h1>Half down.<br />Drive home today.</h1>
         <p class="lead">In-house financing on every vehicle — about $300 a month, no bank required. Here's what's on the lot.</p>
+        <a href="tel:16202086250" class="btn btn-lg mt-2" style="background: var(--amber); color: var(--navy); font-weight: 700;"><i class="mdi mdi-phone"></i> Call (620) 208-6250</a>
     </section>
 
     @if (Model.Cars.Count == 0)
@@ -27,6 +28,12 @@ else
         <div class="section-head">
             <h2>On the Lot</h2>
             <span class="count">@Model.Cars.Count vehicle@(Model.Cars.Count == 1 ? "" : "s")</span>
+        </div>
+        <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+            <span class="count">Sort</span>
+            <a href="/?sort=price-low" class="btn btn-sm @(Model.Sort == "price-high" || Model.Sort == "newest" ? "btn-secondary" : "btn-primary")">Price: Low to High</a>
+            <a href="/?sort=price-high" class="btn btn-sm @(Model.Sort == "price-high" ? "btn-primary" : "btn-secondary")">Price: High to Low</a>
+            <a href="/?sort=newest" class="btn btn-sm @(Model.Sort == "newest" ? "btn-primary" : "btn-secondary")">Newest</a>
         </div>
         <div class="row g-4">
             @foreach (Car car in Model.Cars)
@@ -46,7 +53,7 @@ else
                         </div>
                         <div class="card-body d-flex flex-column">
                             <h3 class="vehicle-name">@car.Name()</h3>
-                            <div class="odo mb-3"><i class="mdi mdi-speedometer"></i> @car.MileageString() mi</div>
+                            <div class="odo mb-3"><i class="mdi mdi-speedometer"></i> @car.MileageDisplay()</div>
                             <div class="price mb-3"><span class="cur">$</span>@car.ListPrice.ToString("N0")</div>
                             <a href="/view/@car.Id" class="btn btn-primary w-100 mt-auto">View Details <i class="mdi mdi-arrow-right"></i></a>
                         </div>
