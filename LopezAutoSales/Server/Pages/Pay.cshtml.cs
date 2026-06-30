@@ -44,6 +44,7 @@ namespace LopezAutoSales.Server.Pages
         public string CarLabel { get; set; }                   // "2015 Ford Focus"
         public string VinMask { get; set; }                    // "VIN •••• 1234"
         public decimal AmountDue { get; set; }                 // LateDue() clamped to Balance()
+        public decimal RemainingBalance { get; set; }          // full payoff — shown so customers can pay it down knowingly
 
         // Surface whether online payments are wired up so the page can degrade gracefully.
         public bool PaymentsAvailable => _checkout.IsConfigured;
@@ -79,13 +80,16 @@ namespace LopezAutoSales.Server.Pages
             }
 
             Found = true;
-            // Show only the amount due this month — never full Balance()/payoff.
-            AmountDue = PaymentMath.AmountDueNow(account.LateDue(), account.Balance());
+            decimal payoff = account.Balance();
+            AmountDue = PaymentMath.AmountDueNow(account.LateDue(), payoff);
+            RemainingBalance = payoff;   // surfaced on the confirm card (the lookup already authenticated them)
             string buyer = account.Sale.Buyer?.Trim() ?? "";   // imported rows could be blank
             MaskedBuyer = buyer.Length > 0 ? $"{buyer[0]}. ••••" : "•••• ••••";
             CarLabel = account.Sale.Car.Name();
             VinMask = $"VIN •••• {account.Sale.Car.VIN[^4..]}";
-            Amount = AmountDue;
+            // Prefill the input with what we'd actually charge: this month's due, or a single
+            // monthly payment for a paid-ahead account — NOT the full payoff.
+            Amount = AmountDue > 0 ? AmountDue : Math.Min(account.MonthlyPayment, payoff);
             Token = _protector.Protect(account.Id.ToString(), TimeSpan.FromMinutes(15));
             return Page();
         }
@@ -127,7 +131,9 @@ namespace LopezAutoSales.Server.Pages
             // Derive the amount server-side; the client value is clamped, never trusted blindly.
             decimal payoff = account.Balance();
             decimal due = PaymentMath.AmountDueNow(account.LateDue(), payoff);
-            decimal amount = PaymentMath.ClampPayment(Amount, due, payoff);
+            // Paid-ahead fallback is one monthly payment, never the whole payoff.
+            decimal defaultWhenNothingDue = Math.Min(account.MonthlyPayment, payoff);
+            decimal amount = PaymentMath.ClampPayment(Amount, due, payoff, defaultWhenNothingDue);
             long cents = PaymentMath.ToCents(amount);
 
             // ForwardedHeaders gives the correct https scheme/host behind Railway's proxy.

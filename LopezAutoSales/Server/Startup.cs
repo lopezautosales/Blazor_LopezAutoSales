@@ -21,6 +21,7 @@ using Serilog;
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 
 namespace LopezAutoSales.Server
@@ -126,23 +127,16 @@ namespace LopezAutoSales.Server
                 options.ClaimsIdentity.UserIdClaimType = ClaimTypes.NameIdentifier);
 
             // Throttle credential endpoints (brute-force / DoS) — Identity lockout alone
-            // doesn't cap request rate.
+            // doesn't cap request rate. Both policies partition by client IP (via
+            // ForwardedHeaders behind Railway's proxy) so one caller can't exhaust the
+            // window for everyone — a plain named FixedWindowLimiter shares ONE global
+            // bucket, which would let any visitor lock out all others.
             services.AddRateLimiter(options =>
             {
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-                options.AddFixedWindowLimiter("auth", w =>
-                {
-                    w.PermitLimit = 8;
-                    w.Window = TimeSpan.FromMinutes(1);
-                    w.QueueLimit = 0;
-                });
-                // Cap public account-lookup attempts on /pay to slow enumeration (IP-keyed).
-                options.AddFixedWindowLimiter("pay-lookup", w =>
-                {
-                    w.PermitLimit = 6;
-                    w.Window = TimeSpan.FromMinutes(1);
-                    w.QueueLimit = 0;
-                });
+                options.AddPolicy("auth", PerIpFixedWindow(permitLimit: 8));
+                // Cap public account-lookup attempts on /pay to slow enumeration, per IP.
+                options.AddPolicy("pay-lookup", PerIpFixedWindow(permitLimit: 6));
             });
 
             // Liveness/readiness for Railway + uptime monitors (incl. DB connectivity).
@@ -187,6 +181,18 @@ namespace LopezAutoSales.Server
             // Backup__Enabled=false, e.g. for local smoke tests with fake R2 creds).
             services.AddHostedService<Services.DatabaseBackupService>();
         }
+
+        // A 1-minute fixed window partitioned by client IP. Unknown IPs (shouldn't happen
+        // behind the proxy) share a single "unknown" bucket.
+        private static Func<HttpContext, RateLimitPartition<string>> PerIpFixedWindow(int permitLimit)
+            => httpContext => RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                factory: _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = permitLimit,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0
+                });
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

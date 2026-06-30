@@ -18,20 +18,29 @@ namespace LopezAutoSales.Tests
         [Fact]
         public void ClampPayment_uses_due_when_no_amount_entered()
         {
-            Assert.Equal(300m, PaymentMath.ClampPayment(null, due: 300m, payoff: 1200m));
+            Assert.Equal(300m, PaymentMath.ClampPayment(null, due: 300m, payoff: 1200m, defaultWhenNothingDue: 250m));
         }
 
         [Fact]
-        public void ClampPayment_falls_back_to_payoff_when_nothing_currently_due()
+        public void ClampPayment_falls_back_to_monthly_default_when_nothing_currently_due()
         {
-            Assert.Equal(1200m, PaymentMath.ClampPayment(null, due: 0m, payoff: 1200m));
+            // Paid-ahead account: a blank/zero submit must NOT charge the full payoff —
+            // it falls back to the supplied monthly default (one payment).
+            Assert.Equal(250m, PaymentMath.ClampPayment(null, due: 0m, payoff: 1200m, defaultWhenNothingDue: 250m));
         }
 
         [Fact]
         public void ClampPayment_never_exceeds_payoff_even_if_customer_overstates()
         {
             // A customer typing 9999 can never charge more than what they owe.
-            Assert.Equal(1200m, PaymentMath.ClampPayment(9999m, due: 300m, payoff: 1200m));
+            Assert.Equal(1200m, PaymentMath.ClampPayment(9999m, due: 300m, payoff: 1200m, defaultWhenNothingDue: 250m));
+        }
+
+        [Fact]
+        public void ClampPayment_allows_explicit_early_payoff()
+        {
+            // Typing the payoff amount is honored exactly (early payoff stays possible).
+            Assert.Equal(1200m, PaymentMath.ClampPayment(1200m, due: 0m, payoff: 1200m, defaultWhenNothingDue: 250m));
         }
 
         [Theory]
@@ -39,9 +48,9 @@ namespace LopezAutoSales.Tests
         [InlineData(-100)]
         public void ClampPayment_floors_non_positive_requests_to_a_dollar(decimal requested)
         {
-            // 0/negative requested falls back to due; with due=0 it would use payoff, so
-            // test the explicit non-positive override path with a small payoff floor.
-            Assert.Equal(1m, PaymentMath.ClampPayment(requested, due: 0m, payoff: 1m));
+            // 0/negative requested falls back to due; with due=0 it uses the monthly default,
+            // so test the floor with a tiny default and payoff.
+            Assert.Equal(1m, PaymentMath.ClampPayment(requested, due: 0m, payoff: 1m, defaultWhenNothingDue: 0m));
         }
 
         [Theory]

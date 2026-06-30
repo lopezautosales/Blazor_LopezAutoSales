@@ -13,13 +13,16 @@ namespace LopezAutoSales.Server.Services
             => Math.Max(0m, Math.Min(lateDue, balance));
 
         // Clamp a customer-entered amount to the range [$1, payoff]. A missing/non-positive
-        // request falls back to the amount due, or the payoff if nothing is currently due.
+        // request falls back to the amount due, or to defaultWhenNothingDue (the monthly
+        // payment) for a paid-ahead account — NEVER silently to the full payoff, which would
+        // let a customer who submits the prefilled $0 get charged their entire balance.
+        // Early payoff is still possible: typing the payoff amount clamps to exactly payoff.
         // The client value is never trusted blindly — it is always clamped server-side.
-        public static decimal ClampPayment(decimal? requested, decimal due, decimal payoff)
+        public static decimal ClampPayment(decimal? requested, decimal due, decimal payoff, decimal defaultWhenNothingDue)
         {
             decimal r = (requested.HasValue && requested.Value > 0)
                 ? requested.Value
-                : (due > 0 ? due : payoff);
+                : (due > 0 ? due : defaultWhenNothingDue);
             return Math.Min(Math.Max(r, 1m), payoff);
         }
 

@@ -46,6 +46,8 @@
                     <dd class="col-7">@Model.VinMask</dd>
                     <dt class="col-5">Amount due now</dt>
                     <dd class="col-7"><strong>@Model.AmountDue.ToString("C")</strong></dd>
+                    <dt class="col-5">Remaining balance</dt>
+                    <dd class="col-7">@Model.RemainingBalance.ToString("C")</dd>
                 </dl>
 
                 @if (Model.PaymentsAvailable)
@@ -58,7 +60,7 @@
                                 <span class="input-group-text">$</span>
                                 <input class="form-control" id="Amount" asp-for="Amount" type="number" step="0.01" min="1" />
                             </div>
-                            <div class="form-text">You can pay the amount due or a different amount up to your balance.</div>
+                            <div class="form-text">Pay the amount due, or any amount up to your remaining balance. Entering more than your balance only charges the balance.</div>
                         </div>
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="mdi mdi-bank"></i> Pay with bank account
