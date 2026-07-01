@@ -23,9 +23,7 @@ else
             <label for="VIN">VIN</label>
             <div class="input-group">
                 <InputText id="VIN" class="form-control" @bind-Value="car.VIN"></InputText>
-                <div class="input-group-append">
-                    <button type="button" class="btn btn-secondary" @onclick="async () => await decoder.TryDecodeAsync(car)">Verify</button>
-                </div>
+                <button type="button" class="btn btn-secondary" @onclick="async () => await decoder.TryDecodeAsync(car)">Verify</button>
             </div>
         </div>
         <div class="row">

@@ -51,13 +51,32 @@ namespace LopezAutoSales.Client
 
         private bool TrySetVariables(Car car)
         {
-            car.DeserializeJson();
-            if (car.Data.Results.Find(x => x.VariableId == 143).Value != "0")
-                return false;
-            car.Year = int.Parse(car.Data.Results.Find(x => x.VariableId == 29).Value);
-            car.Make = car.Data.Results.Find(x => x.VariableId == 26).Value;
-            car.Model = car.Data.Results.Find(x => x.VariableId == 28).Value;
-            return true;
+            // Defensive throughout: malformed NHTSA JSON (null Data, missing variables,
+            // blank year) must not throw — like the HTTP failure above, an exception here
+            // reaches the ErrorBoundary and wipes the in-progress vehicle/sale form.
+            try
+            {
+                car.DeserializeJson();
+                var results = car.Data?.Results;
+                if (results == null)
+                    return false;
+                if (results.Find(x => x.VariableId == 143)?.Value != "0") // 143 = error code
+                    return false;
+                if (!int.TryParse(results.Find(x => x.VariableId == 29)?.Value, out int year))
+                    return false;
+                string make = results.Find(x => x.VariableId == 26)?.Value;
+                string model = results.Find(x => x.VariableId == 28)?.Value;
+                if (string.IsNullOrEmpty(make) || string.IsNullOrEmpty(model))
+                    return false;
+                car.Year = year;
+                car.Make = make;
+                car.Model = model;
+                return true;
+            }
+            catch
+            {
+                return false; // caller alerts "could not be decoded" — manual entry continues
+            }
         }
     }
 }

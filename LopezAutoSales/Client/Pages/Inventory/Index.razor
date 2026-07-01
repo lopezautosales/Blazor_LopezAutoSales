@@ -27,10 +27,10 @@ else
             <PropertyColumn Property="@(c => c.Year)" Sortable="true" Align="Align.Center" />
             <PropertyColumn Property="@(c => c.Make)" Sortable="true" IsDefaultSortColumn="true" Align="Align.Center" />
             <PropertyColumn Property="@(c => c.Model)" Sortable="true" Align="Align.Center" />
-            <TemplateColumn Title="Mileage" SortBy="@(GridSort<Car>.ByAscending(c => c.Mileage))" Align="Align.Center">
+            <TemplateColumn Title="Mileage" SortBy="@(GridSort<Car>.ByAscending(c => c.Mileage))" Align="Align.End">
                 @context.MileageString()
             </TemplateColumn>
-            <TemplateColumn Title="Bought Price" SortBy="@(GridSort<Car>.ByAscending(c => c.BoughtPrice))" Align="Align.Center">
+            <TemplateColumn Title="Bought Price" SortBy="@(GridSort<Car>.ByAscending(c => c.BoughtPrice))" Align="Align.End">
                 @if (context.BoughtPrice.HasValue)
                 {
                     @context.BoughtPrice.Value.ToString("C")
@@ -40,7 +40,7 @@ else
                     <span class="badge text-bg-danger">Missing</span>
                 }
             </TemplateColumn>
-            <PropertyColumn Title="List Price" Property="@(c => c.ListPrice)" Format="C" Sortable="true" Align="Align.Center" />
+            <PropertyColumn Title="List Price" Property="@(c => c.ListPrice)" Format="C" Sortable="true" Align="Align.End" />
             <TemplateColumn Title="Salvage" SortBy="@(GridSort<Car>.ByAscending(c => c.IsSalvage))" Align="Align.Center">
                 @if (context.IsSalvage)
                 {

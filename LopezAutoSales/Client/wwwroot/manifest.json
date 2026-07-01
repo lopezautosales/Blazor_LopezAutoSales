@@ -1,11 +1,17 @@
 {
   "name": "Lopez Auto Sales",
-  "short_name": "Lopez Auto Sales",
-  "start_url": "./app/payments",
+  "short_name": "Lopez Auto",
+  "description": "Inventory and payments app for Lopez Auto Sales, Emporia KS.",
+  "start_url": "/app",
   "display": "standalone",
-  "background_color": "#FFF",
-  "theme_color": "#02bbee",
+  "background_color": "#f6f3ec",
+  "theme_color": "#16243e",
   "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
     {
       "src": "icon-512.png",
       "type": "image/png",

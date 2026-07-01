@@ -52,7 +52,8 @@ else
                 @context.Balance().ToString("C")
             </TemplateColumn>
             <TemplateColumn Title="Late Due" SortBy="@(GridSort<Account>.ByDescending(a => a.LateDue()))" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn="true" Align="Align.End">
-                <span class="@(context.LateDue() > 0 ? "text-danger fw-bold" : null)">@context.LateDue().ToString("C")</span>
+                @* Paid-ahead accounts have a negative LateDue; show them as current, not as a credit. *@
+                <span class="@(context.LateDue() > 0 ? "text-danger fw-bold" : null)">@Math.Max(0m, context.LateDue()).ToString("C")</span>
             </TemplateColumn>
             <TemplateColumn Title="Contract Ends" SortBy="@(GridSort<Account>.ByAscending(a => a.ExpirationDate()))" Align="Align.Center">
                 @context.ExpirationDate().ToShortDateString()
@@ -68,7 +69,8 @@ else
     <div class="d-flex justify-content-end gap-4 fw-bold border-top pt-2">
         <span>Totals (@accounts.Count() shown)</span>
         <span>Balance: @accounts.Sum(x => x.Balance()).ToString("C")</span>
-        <span class="@(accounts.Sum(x => x.LateDue()) > 0 ? "text-danger" : null)">Late Due: @accounts.Sum(x => x.LateDue()).ToString("C")</span>
+        @* Clamp per-account: paid-ahead negatives would offset (understate) real delinquency. *@
+        <span class="@(accounts.Sum(x => Math.Max(0m, x.LateDue())) > 0 ? "text-danger" : null)">Late Due: @accounts.Sum(x => Math.Max(0m, x.LateDue())).ToString("C")</span>
     </div>
     }
 }

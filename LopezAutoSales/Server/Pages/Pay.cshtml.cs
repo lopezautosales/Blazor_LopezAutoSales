@@ -138,6 +138,11 @@ namespace LopezAutoSales.Server.Pages
             decimal defaultWhenNothingDue = Math.Min(account.MonthlyPayment, payoff);
             decimal amount = PaymentMath.ClampPayment(Amount, due, payoff, defaultWhenNothingDue);
             long cents = PaymentMath.ToCents(amount);
+            if (cents < 50) // Stripe's minimum charge — possible when a residual payoff is under $0.50
+            {
+                Message = "Your remaining balance is too small to pay online. Please call us to settle it.";
+                return Page();
+            }
 
             // ForwardedHeaders gives the correct https scheme/host behind Railway's proxy.
             string baseUrl = $"{Request.Scheme}://{Request.Host}";
