@@ -137,6 +137,24 @@ namespace LopezAutoSales.Server
                 options.AddPolicy("auth", PerIpFixedWindow(permitLimit: 8));
                 // Cap public account-lookup attempts on /pay to slow enumeration, per IP.
                 options.AddPolicy("pay-lookup", PerIpFixedWindow(permitLimit: 6));
+                // A bare 429 renders as a blank browser error page — unacceptable for a
+                // customer mid-payment on /pay. API callers still get the plain status.
+                options.OnRejected = async (context, token) =>
+                {
+                    if (context.HttpContext.Request.Path.StartsWithSegments("/api"))
+                        return;
+                    context.HttpContext.Response.ContentType = "text/html; charset=utf-8";
+                    await context.HttpContext.Response.WriteAsync(
+                        "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">" +
+                        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" +
+                        "<title>Too many attempts</title></head>" +
+                        "<body style=\"font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem;text-align:center\">" +
+                        "<h1 style=\"font-size:1.5rem\">Too many attempts</h1>" +
+                        "<p>Please wait a minute and try again.</p>" +
+                        "<p>Need help? Call <a href=\"tel:16202086250\">(620) 208-6250</a>.</p>" +
+                        "<p><a href=\"/pay\">Back to Make a Payment</a></p>" +
+                        "</body></html>", token);
+                };
             });
 
             // Liveness/readiness for Railway + uptime monitors (incl. DB connectivity).

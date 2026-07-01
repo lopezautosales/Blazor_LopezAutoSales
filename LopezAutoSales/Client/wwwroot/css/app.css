@@ -209,8 +209,8 @@ a:focus-visible, button:focus-visible, .btn:focus-visible,
 /* ---- Auth / centered forms ---------------------------------------------- */
 .auth-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 2.25rem; }
 
-/* ---- Info cards (About) -------------------------------------------------- */
-.info-card .info-icon {
+/* ---- Info cards (About) + status icons (/pay/success, /pay/cancelled) ---- */
+.info-icon {
     width: 3rem; height: 3rem; border-radius: .7rem; display: flex; align-items: center; justify-content: center;
     background: var(--amber-soft); color: var(--amber-d); font-size: 1.5rem; margin-bottom: 1rem;
 }

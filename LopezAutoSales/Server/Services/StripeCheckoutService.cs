@@ -2,6 +2,7 @@ using LopezAutoSales.Server.Configuration;
 using Microsoft.Extensions.Options;
 using Stripe;
 using Stripe.Checkout;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -78,6 +79,10 @@ namespace LopezAutoSales.Server.Services
                 ClientReferenceId = accountId.ToString(),
                 SuccessUrl = $"{baseUrl}/pay/success?session_id={{CHECKOUT_SESSION_ID}}",
                 CancelUrl = $"{baseUrl}/pay/cancelled",
+                // The amount is frozen at session creation; Stripe's default expiry is 24h,
+                // during which an in-person payment could make the frozen amount an overcharge.
+                // Stripe's minimum is 30 minutes — 35 leaves headroom for clock skew.
+                ExpiresAt = DateTime.UtcNow.AddMinutes(35),
             };
             Session session = await _sessions.CreateAsync(options);
             return session.Url;

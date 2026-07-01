@@ -26,6 +26,8 @@ namespace LopezAutoSales.Server.Pages
 
         public string Heading { get; set; } = "Thank you";
         public string Detail { get; set; } = "Your payment is being processed.";
+        public decimal? AmountPaid { get; set; }   // proof of what was charged — the customer has nothing else on-screen
+        public string Reference { get; set; }      // PaymentIntent id, quotable when calling the dealership
 
         public async Task<IActionResult> OnGet(string session_id)
         {
@@ -36,6 +38,9 @@ namespace LopezAutoSales.Server.Pages
             try
             {
                 Session session = await _checkout.GetSessionAsync(session_id);
+                if (session.AmountTotal.HasValue)
+                    AmountPaid = session.AmountTotal.Value / 100m;
+                Reference = session.PaymentIntentId;
                 switch (session.PaymentStatus)
                 {
                     case "paid": // card clears immediately

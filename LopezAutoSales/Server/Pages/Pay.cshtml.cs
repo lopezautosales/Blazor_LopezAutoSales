@@ -56,7 +56,8 @@ namespace LopezAutoSales.Server.Pages
             string last4 = (VinLast4 ?? "").Trim().ToUpper();
             string name = (LastName ?? "").Trim().ToLowerInvariant();
             // Uniform response set unconditionally — identical render on miss vs. found.
-            Message = "If we found a matching account, you can continue to payment below.";
+            Message = "If we found a matching account, the payment form will appear below. " +
+                "If it doesn't, double-check your last name and the last 4 of your VIN.";
             if (last4.Length != 4 || name.Length == 0)
             {
                 Found = false;
@@ -65,9 +66,11 @@ namespace LopezAutoSales.Server.Pages
 
             // VIN EndsWith is SQL-translatable; the last-name token match runs in memory
             // because Buyer is a single full-name string.
+            // Repossessed accounts are closed deals — their balance stays positive (write-off
+            // is a flag, not a zeroing) so !IsPaid alone would still offer them for payment.
             var candidates = _context.Accounts.AsNoTracking()
                 .Include(a => a.Payments).Include(a => a.Sale).ThenInclude(s => s.Car)
-                .Where(a => !a.IsPaid && a.Sale.Car.VIN.EndsWith(last4)).ToList();
+                .Where(a => !a.IsPaid && !a.IsRepossessed && a.Sale.Car.VIN.EndsWith(last4)).ToList();
 
             Account account = candidates.FirstOrDefault(a =>
                 a.Sale.Buyer.ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries).Contains(name)
@@ -121,7 +124,7 @@ namespace LopezAutoSales.Server.Pages
 
             Account account = _context.Accounts.AsNoTracking()
                 .Include(a => a.Payments).Include(a => a.Sale).ThenInclude(s => s.Car)
-                .FirstOrDefault(a => a.Id == accountId && !a.IsPaid);
+                .FirstOrDefault(a => a.Id == accountId && !a.IsPaid && !a.IsRepossessed);
             if (account == null)
             {
                 Message = "Account not available.";
@@ -138,7 +141,17 @@ namespace LopezAutoSales.Server.Pages
 
             // ForwardedHeaders gives the correct https scheme/host behind Railway's proxy.
             string baseUrl = $"{Request.Scheme}://{Request.Host}";
-            string url = await _checkout.CreateAchCheckoutUrlAsync(account.Id, cents, account.Sale.Buyers(), baseUrl);
+            string url;
+            try
+            {
+                url = await _checkout.CreateAchCheckoutUrlAsync(account.Id, cents, account.Sale.Buyers(), baseUrl);
+            }
+            catch (Stripe.StripeException ex) // API outage, or a residual payoff below Stripe's $0.50 minimum
+            {
+                _logger.LogError(ex, "Stripe Checkout creation failed for account {Acc} ({Cents} cents)", account.Id, cents);
+                Message = "We couldn't start your payment just now. Please try again in a few minutes, or call us.";
+                return Page();
+            }
             _logger.LogInformation("Stripe Checkout created for account {Acc} ({Cents} cents)", account.Id, cents);
             return Redirect(url); // 302 to checkout.stripe.com (full page, not iframed)
         }

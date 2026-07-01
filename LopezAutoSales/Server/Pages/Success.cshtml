@@ -9,6 +9,14 @@
         <div class="info-icon mx-auto mb-3"><i class="mdi mdi-check-circle-outline"></i></div>
         <h1 class="h3">@Model.Heading</h1>
         <p class="lead">@Model.Detail</p>
+        @if (Model.AmountPaid.HasValue)
+        {
+            <p class="mb-1">Amount: <strong>@Model.AmountPaid.Value.ToString("C")</strong></p>
+        }
+        @if (!string.IsNullOrEmpty(Model.Reference))
+        {
+            <p class="text-muted small">Reference: @Model.Reference</p>
+        }
         <a href="/" class="btn btn-primary mt-3"><i class="mdi mdi-home"></i> Back to inventory</a>
     </div>
 </div>

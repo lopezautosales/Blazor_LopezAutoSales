@@ -94,6 +94,18 @@ namespace LopezAutoSales.Server.Controllers
             }
 
             decimal amount = pi.AmountReceived / 100m; // trust Stripe's settled amount, not the client
+            // The money has already settled, so the payment is always recorded — but flag the
+            // cases that need a human (refund/review): the /pay page blocks repossessed accounts
+            // and clamps to the balance, yet an ACH debit settles days after checkout, so the
+            // account state can change in between.
+            decimal balanceBefore = account.Balance();
+            string flag = "";
+            if (account.IsRepossessed)
+                flag += " [REPOSSESSED — review/refund]";
+            if (amount > balanceBefore)
+                flag += $" [EXCEEDS BALANCE {balanceBefore:C} — review/refund]";
+            if (flag.Length > 0)
+                _logger.LogWarning("Stripe pi {Id} for account {Acc} needs review:{Flag}", pi.Id, accountId, flag);
             Payment payment = new Payment
             {
                 AccountId = accountId,
@@ -102,7 +114,7 @@ namespace LopezAutoSales.Server.Controllers
                 StripePaymentIntentId = pi.Id
             };
             // Balance() BEFORE adding the payment — mirrors AccountController.AddPayment.
-            account.IsPaid = account.Balance() <= amount;
+            account.IsPaid = balanceBefore <= amount;
 
             // Inline audit (don't reuse AccountController.Audit — it reads User.Identity; none here).
             _context.AuditLogs.Add(new AuditLog
@@ -110,7 +122,7 @@ namespace LopezAutoSales.Server.Controllers
                 Timestamp = DateTime.Now,
                 User = "Stripe (online)",
                 Action = "OnlinePaymentRecorded",
-                Details = $"{account.Sale.Buyers()} [{account.Sale.Car.Name()}] {amount:C} via {pi.Id}"
+                Details = $"{account.Sale.Buyers()} [{account.Sale.Car.Name()}] {amount:C} via {pi.Id}{flag}"
             });
             _context.Payments.Add(payment);
             _logger.LogInformation("Online payment {Amt:C} recorded for account {Acc} ({Pi})", amount, accountId, pi.Id);
