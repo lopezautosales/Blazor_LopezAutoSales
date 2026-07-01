@@ -50,9 +50,16 @@ namespace LopezAutoSales.Server.Controllers
                 // Verifies the HMAC signature + 5-minute replay tolerance; throws on mismatch.
                 e = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], _opts.WebhookSecret);
             }
-            catch (StripeException)
+            catch (StripeException ex)
             {
-                return BadRequest(); // bad/missing signature
+                // Bad/missing signature — or an API-version mismatch: the SDK strictly
+                // requires events serialized under ITS pinned version, so a webhook
+                // endpoint created on a different version rejects EVERY event and no
+                // payment ever records. Pin the endpoint's API version to the SDK's
+                // when creating it (docs/stripe-go-live.md). Log loudly so a
+                // misconfiguration is visible immediately, not when a customer calls.
+                _logger.LogError(ex, "Stripe webhook rejected: {Message}", ex.Message);
+                return BadRequest();
             }
 
             switch (e.Type)

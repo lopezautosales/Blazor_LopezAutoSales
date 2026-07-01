@@ -68,7 +68,7 @@ docker run -d --name lopez-app --network lopeznet -p 8099:8080 -e ASPNETCORE_ENV
 # just shows "online payments unavailable". Use `stripe listen` to get a real whsec_… to test webhooks.
 ```
 
-Deployment runbooks: `docs/railway-deploy.md` (hosting + DB + data migration) and `docs/r2-images.md` (image storage).
+Deployment runbooks: `docs/railway-deploy.md` (hosting + DB + data migration), `docs/r2-images.md` (image storage), and `docs/stripe-go-live.md` (flipping /pay to live payments — webhook API-version pinning is the critical gotcha).
 
 ## Conventions & gotchas (non-obvious, easy to break)
 

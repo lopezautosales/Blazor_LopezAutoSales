@@ -39,8 +39,11 @@ namespace LopezAutoSales.Server.Services
             SessionCreateOptions options = new SessionCreateOptions
             {
                 Mode = "payment",
-                // ACH first; card is an optional fallback (higher fees).
-                PaymentMethodTypes = new List<string> { "us_bank_account", "card" },
+                // payment_method_types is deliberately OMITTED — that enables Stripe's
+                // dynamic payment methods: which methods appear (ACH, card, Cash App, …)
+                // and their order is managed in the Dashboard, no deploy needed. ACH
+                // Direct Debit must be enabled there or bank debit won't be offered.
+                // See docs/stripe-go-live.md.
                 LineItems = new List<SessionLineItemOptions>
                 {
                     new SessionLineItemOptions
