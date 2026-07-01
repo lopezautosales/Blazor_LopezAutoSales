@@ -61,7 +61,9 @@ Before switching the env vars to live values, run once end-to-end in test mode:
 2. On `/pay`, look up a real (test DB) account, pay with Stripe's test bank account
    (instant verification) and again with card `4242 4242 4242 4242`.
 3. Confirm: the payment appears in `/app/payments/{id}` with the **Online** badge, the
-   balance drops, and `AuditLogs` has an `OnlinePaymentRecorded` row.
+   balance drops, and `AuditLogs` has an `OnlinePaymentRecorded` row. On the success page,
+   confirm the printable receipt renders (dealership header, masked account, amount,
+   balance, reference) and that **Print receipt** produces clean output (no navbar/footer).
 4. Refund the payment from the Stripe Dashboard → confirm the recorded payment adjusts
    down and the account reopens (`OnlinePaymentAdjusted` audit row).
 5. Check the app logs for any `Stripe webhook rejected` errors — that's the API-version

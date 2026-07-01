@@ -273,6 +273,9 @@ a:focus-visible, button:focus-visible, .btn:focus-visible,
 
 @media print {
     .no-print { display: none; }
+    /* Public chrome (navbar/footer) never belongs on printed output — e.g. the
+       /pay/success receipt a customer prints. */
+    .app-navbar, .site-footer { display: none; }
     .page-break { page-break-before: always; }
     html { font-size: .75rem; line-height: 1.25rem; }
     .form-check-input:checked { appearance: auto; }
