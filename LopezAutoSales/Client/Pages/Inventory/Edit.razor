@@ -85,6 +85,10 @@ else
             <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mt-2">
                 <div class="card card-picture">
                     <img src="@picture.URL" class="card-img-top" alt="@car.Name() photo" />
+                    @if (picture.IsThumbnail)
+                    {
+                        <span class="badge text-bg-warning position-absolute top-0 start-0 m-1">Thumbnail</span>
+                    }
                     <div class="card-body text-center">
                         @if (!picture.IsThumbnail)
                         {

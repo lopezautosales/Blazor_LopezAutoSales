@@ -140,13 +140,15 @@ else
         var rest = specs.Where(p => !highlight.Contains(p.Variable)).OrderBy(p => p.Variable).ToList();
 
         <h2 class="h5 text-muted mb-3">Vehicle details</h2>
-        <div class="text-center">
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 text-center">
             @foreach (CarProperty property in top)
             {
-                <div class="card d-inline-block m-1">
-                    <div class="card-body">
-                        <div class="card-title fw-bold">@property.Variable</div>
-                        <div class="card-text">@property.Value</div>
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body p-2">
+                            <div class="small text-muted">@property.Variable</div>
+                            <div class="fw-semibold">@property.Value</div>
+                        </div>
                     </div>
                 </div>
             }
@@ -155,13 +157,15 @@ else
         {
             <details class="mt-3">
                 <summary class="text-muted">All decoded specs (NHTSA)</summary>
-                <div class="text-center mt-2">
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 text-center mt-1">
                     @foreach (CarProperty property in rest)
                     {
-                        <div class="card d-inline-block m-1">
-                            <div class="card-body">
-                                <div class="card-title fw-bold">@property.Variable</div>
-                                <div class="card-text">@property.Value</div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body p-2">
+                                    <div class="small text-muted">@property.Variable</div>
+                                    <div class="fw-semibold">@property.Value</div>
+                                </div>
                             </div>
                         </div>
                     }

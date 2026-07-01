@@ -153,7 +153,8 @@ else
                         @account.ExpirationDate().ToShortDateString()
                     </td>
                     <td>
-                        @account.LateDue().ToString("C")
+                        @* Clamped like the collections grid — paid-ahead shows current, not a credit. *@
+                        @Math.Max(0m, account.LateDue()).ToString("C")
                     </td>
                     <td>
                         @account.MonthlyPayment.ToString("C")

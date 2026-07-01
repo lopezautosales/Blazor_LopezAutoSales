@@ -36,7 +36,7 @@ else
     else
     {
     <div class="table-responsive">
-        <QuickGrid Items="accounts" Class="table table-striped text-center align-middle">
+        <QuickGrid Items="accounts" Pagination="pagination" Class="table table-striped text-center align-middle">
             <TemplateColumn Title="Status" Align="Align.Center">
                 <span class="badge @StatusBadge(context)">@StatusText(context)</span>
             </TemplateColumn>
@@ -66,6 +66,8 @@ else
             </TemplateColumn>
         </QuickGrid>
     </div>
+    <Paginator State="pagination" />
+    @* Totals stay whole-result-set (all filtered accounts), not per-page. *@
     <div class="d-flex justify-content-end gap-4 fw-bold border-top pt-2">
         <span>Totals (@accounts.Count() shown)</span>
         <span>Balance: @accounts.Sum(x => x.Balance()).ToString("C")</span>
@@ -77,6 +79,7 @@ else
 @code {
     private IEnumerable<Account> results;
     private IQueryable<Account> accounts = Enumerable.Empty<Account>().AsQueryable();
+    private PaginationState pagination = new() { ItemsPerPage = 25 };
     private bool _showPaid = false;
     private bool showPaid { get { return _showPaid; } set { _showPaid = value; Search(); } }
     private bool _pastDueOnly = false;

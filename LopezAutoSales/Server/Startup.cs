@@ -62,6 +62,15 @@ namespace LopezAutoSales.Server
                 options.ForwardLimit = 1;
                 options.KnownIPNetworks.Clear();
                 options.KnownProxies.Clear();
+                // If the platform ever documents stable proxy CIDRs, pin them via
+                // ForwardedHeaders__KnownNetworks (comma-separated, e.g. "10.0.0.0/8").
+                // With networks pinned, X-Forwarded-For from any other source is ignored,
+                // closing the per-IP rate-limit bypass if the container port were ever
+                // directly reachable. Unset = current trust-single-hop behavior.
+                string known = Configuration["ForwardedHeaders:KnownNetworks"];
+                if (!string.IsNullOrWhiteSpace(known))
+                    foreach (string cidr in known.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                        options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(cidr));
             });
 
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -217,13 +226,16 @@ namespace LopezAutoSales.Server
         {
             app.UseForwardedHeaders();
 
-            // Baseline security headers (CSP omitted to avoid breaking the Blazor WASM
-            // bootstrap; X-Frame-Options handles the clickjacking case).
+            // Baseline security headers. The CSP deliberately has NO script-src — the
+            // Blazor WASM bootstrap and the public pages' inline scripts stay untouched —
+            // but object/base/framing injection is closed everywhere (frame-ancestors is
+            // the CSP-standard mirror of X-Frame-Options, which stays for old browsers).
             app.Use(async (context, next) =>
             {
                 context.Response.Headers["X-Content-Type-Options"] = "nosniff";
                 context.Response.Headers["X-Frame-Options"] = "DENY";
                 context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+                context.Response.Headers["Content-Security-Policy"] = "object-src 'none'; base-uri 'self'; frame-ancestors 'none'";
                 await next();
             });
 

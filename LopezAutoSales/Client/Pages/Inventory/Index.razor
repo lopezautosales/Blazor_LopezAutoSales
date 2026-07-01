@@ -23,7 +23,7 @@ else if (!cars.Any())
 else
 {
     <div class="table-responsive">
-        <QuickGrid Items="cars" Class="table table-striped table-hover">
+        <QuickGrid Items="cars" Pagination="pagination" Class="table table-striped table-hover">
             <PropertyColumn Property="@(c => c.Year)" Sortable="true" Align="Align.Center" />
             <PropertyColumn Property="@(c => c.Make)" Sortable="true" IsDefaultSortColumn="true" Align="Align.Center" />
             <PropertyColumn Property="@(c => c.Model)" Sortable="true" Align="Align.Center" />
@@ -60,6 +60,7 @@ else
             </TemplateColumn>
         </QuickGrid>
     </div>
+    <Paginator State="pagination" />
     <div class="d-flex justify-content-end gap-4 fw-bold border-top pt-2 mt-2">
         <span>@cars.Count() in stock</span>
         <span>List value: @cars.Sum(c => c.ListPrice).ToString("C")</span>
@@ -69,6 +70,7 @@ else
 
 @code {
     private IQueryable<Car> cars;
+    private PaginationState pagination = new() { ItemsPerPage = 25 };
 
     protected override async Task OnInitializedAsync()
     {

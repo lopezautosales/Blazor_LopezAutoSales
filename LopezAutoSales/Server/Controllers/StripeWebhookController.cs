@@ -68,6 +68,15 @@ namespace LopezAutoSales.Server.Controllers
                     _logger.LogWarning("Stripe ACH payment failed for session {Id}",
                         (e.Data.Object as Stripe.Checkout.Session)?.Id);
                     break;
+                case "charge.refunded": // dashboard refund, full or partial (AmountRefunded is cumulative)
+                    await ApplyRefundAsync(e.Data.Object as Charge);
+                    break;
+                case "charge.dispute.funds_withdrawn": // ACH/card dispute — money actually left
+                    await ApplyDisputeAsync(e.Data.Object as Dispute, withdrawn: true);
+                    break;
+                case "charge.dispute.funds_reinstated": // dispute won — money came back
+                    await ApplyDisputeAsync(e.Data.Object as Dispute, withdrawn: false);
+                    break;
             }
             return Ok(); // 2xx so Stripe stops retrying — even for events we ignore/dedupe.
         }
@@ -139,6 +148,71 @@ namespace LopezAutoSales.Server.Controllers
                 // Stripe retries, so a settled payment is never silently dropped.
                 _logger.LogInformation("Stripe pi {Id} already recorded (unique index race).", pi.Id);
             }
+        }
+
+        // A dashboard refund reduces the recorded Payment to the charge's still-settled
+        // remainder (Amount - AmountRefunded). Computing an absolute value keeps this
+        // idempotent under duplicate event delivery, including repeated partial refunds.
+        private async Task ApplyRefundAsync(Charge charge)
+        {
+            if (charge?.PaymentIntentId == null)
+                return;
+            Payment payment = await FindOnlinePaymentAsync(charge.PaymentIntentId);
+            if (payment == null)
+                return;
+            decimal newAmount = Math.Max(0, (charge.Amount - charge.AmountRefunded) / 100m);
+            AdjustPayment(payment, newAmount,
+                $"refund of {charge.AmountRefunded / 100m:C} via {charge.PaymentIntentId}");
+            await _context.SaveChangesAsync();
+        }
+
+        // Disputes are relative adjustments (Stripe fires funds_withdrawn once per dispute,
+        // funds_reinstated once if it's won); each adjustment is audit-logged so a human
+        // can reconcile if anything ever double-fires.
+        private async Task ApplyDisputeAsync(Dispute dispute, bool withdrawn)
+        {
+            if (dispute?.PaymentIntentId == null)
+                return;
+            Payment payment = await FindOnlinePaymentAsync(dispute.PaymentIntentId);
+            if (payment == null)
+                return;
+            decimal delta = dispute.Amount / 100m;
+            decimal newAmount = Math.Max(0, payment.Amount + (withdrawn ? -delta : delta));
+            AdjustPayment(payment, newAmount,
+                $"dispute {(withdrawn ? "withdrew" : "reinstated")} {delta:C} via {dispute.PaymentIntentId}");
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task<Payment> FindOnlinePaymentAsync(string paymentIntentId)
+        {
+            Payment payment = await _context.Payments
+                .Include(p => p.Account).ThenInclude(a => a.Payments)
+                .Include(p => p.Account).ThenInclude(a => a.Sale).ThenInclude(s => s.Car)
+                .FirstOrDefaultAsync(p => p.StripePaymentIntentId == paymentIntentId);
+            if (payment == null)
+                // e.g. refund of a charge we never recorded (failed/duplicate pi) — nothing to reverse.
+                _logger.LogWarning("Stripe refund/dispute for pi {Id}: no recorded payment found.", paymentIntentId);
+            return payment;
+        }
+
+        private void AdjustPayment(Payment payment, decimal newAmount, string reason)
+        {
+            if (payment.Amount == newAmount)
+                return; // duplicate delivery — don't pollute the audit trail with no-ops
+            Account account = payment.Account;
+            _logger.LogWarning("Online payment adjusted for account {Acc}: {Old:C} -> {New:C} ({Reason})",
+                account.Id, payment.Amount, newAmount, reason);
+            _context.AuditLogs.Add(new AuditLog
+            {
+                Timestamp = DateTime.Now,
+                User = "Stripe (online)",
+                Action = "OnlinePaymentAdjusted",
+                Details = $"{account.Sale.Buyers()} [{account.Sale.Car.Name()}] {payment.Amount:C} -> {newAmount:C}: {reason}"
+            });
+            payment.Amount = newAmount;
+            // Balance() reflects the mutated tracked payment; reopen the account if the
+            // reversal reintroduced a balance, or close it if a reinstatement finished it.
+            account.IsPaid = account.Balance() <= 0;
         }
     }
 }

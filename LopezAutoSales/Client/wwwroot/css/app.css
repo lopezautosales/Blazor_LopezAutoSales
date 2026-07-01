@@ -220,6 +220,31 @@ a:focus-visible, button:focus-visible, .btn:focus-visible,
 /* Right-aligned numeric grid columns scan better with equal-width digits. */
 .table .col-justify-end { font-variant-numeric: tabular-nums; }
 
+/* Paginator (QuickGrid). Same deal as the sortable headers above — the default
+   theme bundle isn't referenced, so style its markup directly:
+   <div.paginator><div.summary>…</div>
+       <nav><button.go-first><button.go-previous><div.pagination-text>…</div>
+            <button.go-next><button.go-last></nav></div>
+   The buttons are empty elements; the arrows are drawn with ::before glyphs. */
+.paginator {
+    display: flex; align-items: center; justify-content: flex-end; gap: 1rem;
+    padding: .4rem 0; font-size: .9rem; color: var(--steel);
+}
+.paginator nav { display: flex; align-items: center; gap: .25rem; }
+.paginator .pagination-text { margin: 0 .5rem; }
+.paginator button {
+    width: 2rem; height: 2rem; border: 1px solid var(--line); border-radius: .35rem;
+    background: var(--surface); color: var(--navy); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; line-height: 1; padding: 0;
+}
+.paginator button:hover:not(:disabled) { border-color: var(--navy); }
+.paginator button:disabled { opacity: .35; cursor: default; }
+.paginator .go-first::before { content: "«"; }
+.paginator .go-previous::before { content: "‹"; }
+.paginator .go-next::before { content: "›"; }
+.paginator .go-last::before { content: "»"; }
+
 /* ---- Vehicle detail carousel --------------------------------------------- */
 /* Reserve height and keep slides uniform — photos of mixed aspect ratios
    otherwise resize the carousel between slides (and CLS on first load). */
@@ -240,13 +265,15 @@ a:focus-visible, button:focus-visible, .btn:focus-visible,
    Existing app utilities + print rules
    ========================================================================== */
 .card-picture { max-width: 12.5rem; }
+/* Photo-management thumbnails: uniform 4:3 crops so upload rows align. */
+.card-picture .card-img-top { aspect-ratio: 4 / 3; object-fit: cover; background: #eceae3; }
 .pointer { cursor: pointer; }
 .signature { border: 0; border-bottom: 1px solid #000; }
-#placeholder { height: 1.3em; }
+.sig-placeholder { height: 1.3em; }
 
 @media print {
     .no-print { display: none; }
-    #page-break { page-break-before: always; }
+    .page-break { page-break-before: always; }
     html { font-size: .75rem; line-height: 1.25rem; }
     .form-check-input:checked { appearance: auto; }
 
