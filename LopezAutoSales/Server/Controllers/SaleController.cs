@@ -47,6 +47,8 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
+            if (data.TotalDue() < 0)
+                return BadRequest(new string[] { "Total due cannot be negative." });
             _logger.LogInformation($"{User.Identity?.Name} EDITED SALE {data.Id} {data.Buyers()} {data.Car?.Name()}");
             Audit("SaleEdited", $"Sale {data.Id} {data.Buyers()} {data.Car?.Name()}");
             SetLien(data);
@@ -55,8 +57,58 @@ namespace LopezAutoSales.Server.Controllers
             // Update(graph) would otherwise overwrite it from the posted values.
             if (data.Car != null)
                 _context.Entry(data.Car).Property(x => x.BoughtPrice).IsModified = false;
+            // Repossession state is managed via /api/account/repossess, never a sale edit —
+            // the posted account carries whatever was loaded when the form opened.
+            if (data.Account != null)
+            {
+                _context.Entry(data.Account).Property(x => x.IsRepossessed).IsModified = false;
+                _context.Entry(data.Account).Property(x => x.RepossessedDate).IsModified = false;
+            }
+            using var transaction = _context.Database.BeginTransaction();
             _context.SaveChanges();
+            ReconcileAccount(data.Id);
+            transaction.Commit();
             return Ok();
+        }
+
+        // An edited sale changes what's owed; recompute the account from the saved sale so
+        // the client can't strand it (a sale edited down to cash would leave an active,
+        // /pay-able account) or desync it (a raised price would leave IsPaid=true hiding
+        // the new balance). Client-posted account money is never trusted.
+        private void ReconcileAccount(int saleId)
+        {
+            Sale sale = _context.Sales.Include(x => x.Account).ThenInclude(a => a.Payments)
+                .Include(x => x.TradeIn).First(x => x.Id == saleId);
+            Account account = sale.Account;
+            if (sale.TotalDue() <= 0)
+            {
+                if (account == null)
+                    return;
+                if (account.Payments.Count == 0)
+                {
+                    _context.Accounts.Remove(account); // nothing owed, nothing paid — no account
+                }
+                else
+                {
+                    // Payments exist; keep the history but close the account.
+                    account.InitialDue = sale.TotalPayments();
+                    account.IsPaid = true;
+                }
+            }
+            else
+            {
+                if (account == null)
+                {
+                    account = new Account { SaleId = sale.Id, Payments = new List<Payment>() };
+                    _context.Accounts.Add(account);
+                }
+                // TotalPayments = TotalDue + FinanceCharge — matches the contract's
+                // "Total of Payments" disclosure and SaleForm's client-side value.
+                account.InitialDue = sale.TotalPayments();
+                account.IsPaid = account.Balance() <= 0;
+            }
+            if (_context.ChangeTracker.HasChanges())
+                _context.SaveChanges();
         }
 
         [HttpPut("boughtPrice/{id}")]
@@ -97,6 +149,16 @@ namespace LopezAutoSales.Server.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrors());
+            if (sale.TotalDue() < 0)
+                return BadRequest(new string[] { "Total due cannot be negative." });
+            // Recompute account money server-side; the client's values are never trusted.
+            if (sale.TotalDue() == 0)
+                sale.Account = null;
+            else if (sale.Account != null)
+            {
+                sale.Account.InitialDue = sale.TotalPayments();
+                sale.Account.IsPaid = false;
+            }
             if (sale.Date.Date == DateTime.Today)
                 sale.Date = DateTime.Now;
 

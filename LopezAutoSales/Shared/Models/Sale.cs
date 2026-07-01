@@ -95,8 +95,10 @@ namespace LopezAutoSales.Shared.Models
 
         public int MonthsToPay()
         {
-            decimal total = TotalDue();
-            if (total <= 0)
+            // Schedule from TotalPayments, matching Account.InitialDue — so the
+            // contract's "Number of Payments" agrees with the account's payoff term.
+            decimal total = TotalPayments();
+            if (TotalDue() <= 0)
                 return 0;
             if (Account == null || Account.MonthlyPayment == 0)
                 return 0;

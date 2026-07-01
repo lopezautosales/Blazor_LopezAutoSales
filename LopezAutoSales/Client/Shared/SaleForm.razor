@@ -379,7 +379,10 @@
         }
         else
         {
-            Sale.Account.InitialDue = due;
+            // TotalPayments (= TotalDue + FinanceCharge) — must match the contract's
+            // "Total of Payments" disclosure, or a finance charge is disclosed but
+            // never collected. The server recomputes this; the value isn't trusted.
+            Sale.Account.InitialDue = Sale.TotalPayments();
         }
 
         if (!e.Validate())

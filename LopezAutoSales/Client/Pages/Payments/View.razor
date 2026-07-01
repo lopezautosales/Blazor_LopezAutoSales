@@ -48,6 +48,10 @@ else
                         </td>
                         <td>
                             @payment.Amount.ToString("C")
+                            @if (!string.IsNullOrEmpty(payment.StripePaymentIntentId))
+                            {
+                                <span class="badge text-bg-warning ms-1" title="Recorded automatically from a Stripe online payment">Online</span>
+                            }
                         </td>
                         <td class="no-print">
                             @{ string id = $"editPaymentModal{payment.Id}"; }
@@ -213,6 +217,9 @@ else
                 account.Payments.Add(payment);
                 payment = new Payment { AccountId = Id, Amount = account.MonthlyPayment };
             }
+            else
+                // Money-losing failure mode if silent: staff assume the payment saved.
+                await js.InvokeVoidAsync("alert", $"The payment was NOT saved: {await response.Content.ReadAsStringAsync()}");
         }
         finally
         {
@@ -222,6 +229,11 @@ else
 
     private async Task Delete(Payment payment, string id)
     {
+        string online = !string.IsNullOrEmpty(payment.StripePaymentIntentId)
+            ? "\n\nThis payment was recorded automatically from an ONLINE (Stripe) payment. Deleting it here does NOT refund the customer, and the books will no longer match Stripe."
+            : "";
+        if (!await js.InvokeAsync<bool>("confirm", $"Delete the {payment.Amount.ToString("C")} payment dated {payment.Date.ToShortDateString()}?{online}\n\nThis can't be undone."))
+            return;
         editPayment.Id = payment.Id;
         var response = await auth.Client.PostAsJsonAsync($"/api/account/payment/delete", editPayment);
         if (response.IsSuccessStatusCode)
@@ -229,10 +241,15 @@ else
             account.Payments.Remove(payment);
             await js.InvokeVoidAsync("toggleModal", id);
         }
+        else
+            await js.InvokeVoidAsync("alert", $"The payment was NOT deleted: {await response.Content.ReadAsStringAsync()}");
     }
 
     private async Task Save(Payment payment, string id)
     {
+        if (!string.IsNullOrEmpty(payment.StripePaymentIntentId)
+            && !await js.InvokeAsync<bool>("confirm", "This payment was recorded automatically from an online (Stripe) payment. Editing it will make the books disagree with Stripe. Continue?"))
+            return;
         editPayment.Id = payment.Id;
         var response = await auth.Client.PutAsJsonAsync($"/api/account/payment", editPayment);
         if (response.IsSuccessStatusCode)
@@ -242,6 +259,8 @@ else
             editPayment = new Payment { AccountId = Id, Amount = account.MonthlyPayment };
             await js.InvokeVoidAsync("toggleModal", id);
         }
+        else
+            await js.InvokeVoidAsync("alert", $"The changes were NOT saved: {await response.Content.ReadAsStringAsync()}");
     }
 
     private async Task Repossess()
