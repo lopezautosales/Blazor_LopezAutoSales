@@ -8,6 +8,8 @@
     <p class="eyebrow">In-house financing</p>
     <h1>Make a Payment</h1>
     <p>Pay your monthly note online with your bank account. Look up your account below.</p>
+    <p lang="es" class="mb-0">Pague su nota mensual en línea. Busque su cuenta abajo.
+        ¿Prefiere hablar en español? Llámenos al <a href="tel:16202086250">(620)&nbsp;208-6250</a>.</p>
 </div>
 
 <div class="row justify-content-center">
@@ -16,17 +18,18 @@
             <h2 class="h5 mb-3">Find my account</h2>
             <form method="post" asp-page-handler="Lookup" data-single-submit data-busy-text="Looking up&hellip;">
                 <div class="mb-3">
-                    <label class="form-label" for="LastName">Last name</label>
+                    <label class="form-label" for="LastName">Last name <span class="text-muted" lang="es">/ Apellido</span></label>
                     <input class="form-control" id="LastName" asp-for="LastName" autocomplete="off" required />
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="VinLast4">Last 4 of your vehicle's VIN</label>
+                    <label class="form-label" for="VinLast4">Last 4 of your vehicle's VIN <span class="text-muted" lang="es">/ Últimos 4 del VIN</span></label>
                     @* inputmode=text, not numeric — VIN position 14 can be a letter. *@
                     <input class="form-control" id="VinLast4" asp-for="VinLast4" maxlength="4" inputmode="text"
                            autocapitalize="characters" autocomplete="off" placeholder="1234" required />
-                    <div class="form-text">You can find your VIN on your registration or insurance card.</div>
+                    <div class="form-text">You can find your VIN on your registration or insurance card.
+                        <span lang="es">Encuentre el VIN en su registración o tarjeta de seguro.</span></div>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Find my account</button>
+                <button type="submit" class="btn btn-primary w-100">Find my account <span lang="es">/ Buscar mi cuenta</span></button>
             </form>
         </div>
 
@@ -35,6 +38,7 @@
             <div class="alert alert-info">
                 @Model.Message
                 Questions? Call <a href="tel:16202086250">(620) 208-6250</a>.
+                <span lang="es">¿Preguntas? Llámenos.</span>
             </div>
         }
 
@@ -71,14 +75,18 @@
                         <p class="form-text">
                             You'll finish on the next screen — pay by one-time bank debit or by card.
                             Payments are processed securely by Stripe; your bank and card details never touch our servers.
+                            <span lang="es">Terminará en la siguiente pantalla — pago con débito bancario o tarjeta,
+                            procesado de forma segura por Stripe.</span>
                         </p>
                         <button type="submit" class="btn btn-primary w-100">
-                            <i class="mdi mdi-lock"></i> Continue to secure payment
+                            <i class="mdi mdi-lock"></i> Continue to secure payment <span lang="es">/ Continuar al pago seguro</span>
                         </button>
                         <p class="form-text mt-2 mb-0">
                             <i class="mdi mdi-information-outline"></i>
                             Bank payments take a few business days to clear, so they won't show here right away.
                             If you paid online in the last few days, it's already on the way.
+                            <span lang="es">Los pagos bancarios tardan unos días hábiles en procesarse — si pagó en línea
+                            hace poco, ya está en camino.</span>
                         </p>
                     </form>
                 }

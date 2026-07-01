@@ -29,7 +29,9 @@ namespace LopezAutoSales.Server.Pages
             query = sort switch
             {
                 "price-high" => query.OrderByDescending(x => x.ListPrice),
-                "newest" => query.OrderByDescending(x => x.Year),
+                // Arrival date, not model year — repeat shoppers check for what just came in.
+                "newest" => query.OrderByDescending(x => x.Date).ThenByDescending(x => x.Id),
+                "year" => query.OrderByDescending(x => x.Year),
                 _ => query.OrderBy(x => x.ListPrice),
             };
             Cars = query.ToList();

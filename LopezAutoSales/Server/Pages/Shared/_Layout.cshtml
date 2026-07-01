@@ -6,6 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewBag.Title - Lopez Auto Sales</title>
     <meta name="theme-color" content="#16243e" />
+    @{
+        // Default description/og tags for every public page. A page that emits its own
+        // full set (View.cshtml) opts out via ViewData["SuppressDefaultMeta"].
+        bool suppressMeta = ViewData["SuppressDefaultMeta"] as bool? ?? false;
+        string metaDesc = ViewData["Description"] as string
+            ?? "Quality used cars with in-house financing — about half down and $300 a month, no bank required. Lopez Auto Sales, family-owned in Emporia, Kansas.";
+    }
+    @if (!suppressMeta)
+    {
+        <meta name="description" content="@metaDesc" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="@ViewBag.Title - Lopez Auto Sales" />
+        <meta property="og:description" content="@metaDesc" />
+        <meta property="og:site_name" content="Lopez Auto Sales" />
+    }
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Roboto+Mono:wght@500;600&display=swap" rel="stylesheet" />
