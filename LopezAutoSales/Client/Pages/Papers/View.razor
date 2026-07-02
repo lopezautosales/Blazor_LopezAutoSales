@@ -1,5 +1,6 @@
 ﻿@page "/app/papers/view/{id:int}"
 @inject AuthHttp auth
+@inject IJSRuntime js
 @attribute [Authorize(Roles = "Admin")]
 @using LopezAutoSales.Client.Shared.Papers
 
@@ -9,14 +10,17 @@
 }
 else
 {
+    <div class="text-end my-2 no-print">
+        <button class="btn btn-secondary" @onclick="Print"><i class="mdi mdi-printer"></i> Print</button>
+    </div>
     <Contract Sale="sale" />
-    <div id="page-break" />
+    <div class="page-break" />
     <TransferAgreement Sale="sale" />
-    <div id="page-break" />
+    <div class="page-break" />
     <Warranty Car="sale.Car" Amount="sale.Warranty" />
     @if (sale.TotalDue() > 0)
     {
-        <div id="page-break" />
+        <div class="page-break" />
         <PromissoryNote Sale="sale" />
     }
 }
@@ -30,5 +34,10 @@ else
     {
         sale = await auth.Client.GetFromJsonAsync<Sale>($"/api/sale/view/{Id}");
         await base.OnInitializedAsync();
+    }
+
+    private async Task Print()
+    {
+        await js.InvokeVoidAsync("print");
     }
 }

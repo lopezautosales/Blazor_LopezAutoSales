@@ -26,6 +26,15 @@ seeds the admin user. Images live in Cloudflare R2 (see `r2-images.md`).
 Railway injects `PORT` automatically — the app already reads it. On first deploy the app
 creates the schema (`__EFMigrationsHistory` + tables) and seeds the admin user and role.
 
+> **Security constraint — proxy trust.** The app honors `X-Forwarded-For`/`-Proto` from a
+> single hop with no pinned proxy list (Railway's edge proxy IPs aren't stable). That is
+> only safe while the container port is reachable **exclusively** through Railway's proxy —
+> never expose the container port publicly (no TCP proxy to the app port, no host
+> networking), or an attacker can spoof client IPs and bypass the per-IP rate limits on
+> login and /pay. If the platform ever documents stable proxy CIDRs, pin them with
+> `ForwardedHeaders__KnownNetworks` (comma-separated, e.g. `10.0.0.0/8,100.64.0.0/10`) —
+> forwarded headers from any other source are then ignored.
+
 ## 3. Migrating existing data from SQL Server
 
 > Back up the SQL Server database first.

@@ -1,5 +1,6 @@
 using Amazon.Runtime;
 using Amazon.S3;
+using LopezAutoSales.Server.Configuration;
 using LopezAutoSales.Server.Models;
 using LopezAutoSales.Server.Storage;
 using LopezAutoSales.Shared;
@@ -20,6 +21,7 @@ using Serilog;
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 
 namespace LopezAutoSales.Server
@@ -60,6 +62,15 @@ namespace LopezAutoSales.Server
                 options.ForwardLimit = 1;
                 options.KnownIPNetworks.Clear();
                 options.KnownProxies.Clear();
+                // If the platform ever documents stable proxy CIDRs, pin them via
+                // ForwardedHeaders__KnownNetworks (comma-separated, e.g. "10.0.0.0/8").
+                // With networks pinned, X-Forwarded-For from any other source is ignored,
+                // closing the per-IP rate-limit bypass if the container port were ever
+                // directly reachable. Unset = current trust-single-hop behavior.
+                string known = Configuration["ForwardedHeaders:KnownNetworks"];
+                if (!string.IsNullOrWhiteSpace(known))
+                    foreach (string cidr in known.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                        options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(cidr));
             });
 
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -125,16 +136,34 @@ namespace LopezAutoSales.Server
                 options.ClaimsIdentity.UserIdClaimType = ClaimTypes.NameIdentifier);
 
             // Throttle credential endpoints (brute-force / DoS) — Identity lockout alone
-            // doesn't cap request rate.
+            // doesn't cap request rate. Both policies partition by client IP (via
+            // ForwardedHeaders behind Railway's proxy) so one caller can't exhaust the
+            // window for everyone — a plain named FixedWindowLimiter shares ONE global
+            // bucket, which would let any visitor lock out all others.
             services.AddRateLimiter(options =>
             {
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-                options.AddFixedWindowLimiter("auth", w =>
+                options.AddPolicy("auth", PerIpFixedWindow(permitLimit: 8));
+                // Cap public account-lookup attempts on /pay to slow enumeration, per IP.
+                options.AddPolicy("pay-lookup", PerIpFixedWindow(permitLimit: 6));
+                // A bare 429 renders as a blank browser error page — unacceptable for a
+                // customer mid-payment on /pay. API callers still get the plain status.
+                options.OnRejected = async (context, token) =>
                 {
-                    w.PermitLimit = 8;
-                    w.Window = TimeSpan.FromMinutes(1);
-                    w.QueueLimit = 0;
-                });
+                    if (context.HttpContext.Request.Path.StartsWithSegments("/api"))
+                        return;
+                    context.HttpContext.Response.ContentType = "text/html; charset=utf-8";
+                    await context.HttpContext.Response.WriteAsync(
+                        "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">" +
+                        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" +
+                        "<title>Too many attempts</title></head>" +
+                        "<body style=\"font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem;text-align:center\">" +
+                        "<h1 style=\"font-size:1.5rem\">Too many attempts</h1>" +
+                        "<p>Please wait a minute and try again.</p>" +
+                        "<p>Need help? Call <a href=\"tel:16202086250\">(620) 208-6250</a>.</p>" +
+                        "<p><a href=\"/pay\">Back to Make a Payment</a></p>" +
+                        "</body></html>", token);
+                };
             });
 
             // Liveness/readiness for Railway + uptime monitors (incl. DB connectivity).
@@ -166,23 +195,47 @@ namespace LopezAutoSales.Server
             });
             services.AddSingleton<IImageStorage, R2ImageStorage>();
 
+            // Stripe (online note payments) is OPTIONAL — the app must still run without it
+            // (e.g. local smoke tests). So we bind the section but deliberately do NOT
+            // ValidateOnStart: the checkout service exposes IsConfigured and the public /pay
+            // page degrades gracefully when keys are unset. Real TEST keys come from
+            // user-secrets (dev) / env vars (prod): Stripe__SecretKey, Stripe__PublishableKey,
+            // Stripe__WebhookSecret. appsettings.json ships empty placeholders only.
+            services.AddOptions<StripeOptions>().Bind(Configuration.GetSection("Stripe"));
+            services.AddSingleton<Services.IStripeCheckoutService, Services.StripeCheckoutService>();
+
             // Periodic owner-controlled DB backups to the object store (disable with
             // Backup__Enabled=false, e.g. for local smoke tests with fake R2 creds).
             services.AddHostedService<Services.DatabaseBackupService>();
         }
+
+        // A 1-minute fixed window partitioned by client IP. Unknown IPs (shouldn't happen
+        // behind the proxy) share a single "unknown" bucket.
+        private static Func<HttpContext, RateLimitPartition<string>> PerIpFixedWindow(int permitLimit)
+            => httpContext => RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                factory: _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = permitLimit,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0
+                });
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseForwardedHeaders();
 
-            // Baseline security headers (CSP omitted to avoid breaking the Blazor WASM
-            // bootstrap; X-Frame-Options handles the clickjacking case).
+            // Baseline security headers. The CSP deliberately has NO script-src — the
+            // Blazor WASM bootstrap and the public pages' inline scripts stay untouched —
+            // but object/base/framing injection is closed everywhere (frame-ancestors is
+            // the CSP-standard mirror of X-Frame-Options, which stays for old browsers).
             app.Use(async (context, next) =>
             {
                 context.Response.Headers["X-Content-Type-Options"] = "nosniff";
                 context.Response.Headers["X-Frame-Options"] = "DENY";
                 context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+                context.Response.Headers["Content-Security-Policy"] = "object-src 'none'; base-uri 'self'; frame-ancestors 'none'";
                 await next();
             });
 

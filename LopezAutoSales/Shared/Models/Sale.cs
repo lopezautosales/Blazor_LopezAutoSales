@@ -75,7 +75,9 @@ namespace LopezAutoSales.Shared.Models
         {
             if (IsOutOfState)
                 return 0;
-            return Math.Round(TradeDifference() * TaxRate / 100, 2);
+            // Half-up, not banker's rounding — $850.085 must round to $850.09 like tax
+            // authorities (and every receipt the buyer compares against) expect.
+            return Math.Round(TradeDifference() * TaxRate / 100, 2, MidpointRounding.AwayFromZero);
         }
 
         public decimal Subtotal()
@@ -95,8 +97,10 @@ namespace LopezAutoSales.Shared.Models
 
         public int MonthsToPay()
         {
-            decimal total = TotalDue();
-            if (total <= 0)
+            // Schedule from TotalPayments, matching Account.InitialDue — so the
+            // contract's "Number of Payments" agrees with the account's payoff term.
+            decimal total = TotalPayments();
+            if (TotalDue() <= 0)
                 return 0;
             if (Account == null || Account.MonthlyPayment == 0)
                 return 0;

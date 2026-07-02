@@ -36,7 +36,7 @@ else
     else
     {
     <div class="table-responsive">
-        <QuickGrid Items="accounts" Class="table table-striped text-center align-middle">
+        <QuickGrid Items="accounts" Pagination="pagination" Class="table table-striped text-center align-middle">
             <TemplateColumn Title="Status" Align="Align.Center">
                 <span class="badge @StatusBadge(context)">@StatusText(context)</span>
             </TemplateColumn>
@@ -52,7 +52,8 @@ else
                 @context.Balance().ToString("C")
             </TemplateColumn>
             <TemplateColumn Title="Late Due" SortBy="@(GridSort<Account>.ByDescending(a => a.LateDue()))" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn="true" Align="Align.End">
-                <span class="@(context.LateDue() > 0 ? "text-danger fw-bold" : null)">@context.LateDue().ToString("C")</span>
+                @* Paid-ahead accounts have a negative LateDue; show them as current, not as a credit. *@
+                <span class="@(context.LateDue() > 0 ? "text-danger fw-bold" : null)">@Math.Max(0m, context.LateDue()).ToString("C")</span>
             </TemplateColumn>
             <TemplateColumn Title="Contract Ends" SortBy="@(GridSort<Account>.ByAscending(a => a.ExpirationDate()))" Align="Align.Center">
                 @context.ExpirationDate().ToShortDateString()
@@ -65,16 +66,20 @@ else
             </TemplateColumn>
         </QuickGrid>
     </div>
+    <Paginator State="pagination" />
+    @* Totals stay whole-result-set (all filtered accounts), not per-page. *@
     <div class="d-flex justify-content-end gap-4 fw-bold border-top pt-2">
         <span>Totals (@accounts.Count() shown)</span>
         <span>Balance: @accounts.Sum(x => x.Balance()).ToString("C")</span>
-        <span class="@(accounts.Sum(x => x.LateDue()) > 0 ? "text-danger" : null)">Late Due: @accounts.Sum(x => x.LateDue()).ToString("C")</span>
+        @* Clamp per-account: paid-ahead negatives would offset (understate) real delinquency. *@
+        <span class="@(accounts.Sum(x => Math.Max(0m, x.LateDue())) > 0 ? "text-danger" : null)">Late Due: @accounts.Sum(x => Math.Max(0m, x.LateDue())).ToString("C")</span>
     </div>
     }
 }
 @code {
     private IEnumerable<Account> results;
     private IQueryable<Account> accounts = Enumerable.Empty<Account>().AsQueryable();
+    private PaginationState pagination = new() { ItemsPerPage = 25 };
     private bool _showPaid = false;
     private bool showPaid { get { return _showPaid; } set { _showPaid = value; Search(); } }
     private bool _pastDueOnly = false;

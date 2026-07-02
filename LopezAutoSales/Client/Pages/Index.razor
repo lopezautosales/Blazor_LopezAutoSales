@@ -68,9 +68,14 @@ else
     protected override async Task OnInitializedAsync()
     {
         DateTime today = DateTime.Today;
-        List<Car> inventory = await auth.Client.GetFromJsonAsync<List<Car>>("/api/inventory");
-        List<Sale> sales = await auth.Client.GetFromJsonAsync<List<Sale>>($"/api/sale/{today.Year}");
-        List<Acct> accounts = await auth.Client.GetFromJsonAsync<List<Acct>>("/api/account");
+        // Independent fetches — run concurrently; sequential awaits made the landing page ~3x slower.
+        Task<List<Car>> inventoryTask = auth.Client.GetFromJsonAsync<List<Car>>("/api/inventory");
+        Task<List<Sale>> salesTask = auth.Client.GetFromJsonAsync<List<Sale>>($"/api/sale/{today.Year}");
+        Task<List<Acct>> accountsTask = auth.Client.GetFromJsonAsync<List<Acct>>("/api/account");
+        await Task.WhenAll(inventoryTask, salesTask, accountsTask);
+        List<Car> inventory = inventoryTask.Result;
+        List<Sale> sales = salesTask.Result;
+        List<Acct> accounts = accountsTask.Result;
 
         inStock = inventory.Count;
         lotValue = inventory.Sum(x => x.ListPrice);

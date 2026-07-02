@@ -251,7 +251,7 @@ namespace LopezAutoSales.Server.Controllers
 
         private async Task SaveImageAsync(Image image, IImageFormat format, string key)
         {
-            IImageEncoder encoder = Configuration.Default.ImageFormatsManager.FindEncoder(format);
+            IImageEncoder encoder = SixLabors.ImageSharp.Configuration.Default.ImageFormatsManager.FindEncoder(format);
             using MemoryStream ms = new MemoryStream();
             image.Save(ms, encoder);
             ms.Position = 0;

@@ -1,0 +1,83 @@
+@page "/pay/success"
+@using LopezAutoSales.Shared
+@model SuccessModel
+@{
+    ViewBag.Title = "Payment";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6 py-4">
+        <div class="text-center">
+            <div class="info-icon mx-auto mb-3 no-print"><i class="mdi mdi-check-circle-outline"></i></div>
+            <h1 class="h3">@Model.Heading</h1>
+            <p class="lead">@Model.Detail</p>
+        </div>
+
+        @if (Model.AmountPaid.HasValue)
+        {
+            <div class="card p-4 my-3">
+                <div class="text-center mb-3">
+                    <div class="fw-bold">@Dealership.Name</div>
+                    <div class="small text-muted">
+                        @Dealership.Address.Street, @Dealership.Address.City, @Dealership.Address.State @Dealership.Address.ZIP
+                        · @Dealership.Phone
+                    </div>
+                </div>
+                <dl class="row mb-0">
+                    <dt class="col-5">Date</dt>
+                    <dd class="col-7">@DateTime.Now.ToString("MM/dd/yyyy")</dd>
+                    @if (!string.IsNullOrEmpty(Model.MaskedBuyer))
+                    {
+                        <dt class="col-5">Account holder</dt>
+                        <dd class="col-7">@Model.MaskedBuyer</dd>
+                        <dt class="col-5">Vehicle</dt>
+                        <dd class="col-7">@Model.CarLabel</dd>
+                        <dt class="col-5">VIN</dt>
+                        <dd class="col-7">@Model.VinMask</dd>
+                    }
+                    <dt class="col-5">Amount</dt>
+                    <dd class="col-7"><strong>@Model.AmountPaid.Value.ToString("C")</strong></dd>
+                    @if (Model.Balance.HasValue)
+                    {
+                        if (Model.Settled)
+                        {
+                            <dt class="col-5">Remaining balance</dt>
+                            <dd class="col-7">@Model.Balance.Value.ToString("C")</dd>
+                        }
+                        else
+                        {
+                            <dt class="col-5">Balance before this payment</dt>
+                            <dd class="col-7">@Model.Balance.Value.ToString("C")</dd>
+                        }
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Reference))
+                    {
+                        <dt class="col-5">Reference</dt>
+                        <dd class="col-7 text-muted small">@Model.Reference</dd>
+                    }
+                </dl>
+                @if (!Model.Settled)
+                {
+                    <p class="form-text mt-3 mb-0">
+                        Your payment will be applied to the balance once it clears.
+                        <span lang="es">Su pago se aplicará al saldo una vez que se procese.</span>
+                    </p>
+                }
+            </div>
+        }
+
+        <div class="text-center no-print mt-3">
+            @if (Model.AmountPaid.HasValue)
+            {
+                <button type="button" class="btn btn-secondary" onclick="window.print()">
+                    <i class="mdi mdi-printer"></i> Print receipt
+                </button>
+            }
+            <a href="/" class="btn btn-primary ms-2"><i class="mdi mdi-home"></i> Back to inventory</a>
+        </div>
+        <p class="text-center form-text mt-3 no-print">
+            Keep this receipt for your records. Questions? Call <a href="tel:16202086250">(620) 208-6250</a>.
+            <span lang="es">Guarde este recibo. ¿Preguntas? Llámenos.</span>
+        </p>
+    </div>
+</div>

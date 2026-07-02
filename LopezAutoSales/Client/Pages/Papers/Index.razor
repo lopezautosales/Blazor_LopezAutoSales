@@ -32,7 +32,7 @@ else
             <input id="search" type="text" class="form-control" @bind-value="search" @bind-value:event="oninput" />
         </div>
         <div class="table-responsive">
-            <QuickGrid Items="filtered" Class="table table-striped text-center">
+            <QuickGrid Items="filtered" Pagination="pagination" Class="table table-striped text-center">
                 <PropertyColumn Title="Date" Property="@(s => s.Date)" Format="MM/dd/yyyy" Sortable="true" IsDefaultSortColumn="true" InitialSortDirection="SortDirection.Descending" Align="Align.Center" />
                 <TemplateColumn Title="Buyers" SortBy="@(GridSort<Sale>.ByAscending(s => s.Buyer))" Align="Align.Center">
                     @context.Buyers()
@@ -52,6 +52,7 @@ else
                 </TemplateColumn>
             </QuickGrid>
         </div>
+        <Paginator State="pagination" />
         @if (!filtered.Any())
         {
             <p class="lead text-center py-3">No papers match "@search".</p>
@@ -66,6 +67,7 @@ else
     private string _search;
     private string search { get { return _search; } set { _search = value; Filter(); } }
     private IQueryable<Sale> filtered = Enumerable.Empty<Sale>().AsQueryable();
+    private PaginationState pagination = new() { ItemsPerPage = 25 };
 
     protected override async Task OnParametersSetAsync()
     {

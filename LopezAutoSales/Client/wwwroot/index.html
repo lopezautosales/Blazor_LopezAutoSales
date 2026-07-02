@@ -19,8 +19,13 @@
 
 <body>
     <div id="app" class="d-flex flex-column">
-        <div class="text-center my-auto">
-            Loading...
+        <!-- Splash markup is replaced wholesale when Blazor starts; #app's own classes must
+             stay layout-neutral, so the full-viewport centering lives on this inner div. -->
+        <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #16243e; color: #f6f3ec;">
+            <div class="text-center">
+                <div style="font-family: Oswald, 'Source Sans 3', sans-serif; font-size: 1.5rem; letter-spacing: .05em; text-transform: uppercase;">Lopez Auto Sales</div>
+                <div class="spinner-border mt-3" style="color: #f59e0b;" role="status"><span class="visually-hidden">Loading…</span></div>
+            </div>
         </div>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>

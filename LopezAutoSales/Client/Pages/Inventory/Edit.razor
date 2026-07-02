@@ -23,9 +23,7 @@ else
             <label for="VIN">VIN</label>
             <div class="input-group">
                 <InputText id="VIN" class="form-control" @bind-Value="car.VIN"></InputText>
-                <div class="input-group-append">
-                    <button type="button" class="btn btn-secondary" @onclick="async () => await decoder.TryDecodeAsync(car)">Verify</button>
-                </div>
+                <button type="button" class="btn btn-secondary" @onclick="async () => await decoder.TryDecodeAsync(car)">Verify</button>
             </div>
         </div>
         <div class="row">
@@ -87,6 +85,10 @@ else
             <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mt-2">
                 <div class="card card-picture">
                     <img src="@picture.URL" class="card-img-top" alt="@car.Name() photo" />
+                    @if (picture.IsThumbnail)
+                    {
+                        <span class="badge text-bg-warning position-absolute top-0 start-0 m-1">Thumbnail</span>
+                    }
                     <div class="card-body text-center">
                         @if (!picture.IsThumbnail)
                         {
@@ -184,6 +186,8 @@ else
             if (response.Headers.TryGetValues("X-Skipped-Files", out var skipped))
                 await js.InvokeVoidAsync("alert", $"{skipped.First()} file(s) were skipped — not a valid image or too large.");
         }
+        else
+            await js.InvokeVoidAsync("alert", $"The photos were NOT uploaded: {await response.Content.ReadAsStringAsync()}");
     }
 
     private async Task SetThumbnail(Picture picture)

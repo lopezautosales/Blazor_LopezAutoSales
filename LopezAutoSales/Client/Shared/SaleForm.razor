@@ -98,9 +98,7 @@
                 <label for="VIN">VIN:</label>
                 <div class="input-group">
                     <InputText class="form-control" id="VIN" @bind-Value="Sale.Car.VIN" />
-                    <div class="input-group-append no-print">
-                        <button type="button" class="btn btn-secondary" @onclick="async () => await decoder.TryDecodeAsync(Sale.Car)">Verify</button>
-                    </div>
+                    <button type="button" class="btn btn-secondary no-print" @onclick="async () => await decoder.TryDecodeAsync(Sale.Car)">Verify</button>
                 </div>
             </div>
         </div>
@@ -149,9 +147,7 @@
                         <label for="TradeVIN">VIN:</label>
                         <div class="input-group">
                             <InputText class="form-control" id="TradeVIN" @bind-Value="Sale.TradeIn.VIN" />
-                            <div class="input-group-append no-print">
-                                <button type="button" class="btn btn-secondary" @onclick="async () => await decoder.TryDecodeAsync(Sale.TradeIn)">Verify</button>
-                            </div>
+                            <button type="button" class="btn btn-secondary no-print" @onclick="async () => await decoder.TryDecodeAsync(Sale.TradeIn)">Verify</button>
                         </div>
                     </div>
                 </div>
@@ -195,13 +191,9 @@
                                 <InputCheckbox class="form-check-input" id="IsOutOfState" @bind-Value="Sale.IsOutOfState" />
                                 <label class="form-check-label" for="IsOutOfState">Out of State</label>
                                 <div class="input-group w-75 mx-auto">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text">Tax:</div>
-                                    </div>
+                                    <div class="input-group-text">Tax:</div>
                                     <InputNumber class="form-control text-center" @bind-Value="Sale.TaxRate" />
-                                    <div class="input-group-append">
-                                        <div class="input-group-text">%</div>
-                                    </div>
+                                    <div class="input-group-text">%</div>
                                 </div>
                             </th>
                             <td>
@@ -379,7 +371,10 @@
         }
         else
         {
-            Sale.Account.InitialDue = due;
+            // TotalPayments (= TotalDue + FinanceCharge) — must match the contract's
+            // "Total of Payments" disclosure, or a finance charge is disclosed but
+            // never collected. The server recomputes this; the value isn't trusted.
+            Sale.Account.InitialDue = Sale.TotalPayments();
         }
 
         if (!e.Validate())
