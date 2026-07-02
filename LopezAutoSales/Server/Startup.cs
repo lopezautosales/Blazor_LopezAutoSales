@@ -259,7 +259,22 @@ namespace LopezAutoSales.Server
             }
 
             app.UseBlazorFrameworkFiles();
-            app.UseStaticFiles();
+            // Without an explicit Cache-Control, Cloudflare imposes a 4-hour default on
+            // CSS/JS and keeps serving pre-deploy assets. Fingerprinted URLs (?v=<hash>,
+            // from asp-append-version in _Layout) change on every content change, so they
+            // get an immutable year; bare URLs (e.g. the WASM index.html's links) must
+            // revalidate — the ETag makes that a cheap 304. (_framework files are handled
+            // by UseBlazorFrameworkFiles above, which already sends no-cache.)
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    ctx.Context.Response.Headers["Cache-Control"] =
+                        ctx.Context.Request.Query.ContainsKey("v")
+                            ? "public, max-age=31536000, immutable"
+                            : "no-cache";
+                }
+            });
 
             app.UseSerilogRequestLogging();
             app.UseRouting();

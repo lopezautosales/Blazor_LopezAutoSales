@@ -25,9 +25,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Roboto+Mono:wght@500;600&display=swap" rel="stylesheet" />
-    <link href="~/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="~/dist/css/materialdesignicons.min.css" rel="stylesheet" />
-    <link href="~/css/app.css" rel="stylesheet" />
+    @* asp-append-version fingerprints the URL (?v=<content-hash>) so Cloudflare/browsers
+       can't serve a stale copy after a deploy; Startup gives ?v= URLs a long immutable cache. *@
+    <link href="~/css/bootstrap.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/dist/css/materialdesignicons.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/app.css" rel="stylesheet" asp-append-version="true" />
     <script type="application/ld+json">
     {
       "@@context": "https://schema.org",
@@ -135,7 +137,7 @@
             <small style="color: rgba(226,232,240,.55); font-family: 'Roboto Mono', monospace; font-size: .78rem;">&copy; @DateTime.Now.Year Lopez Auto Sales, Inc.</small>
         </div>
     </footer>
-    <script src="~/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
     @RenderSection("Scripts", false)
 </body>
 </html>
