@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject LopezAutoSales.Server.Services.IStripeCheckoutService Checkout
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -72,9 +73,15 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/about"><i class="mdi mdi-information"></i> About</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/pay"><i class="mdi mdi-cash"></i> Make a Payment</a>
-                    </li>
+                    @* Online payments launch by setting the Stripe__* env vars — until then
+                       the nav shows no trace of /pay (the page itself degrades gracefully
+                       if reached by URL). See docs/stripe-go-live.md. *@
+                    @if (Checkout.IsConfigured)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/pay"><i class="mdi mdi-cash"></i> Make a Payment</a>
+                        </li>
+                    }
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="mdi mdi-message"></i> Contact Us
