@@ -1,9 +1,9 @@
 using LopezAutoSales.Server.Storage;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Globalization;
 using System.IO;
@@ -19,12 +19,17 @@ namespace LopezAutoSales.Server.Services
     // store, giving the owner a restorable copy independent of the managed database's own
     // snapshots. Pure .NET — no pg_dump binary or client-version coupling.
     //
-    // Restore (developer, rare): download the newest backups/lopez-*.json.gz from R2,
-    // gunzip, and re-import the arrays into a fresh database. See docs/railway-deploy.md.
+    // Writes through IBackupStorage, which is backed by a private bucket. Snapshots hold
+    // customer names, addresses and payment histories, so they must never be written
+    // through IImageStorage — that bucket is public by design. If backup storage is
+    // unconfigured this service refuses to run rather than fall back to another store.
+    //
+    // Restore (developer, rare): download the newest backups/lopez-*.json.gz from the
+    // private bucket, gunzip, and re-import the arrays into a fresh database.
     public class DatabaseBackupService : BackgroundService
     {
         private readonly IServiceProvider _services;
-        private readonly IImageStorage _storage;
+        private readonly IBackupStorage _storage;
         private readonly ILogger<DatabaseBackupService> _logger;
         private readonly TimeSpan _interval;
         private readonly bool _enabled;
@@ -35,23 +40,32 @@ namespace LopezAutoSales.Server.Services
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        public DatabaseBackupService(IServiceProvider services, IImageStorage storage,
-            IConfiguration config, ILogger<DatabaseBackupService> logger)
+        public DatabaseBackupService(IServiceProvider services, IBackupStorage storage,
+            IOptions<BackupStorageOptions> options, ILogger<DatabaseBackupService> logger)
         {
             _services = services;
             _storage = storage;
             _logger = logger;
-            _enabled = config.GetValue("Backup:Enabled", true);
-            // Default cadence is weekly (168h); override with Backup:IntervalHours.
-            int hours = config.GetValue("Backup:IntervalHours", 168);
-            _interval = TimeSpan.FromHours(hours < 1 ? 1 : hours);
+            BackupStorageOptions o = options.Value;
+            _enabled = o.Enabled;
+            // Default cadence is weekly (168h); override with Backup__IntervalHours.
+            _interval = TimeSpan.FromHours(o.IntervalHours < 1 ? 1 : o.IntervalHours);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             if (!_enabled)
             {
-                _logger.LogInformation("Database backups are disabled (Backup:Enabled=false).");
+                _logger.LogInformation("Database backups are disabled (Backup__Enabled=false).");
+                return;
+            }
+
+            // Fail closed: a missing Backup section means no backups at all, never a
+            // fallback to any other store.
+            if (!_storage.IsConfigured)
+            {
+                _logger.LogError("Database backups are NOT running: the Backup section is missing "
+                    + "Backup__ServiceUrl / Backup__Bucket / Backup__AccessKey / Backup__SecretKey.");
                 return;
             }
 

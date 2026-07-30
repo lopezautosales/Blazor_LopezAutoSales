@@ -204,8 +204,12 @@ namespace LopezAutoSales.Server
             services.AddOptions<StripeOptions>().Bind(Configuration.GetSection("Stripe"));
             services.AddSingleton<Services.IStripeCheckoutService, Services.StripeCheckoutService>();
 
-            // Periodic owner-controlled DB backups to the object store (disable with
-            // Backup__Enabled=false, e.g. for local smoke tests with fake R2 creds).
+            // Periodic owner-controlled DB backups. These go to their own private bucket
+            // with their own credentials, kept separate from the public image bucket above.
+            // Deliberately no ValidateOnStart: the app must still boot unconfigured (local
+            // smoke tests), and DatabaseBackupService fails closed instead of falling back.
+            services.AddOptions<BackupStorageOptions>().Bind(Configuration.GetSection("Backup"));
+            services.AddSingleton<IBackupStorage, R2BackupStorage>();
             services.AddHostedService<Services.DatabaseBackupService>();
         }
 
