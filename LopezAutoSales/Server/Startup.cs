@@ -239,11 +239,29 @@ namespace LopezAutoSales.Server
                 await next();
             });
 
-            // Apply pending EF migrations and seed the admin user on startup.
-            using (IServiceScope scope = app.ApplicationServices.CreateScope())
+            // Apply pending EF migrations and seed the admin user on startup. An unhandled
+            // failure here kills the host, and Railway's restart backoff eventually stops
+            // retrying — so a database that's only briefly unreachable (a Postgres restart,
+            // platform maintenance, or the app simply starting before Postgres accepts
+            // connections) turns a short blip into an outage that needs a manual redeploy.
+            // Retry with backoff; if the database is genuinely gone, still fail loudly rather
+            // than serve an app whose schema was never migrated.
+            const int maxAttempts = 8;
+            for (int attempt = 1; ; attempt++)
             {
-                scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
-                SeedUsers(scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>());
+                try
+                {
+                    using IServiceScope scope = app.ApplicationServices.CreateScope();
+                    scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
+                    SeedUsers(scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>());
+                    break;
+                }
+                catch (Exception ex) when (attempt < maxAttempts)
+                {
+                    TimeSpan delay = TimeSpan.FromSeconds(Math.Min(5 * attempt, 20));
+                    Log.Warning(ex, "Database unavailable on startup (attempt {Attempt}/{MaxAttempts}); retrying in {Delay}s.", attempt, maxAttempts, delay.TotalSeconds);
+                    System.Threading.Thread.Sleep(delay);
+                }
             }
 
             if (env.IsDevelopment())
