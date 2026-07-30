@@ -361,3 +361,6 @@ docs/
 # keep per-developer local files out of the repo.
 .claude/settings.local.json
 CLAUDE.local.md
+
+# graphify: generated knowledge-graph output (rebuild with /graphify)
+graphify-out/
