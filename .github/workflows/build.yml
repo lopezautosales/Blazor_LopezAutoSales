@@ -2,7 +2,7 @@ name: build
 
 on:
   push:
-    branches: [master]
+    branches: ['**']
   pull_request:
 
 permissions:
@@ -12,8 +12,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Every branch push runs the checks, so a branch is verified before a PR exists.
+# A same-repo PR would otherwise build twice (once for the push, once for the
+# pull_request), so the pull_request event only does the work for forks -- whose
+# commits never produce a push event on this repo.
 jobs:
   build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -40,6 +45,7 @@ jobs:
           dotnet dotnet-ef migrations has-pending-model-changes
 
   docker:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
