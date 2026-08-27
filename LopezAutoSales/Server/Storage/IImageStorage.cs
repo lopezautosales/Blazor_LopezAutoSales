@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,14 +10,7 @@ namespace LopezAutoSales.Server.Storage
     {
         Task SaveAsync(string key, Stream content, string contentType, CancellationToken ct = default);
 
-        Task<Stream> OpenReadAsync(string key, CancellationToken ct = default);
-
         Task DeleteAsync(string key, CancellationToken ct = default);
-
-        Task<bool> ExistsAsync(string key, CancellationToken ct = default);
-
-        // All object keys under a prefix (e.g. "backups/"). Order is unspecified.
-        Task<IReadOnlyList<string>> ListKeysAsync(string prefix, CancellationToken ct = default);
 
         string PublicUrl(string key);
 
