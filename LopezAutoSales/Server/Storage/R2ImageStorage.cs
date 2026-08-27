@@ -84,8 +84,11 @@ namespace LopezAutoSales.Server.Storage
             do
             {
                 response = await _s3.ListObjectsV2Async(request, ct);
-                foreach (S3Object obj in response.S3Objects)
-                    keys.Add(obj.Key);
+                // AWS SDK v4 leaves S3Objects NULL (v3 returned an empty list) when the
+                // prefix matches nothing -- e.g. the first run against a fresh bucket.
+                if (response.S3Objects != null)
+                    foreach (S3Object obj in response.S3Objects)
+                        keys.Add(obj.Key);
                 request.ContinuationToken = response.NextContinuationToken;
             } while (response.IsTruncated == true);
             return keys;

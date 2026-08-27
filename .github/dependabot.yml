@@ -5,6 +5,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # ImageSharp 3.x/4.x switched to a paid commercial license; we stay on the
+      # Apache-2.0 2.x line on purpose. See CLAUDE.md.
+      - dependency-name: "SixLabors.ImageSharp"
+        versions: [">=3.0.0"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
