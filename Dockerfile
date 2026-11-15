@@ -15,7 +15,7 @@ COPY . .
 RUN dotnet publish LopezAutoSales/Server/LopezAutoSales.Server.csproj -c Release -o /app /p:UseAppHost=false
 
 # ---- runtime ----
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS runtime
 WORKDIR /app
 # Npgsql probes for Kerberos/GSSAPI at startup; curl is used by the healthcheck;
 # tzdata provides the zoneinfo DB so TZ below resolves to a real timezone.
